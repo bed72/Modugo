@@ -14,7 +14,7 @@ import 'package:modugo/src/interfaces/module_interface.dart';
 
 abstract class Module {
   List<Module> get imports => const [];
-  List<Bind<Object>> get binds => const [];
+  List<Bind> get binds => const [];
   List<ModuleInterface> get routes => const [];
 
   final _routerManager = Manager();

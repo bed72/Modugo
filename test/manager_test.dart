@@ -65,21 +65,6 @@ void main() {
     },
   );
 
-  test('bind reference count should decrease correctly', () async {
-    final type = innerModule.binds.first.instance.runtimeType;
-
-    manager.registerBindsIfNeeded(innerModule);
-    expect(manager.bindReferences[type], greaterThan(0));
-
-    manager.unregisterRoute('/inner', innerModule);
-    await Future.delayed(Duration(milliseconds: disposeMilisenconds + 72));
-
-    expect(
-      manager.bindReferences.containsKey(type),
-      isTrue,
-    ); // Because is a root module
-  });
-
   test('should not register binds again for active module', () {
     manager.registerBindsIfNeeded(innerModule);
 
@@ -87,5 +72,41 @@ void main() {
     manager.registerBindsIfNeeded(innerModule);
 
     expect(manager.bindReferences.length, equals(before));
+  });
+
+  test(
+    'should keep module active while at least one route is registered',
+    () async {
+      manager.registerBindsIfNeeded(innerModule);
+
+      manager.registerRoute('/inner/1', innerModule);
+      manager.registerRoute('/inner/2', innerModule);
+      manager.unregisterRoute('/inner/1', innerModule);
+
+      await Future.delayed(Duration(milliseconds: disposeMilisenconds + 72));
+
+      expect(manager.isModuleActive(innerModule), isTrue);
+
+      manager.unregisterRoute('/inner/2', innerModule);
+      await Future.delayed(Duration(milliseconds: disposeMilisenconds + 72));
+
+      expect(manager.isModuleActive(innerModule), isFalse);
+    },
+  );
+
+  test('bind reference count should decrease correctly', () async {
+    manager.registerBindsIfNeeded(innerModule);
+
+    final type = innerModule.binds.first.instance.runtimeType;
+    print('Captured type after register: $type');
+
+    expect(manager.isModuleActive(innerModule), isTrue);
+
+    manager.registerRoute('/inner', innerModule);
+    manager.unregisterRoute('/inner', innerModule);
+    await Future.delayed(Duration(milliseconds: disposeMilisenconds + 72));
+
+    expect(manager.isModuleActive(innerModule), isFalse);
+    expect(manager.bindReferences.containsKey(type), isFalse);
   });
 }

@@ -39,17 +39,18 @@ final class Manager implements ManagerInterface {
   void registerBindsIfNeeded(Module module) {
     if (_activeRoutes.containsKey(module)) return;
 
-    List<Bind<Object>> allBinds = [
+    final allBinds = <Bind>[
       ...module.binds,
-      ...module.imports.map((e) => e.binds).expand((e) => e),
+      for (final imported in module.imports) ...imported.binds,
     ];
+
     _recursiveRegisterBinds(allBinds);
 
     _activeRoutes[module] = {};
 
     if (Modugo.debugLogDiagnostics) {
       log(
-        'INJECTED: ${module.runtimeType} BINDS: ${[...module.binds.map((e) => e.instance.runtimeType.toString()), ...module.imports.map((e) => e.binds.map((e) => e.instance.runtimeType.toString()).toList())]}',
+        'INJECTED: ${module.runtimeType} BINDS: ${_logModuleBindsTypes(module)}',
         name: '💉',
       );
     }
@@ -68,7 +69,7 @@ final class Manager implements ManagerInterface {
     _activeRoutes[module]?.remove(route);
     _timer?.cancel();
     _timer = Timer(Duration(milliseconds: disposeMilisenconds), () {
-      if (_activeRoutes[module] != null && _activeRoutes[module]!.isEmpty) {
+      if (_activeRoutes[module]?.isEmpty ?? true) {
         unregisterBinds(module);
       }
       _timer?.cancel();
@@ -77,27 +78,24 @@ final class Manager implements ManagerInterface {
 
   @override
   void unregisterBinds(Module module) {
-    if (_appModule != null && module == _appModule!) return;
-
+    if (_appModule == module) return;
     if (_activeRoutes[module]?.isNotEmpty ?? false) return;
 
     if (Modugo.debugLogDiagnostics) {
       log(
-        'DISPOSED: ${module.runtimeType} BINDS: ${[...module.binds.map((e) => e.instance.runtimeType.toString()), ...module.imports.map((e) => e.binds.map((e) => e.instance.runtimeType.toString()).toList())]}',
+        'DISPOSED: ${module.runtimeType} BINDS: ${_logModuleBindsTypes(module)}',
         name: '🗑️',
       );
     }
 
     for (final bind in module.binds) {
-      _decrementBindReference(bind.instance.runtimeType);
+      _decrementBindReference(_resolveBindType(bind));
     }
 
-    if (module.imports.isNotEmpty) {
-      for (final importedModule in module.imports) {
-        for (final bind in importedModule.binds) {
-          if (_appModule?.binds.contains(bind) ?? false) continue;
-          _decrementBindReference(bind.instance.runtimeType);
-        }
+    for (final importedModule in module.imports) {
+      for (final bind in importedModule.binds) {
+        if (_appModule?.binds.contains(bind) ?? false) continue;
+        _decrementBindReference(_resolveBindType(bind));
       }
     }
 
@@ -107,36 +105,33 @@ final class Manager implements ManagerInterface {
     _activeRoutes.remove(module);
   }
 
-  void _recursiveRegisterBinds(List<Bind<Object>> binds) {
+  void _recursiveRegisterBinds(List<Bind> binds, [int depth = 0]) {
     if (binds.isEmpty) return;
 
-    List<Bind<Object>> queueBinds = [];
+    final queueBinds = <Bind>[];
 
     for (final bind in binds) {
       try {
-        _incrementBindReference(bind.instance.runtimeType);
+        _incrementBindReference(_resolveBindType(bind));
         Bind.register(bind);
       } catch (_) {
         queueBinds.add(bind);
       }
     }
 
-    if (queueBinds.length < binds.length) {
-      _recursiveRegisterBinds(queueBinds);
+    if (queueBinds.isEmpty) return;
+
+    if (queueBinds.length == binds.length) {
+      throw Exception(
+        'Cyclic or unresolved dependencies: ${queueBinds.map((b) => _resolveBindType(b)).toList()}',
+      );
     }
 
-    if (queueBinds.isNotEmpty) {
-      for (final bind in queueBinds) {
-        _incrementBindReference(bind.instance.runtimeType);
-        Bind.register(bind);
-      }
-    }
+    _recursiveRegisterBinds(queueBinds, depth + 1);
   }
 
   void _incrementBindReference(Type type) {
-    _bindReferences.containsKey(type)
-        ? _bindReferences[type] = (_bindReferences[type] ?? 0) + 1
-        : _bindReferences[type] = 1;
+    _bindReferences[type] = (_bindReferences[type] ?? 0) + 1;
   }
 
   void _decrementBindReference(Type type) {
@@ -147,5 +142,18 @@ final class Manager implements ManagerInterface {
         bindsToDispose.add(type);
       }
     }
+  }
+
+  String _logModuleBindsTypes(Module module) {
+    final types = <String>[
+      ...module.binds.map((b) => _resolveBindType(b).toString()),
+      for (final m in module.imports)
+        ...m.binds.map((b) => _resolveBindType(b).toString()),
+    ];
+    return types.toString();
+  }
+
+  Type _resolveBindType(Bind bind) {
+    return bind.maybeInstance?.runtimeType ?? bind.runtimeType;
   }
 }
