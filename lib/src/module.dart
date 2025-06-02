@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-
 import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/manager.dart';
 import 'package:go_router/go_router.dart';
@@ -23,9 +22,11 @@ abstract class Module {
     bool topLevel = false,
     String modulePath = '',
   }) {
-    List<RouteBase> result = [];
-    _routerManager.registerBindsAppModule(this);
+    if (!_routerManager.isModuleActive(this)) {
+      _routerManager.registerBindsAppModule(this);
+    }
 
+    List<RouteBase> result = [];
     result.addAll(_createShellRoutes(topLevel));
     result.addAll(_createChildRoutes(topLevel: topLevel));
     result.addAll(
@@ -66,7 +67,7 @@ abstract class Module {
   List<GoRoute> _createChildRoutes({required bool topLevel}) =>
       routes
           .whereType<ChildRoute>()
-          .where((route) => adjustRoute(route.path) != '/')
+          .where((route) => _adjustRoute(route.path) != '/')
           .map((route) => _createChild(childRoute: route, topLevel: topLevel))
           .toList();
 
@@ -78,7 +79,7 @@ abstract class Module {
     final childRoute =
         module.module.routes
             .whereType<ChildRoute>()
-            .where((route) => adjustRoute(route.path) == '/')
+            .where((route) => _adjustRoute(route.path) == '/')
             .firstOrNull;
 
     return GoRoute(
@@ -178,7 +179,7 @@ abstract class Module {
         );
       }).toList();
 
-  String adjustRoute(String route) =>
+  String _adjustRoute(String route) =>
       (route == '/' || route.startsWith('/:')) ? '/' : route;
 
   String _normalizePath({required String path, required bool topLevel}) {
@@ -186,17 +187,10 @@ abstract class Module {
       path = path.substring(1);
     }
 
-    return buildPath(path);
-  }
-
-  String buildPath(String path) {
     if (!path.endsWith('/')) path = '$path/';
-
     path = path.replaceAll(RegExp(r'/+'), '/');
 
-    if (path == '/') return path;
-
-    return path.substring(0, path.length - 1);
+    return path == '/' ? path : path.substring(0, path.length - 1);
   }
 
   Widget _buildRouteChild(
@@ -237,19 +231,21 @@ abstract class Module {
     required ChildRoute route,
     required GoRouterState state,
   }) {
-    final completer = Completer<bool>();
-    final onExit = route.onExit?.call(context, state) ?? Future.value(true);
+    final onExit = route.onExit?.call(context, state);
 
-    completer.complete(onExit);
+    final futureExit =
+        onExit is Future<bool> ? onExit : Future.value(onExit ?? true);
 
-    return completer.future.then((exit) {
-      try {
-        if (exit) _unregister(state.uri.toString(), module: module);
-        return exit;
-      } catch (_) {
-        return false;
-      }
-    });
+    return futureExit
+        .then((exit) {
+          try {
+            if (exit) _unregister(state.uri.toString(), module: module);
+            return exit;
+          } catch (_) {
+            return false;
+          }
+        })
+        .catchError((_) => false);
   }
 
   void _register({required String path, Module? module}) {

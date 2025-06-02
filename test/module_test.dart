@@ -2,7 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'mocks/modugo_mock.dart';
-import 'mocks/modules_mock.dart';
+import 'mocks/modules/modules_mock.dart';
 
 void main() {
   setUpAll(() async {
@@ -28,23 +28,5 @@ void main() {
 
     final shell = routes.whereType<ShellRoute>().first;
     expect(shell, isNotNull);
-  });
-
-  test('Module.adjustRoute works as expected', () {
-    final module = OtherModuleMock();
-
-    expect(module.adjustRoute('/'), '/');
-    expect(module.adjustRoute('/:id'), '/');
-    expect(module.adjustRoute('/other'), '/other');
-  });
-
-  test('Module.buildPath normalizes paths correctly', () {
-    final module = OtherModuleMock();
-
-    expect(module.buildPath('/'), '/');
-    expect(module.buildPath('/abc/'), '/abc');
-    expect(module.buildPath('/abc'), '/abc');
-    expect(module.buildPath('/abc//'), '/abc');
-    expect(module.buildPath('/abc////xyz/'), '/abc/xyz');
   });
 }

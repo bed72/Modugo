@@ -5,7 +5,7 @@ import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/transitions/transition.dart';
 
 import 'mocks/modugo_mock.dart';
-import 'mocks/modules_mock.dart';
+import 'mocks/modules/modules_mock.dart';
 
 void main() {
   test('GoRouterModular.configure sets up router and diagnostics', () async {

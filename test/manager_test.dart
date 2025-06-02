@@ -1,11 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/dispose.dart';
+import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/manager.dart';
 import 'package:modugo/src/interfaces/manager_interface.dart';
 
 import 'mocks/modugo_mock.dart';
-import 'mocks/modules_mock.dart';
+import 'mocks/modules/cycle_modules_mock.dart';
+import 'mocks/modules/modules_mock.dart';
+import 'mocks/services_mock.dart';
 
 void main() {
   late final ManagerInterface manager;
@@ -108,5 +111,30 @@ void main() {
 
     expect(manager.isModuleActive(innerModule), isFalse);
     expect(manager.bindReferences.containsKey(type), isFalse);
+  });
+
+  test('manual unregisterBinds works', () {
+    manager.registerBindsIfNeeded(innerModule);
+    manager.unregisterBinds(innerModule);
+
+    expect(manager.isModuleActive(innerModule), isFalse);
+    expect(() => Bind.get<ExampleServiceMock>(), throwsException);
+  });
+
+  test('Injector clearAll removes all binds', () {
+    manager.registerBindsIfNeeded(innerModule);
+    manager.registerBindsIfNeeded(rootModule);
+
+    Bind.clearAll();
+
+    expect(() => Bind.get<ExampleServiceMock>(), throwsException);
+  });
+
+  test('should throw on cyclic dependencies at resolution', () {
+    final cyclicModule = CyclicModuleMock();
+
+    manager.registerBindsIfNeeded(cyclicModule);
+
+    expect(() => Bind.get<CyclicAMock>(), throwsA(isA<Error>()));
   });
 }

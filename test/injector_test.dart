@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/injector.dart';
@@ -23,7 +25,7 @@ void main() {
   });
 
   test('should create instance only on first get', () {
-    var created = false;
+    bool created = false;
 
     Bind.register<ExampleServiceMock>(
       Bind.lazySingleton((_) {
@@ -75,7 +77,7 @@ void main() {
 
     Bind.get<ExampleServiceMock>();
 
-    Bind.dispose<ExampleServiceMock>();
+    Bind.disposeByType(ExampleServiceMock);
 
     expect(() => Bind.get<ExampleServiceMock>(), throwsException);
   });
@@ -103,5 +105,34 @@ void main() {
 
     final instance = Bind.get<ExampleServiceMock>();
     expect(instance.id, equals(2));
+  });
+
+  test('clearAll should dispose all and clear binds', () {
+    Bind.register<ExampleServiceMock>(
+      Bind.singleton((_) => ExampleServiceMock(id: 1)),
+    );
+    Bind.register<CounterServiceMock>(
+      Bind.singleton((_) => CounterServiceMock()),
+    );
+
+    expect(Bind.get<ExampleServiceMock>(), isNotNull);
+    expect(Bind.get<CounterServiceMock>(), isNotNull);
+
+    Bind.clearAll();
+
+    expect(() => Bind.get<ExampleServiceMock>(), throwsException);
+    expect(() => Bind.get<CounterServiceMock>(), throwsException);
+  });
+
+  test('disposeInstance should close StreamController', () {
+    final controller = StreamController();
+
+    Bind.register<StreamController>(Bind.singleton((_) => controller));
+
+    Bind.get<StreamController>();
+
+    Bind.disposeByType(StreamController);
+
+    expect(controller.isClosed, isTrue);
   });
 }

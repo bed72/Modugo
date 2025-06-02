@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:flutter/widgets.dart';
+
 final class Injector {
   T get<T>() => Bind.get<T>();
 }
@@ -5,11 +9,12 @@ final class Injector {
 final class Bind<T> {
   static final Map<Type, Bind> _binds = {};
 
+  T? _cachedInstance;
+
   final bool isLazy;
+  final Type type = T;
   final bool isSingleton;
   final T Function(Injector i) factoryFunction;
-
-  T? _cachedInstance;
 
   Bind(this.factoryFunction, {this.isSingleton = true, this.isLazy = true});
 
@@ -17,7 +22,6 @@ final class Bind<T> {
 
   T get instance {
     if (!isSingleton) return factoryFunction(Injector());
-
     return _cachedInstance ??= factoryFunction(Injector());
   }
 
@@ -35,27 +39,50 @@ final class Bind<T> {
       Bind<T>(builder, isSingleton: true, isLazy: true);
 
   static void register<T>(Bind<T> bind) {
-    _binds[T] = bind;
+    _binds[bind.type] = bind;
 
     if (!bind.isLazy && bind.isSingleton) {
       bind._cachedInstance = bind.factoryFunction(Injector());
     }
   }
 
-  static void dispose<T>() {
-    _binds.remove(T);
-  }
-
-  static void clearAll() {
-    _binds.clear();
-  }
-
   static void disposeByType(Type type) {
+    final bind = _binds[type];
+
+    if (bind != null && bind.isSingleton) bind.disposeInstance();
+
     _binds.remove(type);
   }
 
+  static void clearAll() {
+    for (final bind in _binds.values) {
+      bind.disposeInstance();
+    }
+
+    _binds.clear();
+  }
+
+  void disposeInstance() {
+    if (!isSingleton || _cachedInstance == null) return;
+
+    final instance = _cachedInstance;
+
+    try {
+      if (instance is Sink) instance.close();
+      if (instance is ChangeNotifier) instance.dispose();
+      if (instance is StreamController) instance.close();
+    } catch (e, stack) {
+      debugPrint(
+        'Error disposing instance of type ${instance.runtimeType}: $e',
+      );
+      debugPrint('$stack');
+    }
+
+    _cachedInstance = null;
+  }
+
   static T _find<T>() {
-    final bind = _binds[dynamic];
+    final bind = _binds[T];
 
     if (bind == null) {
       throw Exception('Bind not found for type ${T.toString()}');

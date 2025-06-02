@@ -105,6 +105,9 @@ final class Manager implements ManagerInterface {
     _activeRoutes.remove(module);
   }
 
+  Type _resolveBindType(Bind bind) =>
+      bind.maybeInstance?.runtimeType ?? bind.runtimeType;
+
   void _recursiveRegisterBinds(List<Bind> binds, [int depth = 0]) {
     if (binds.isEmpty) return;
 
@@ -151,9 +154,5 @@ final class Manager implements ManagerInterface {
         ...m.binds.map((b) => _resolveBindType(b).toString()),
     ];
     return types.toString();
-  }
-
-  Type _resolveBindType(Bind bind) {
-    return bind.maybeInstance?.runtimeType ?? bind.runtimeType;
   }
 }

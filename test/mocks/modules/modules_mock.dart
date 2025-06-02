@@ -7,7 +7,7 @@ import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
 
-import 'services_mock.dart';
+import '../services_mock.dart';
 
 final class InnerModuleMock extends Module {
   @override
