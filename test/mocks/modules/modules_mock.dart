@@ -11,14 +11,14 @@ import '../services_mock.dart';
 
 final class InnerModuleMock extends Module {
   @override
-  List<SyncBind<Object>> get syncBinds => [
-    SyncBind.factory((i) => SyncServiceMock()),
+  List<SyncBind> get syncBinds => [
+    SyncBind.factory<SyncServiceMock>((i) => SyncServiceMock()),
   ];
 }
 
 final class AnotherModuleMock extends Module {
   @override
-  List<SyncBind<Object>> get syncBinds => [];
+  List<SyncBind> get syncBinds => [];
 
   @override
   List<Module> get imports => [InnerModuleMock()];
@@ -26,7 +26,7 @@ final class AnotherModuleMock extends Module {
 
 final class RootModuleMock extends Module {
   @override
-  List<SyncBind<Object>> get syncBinds => [];
+  List<SyncBind> get syncBinds => [];
 
   @override
   List<Module> get imports => [InnerModuleMock()];
@@ -51,5 +51,10 @@ final class OtherModuleMock extends Module {
         ChildRoute('/dashboard', child: (context, state) => Placeholder()),
       ],
     ),
+  ];
+
+  @override
+  List<SyncBind> get syncBinds => [
+    SyncBind.factory<SyncServiceMock>((i) => SyncServiceMock()),
   ];
 }

@@ -5,10 +5,11 @@ import 'package:flutter/widgets.dart';
 import 'package:modugo/src/injectors/injector.dart';
 
 final class AsyncBind<T> {
-  static final Map<Type, AsyncBind> _asyncBinds = {};
+  static final Map<Type, AsyncBind> _binds = {};
 
   Future<T>? _cachedFuture;
 
+  final Type type = T;
   final bool isSingleton;
   final Future<T> Function(Injector i) factoryFunction;
   final Future<void> Function(T instance)? disposeAsync;
@@ -24,10 +25,46 @@ final class AsyncBind<T> {
 
     try {
       return await _cachedFuture!;
-    } catch (e) {
+    } catch (_) {
       _cachedFuture = null;
       rethrow;
     }
+  }
+
+  static AsyncBind? getBindByType(Type type) => _binds[type];
+
+  static void register<T>(AsyncBind<T> bind) {
+    _binds[bind.type] = bind;
+
+    if (bind.isSingleton) {
+      bind._cachedFuture = bind.factoryFunction(Injector());
+    }
+  }
+
+  static Future<void> clearAll() async {
+    for (final bind in _binds.values) {
+      await bind.disposeInstance();
+    }
+
+    _binds.clear();
+  }
+
+  static Future<void> disposeByType(Type type) async {
+    final bind = _binds[type];
+
+    if (bind != null) await bind.disposeInstance();
+
+    _binds.remove(type);
+  }
+
+  static Future<T> get<T>() async {
+    final bind = _binds[T];
+
+    if (bind == null) {
+      throw Exception('AsyncBind not found for type ${T.toString()}');
+    }
+
+    return await (bind as AsyncBind<T>).instance;
   }
 
   Future<void> disposeInstance() async {
@@ -51,34 +88,5 @@ final class AsyncBind<T> {
     }
 
     _cachedFuture = null;
-  }
-
-  static Future<T> get<T>() async {
-    final bind = _asyncBinds[T];
-    if (bind == null) {
-      throw Exception('AsyncBind not found for type ${T.toString()}');
-    }
-    return await (bind as AsyncBind<T>).instance;
-  }
-
-  static void register<T>(AsyncBind<T> bind) {
-    _asyncBinds[T] = bind;
-
-    if (bind.isSingleton) {
-      bind._cachedFuture = bind.factoryFunction(Injector());
-    }
-  }
-
-  static Future<void> disposeByType(Type type) async {
-    final bind = _asyncBinds[type];
-    if (bind != null) await bind.disposeInstance();
-    _asyncBinds.remove(type);
-  }
-
-  static Future<void> clearAll() async {
-    for (final bind in _asyncBinds.values) {
-      await bind.disposeInstance();
-    }
-    _asyncBinds.clear();
   }
 }

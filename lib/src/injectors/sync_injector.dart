@@ -23,8 +23,6 @@ final class SyncBind<T> {
     return _cachedInstance ??= factoryFunction(Injector());
   }
 
-  static T get<T>() => _find<T>();
-
   static SyncBind? getBindByType(Type type) => _binds[type];
 
   static SyncBind<T> factory<T>(T Function(Injector i) builder) =>
@@ -44,6 +42,14 @@ final class SyncBind<T> {
     }
   }
 
+  static void clearAll() {
+    for (final bind in _binds.values) {
+      bind.disposeInstance();
+    }
+
+    _binds.clear();
+  }
+
   static void disposeByType(Type type) {
     final bind = _binds[type];
 
@@ -52,12 +58,16 @@ final class SyncBind<T> {
     _binds.remove(type);
   }
 
-  static void clearAll() {
-    for (final bind in _binds.values) {
-      bind.disposeInstance();
-    }
+  static T get<T>() {
+    {
+      final bind = _binds[T];
 
-    _binds.clear();
+      if (bind == null) {
+        throw Exception('SyncBind not found for type ${T.toString()}');
+      }
+
+      return (bind as SyncBind<T>).instance;
+    }
   }
 
   void disposeInstance() {
@@ -77,15 +87,5 @@ final class SyncBind<T> {
     }
 
     _cachedInstance = null;
-  }
-
-  static T _find<T>() {
-    final bind = _binds[T];
-
-    if (bind == null) {
-      throw Exception('SyncBind not found for type ${T.toString()}');
-    }
-
-    return (bind as SyncBind<T>).instance;
   }
 }

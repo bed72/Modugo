@@ -19,3 +19,16 @@ void safeDispose(dynamic instance) {
     debugPrint('$stack');
   }
 }
+
+abstract interface class BaseBind<T> {
+  final bool isSingleton;
+  final T Function(Injector i) factoryFunction;
+
+  BaseBind(this.factoryFunction, {this.isSingleton = true});
+
+  FutureOr<T> getInstance();
+
+  FutureOr<void> disposeInstance();
+
+  Type get runtimeTypeKey => T;
+}

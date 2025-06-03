@@ -40,19 +40,23 @@ final class Manager implements ManagerInterface {
   void registerBindsIfNeeded(Module module) {
     if (_activeRoutes.containsKey(module)) return;
 
-    final allSyncBinds = <SyncBind>[
-      ...module.syncBinds,
-      for (final imported in module.imports) ...imported.syncBinds,
-    ];
-    _recursiveRegisterBinds(allSyncBinds);
-
     final allAsyncBinds = <AsyncBind>[
       ...module.asyncBinds,
       for (final imported in module.imports) ...imported.asyncBinds,
     ];
     for (final asyncBind in allAsyncBinds) {
       AsyncBind.register(asyncBind);
+
+      if (Modugo.debugLogDiagnostics) {
+        log('REGISTERING ASYNC BIND: ${asyncBind.type}', name: '💉');
+      }
     }
+
+    final allSyncBinds = <SyncBind>[
+      ...module.syncBinds,
+      for (final imported in module.imports) ...imported.syncBinds,
+    ];
+    _recursiveRegisterBinds(allSyncBinds);
 
     _activeRoutes[module] = {};
 
@@ -76,9 +80,10 @@ final class Manager implements ManagerInterface {
 
     _activeRoutes[module]?.remove(route);
     _timer?.cancel();
-    _timer = Timer(Duration(milliseconds: disposeMilisenconds), () {
+
+    _timer = Timer(Duration(milliseconds: disposeMilisenconds), () async {
       if (_activeRoutes[module]?.isEmpty ?? true) {
-        unregisterBinds(module);
+        await unregisterBinds(module);
       }
       _timer?.cancel();
     });
@@ -111,7 +116,6 @@ final class Manager implements ManagerInterface {
     bindsToDispose.map((type) => SyncBind.disposeByType(type)).toList();
     bindsToDispose.clear();
 
-    // Dispose async binds
     for (final asyncBind in module.asyncBinds) {
       await AsyncBind.disposeByType(asyncBind.runtimeType);
     }
@@ -137,6 +141,11 @@ final class Manager implements ManagerInterface {
     for (final bind in binds) {
       try {
         _incrementBindReference(_resolveBindType(bind));
+
+        if (Modugo.debugLogDiagnostics) {
+          log('REGISTERING SYNC BIND: ${bind.type}', name: '💉');
+        }
+
         SyncBind.register(bind);
       } catch (_) {
         queueBinds.add(bind);

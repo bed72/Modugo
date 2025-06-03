@@ -1,11 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/dispose.dart';
+import 'package:modugo/src/injectors/async_injector.dart';
 import 'package:modugo/src/manager.dart';
 import 'package:modugo/src/injectors/sync_injector.dart';
 import 'package:modugo/src/interfaces/manager_interface.dart';
 
 import 'mocks/modugo_mock.dart';
+import 'mocks/modules/async_modules_mock.dart';
 import 'mocks/services_mock.dart';
 import 'mocks/modules/modules_mock.dart';
 import 'mocks/modules/cycle_modules_mock.dart';
@@ -136,5 +138,39 @@ void main() {
     manager.registerBindsIfNeeded(cyclicModule);
 
     expect(() => SyncBind.get<CyclicAMock>(), throwsA(isA<Error>()));
+  });
+
+  test('should register and resolve async binds', () async {
+    manager.registerBindsIfNeeded(ModuleWithAsyncMock());
+
+    final asyncService = await AsyncBind.get<AsyncServiceMock>();
+
+    expect(asyncService, isNotNull);
+    expect(asyncService, isA<AsyncServiceMock>());
+  });
+
+  test('async and sync binds coexist without conflict', () async {
+    final combinedModule = ModuleWithSyncAndAsyncMock();
+
+    manager.registerBindsIfNeeded(combinedModule);
+
+    final syncService = SyncBind.get<SyncServiceMock>();
+    final asyncService = await AsyncBind.get<AsyncServiceMock>();
+
+    expect(syncService, isNotNull);
+    expect(asyncService, isNotNull);
+  });
+
+  test('should clear all async binds with clearAll', () async {
+    final moduleWithAsync = ModuleWithAsyncMock();
+
+    manager.registerBindsIfNeeded(moduleWithAsync);
+
+    final service = await AsyncBind.get<AsyncServiceMock>();
+    expect(service, isNotNull);
+
+    await AsyncBind.clearAll();
+
+    expect(() => AsyncBind.get<AsyncServiceMock>(), throwsException);
   });
 }
