@@ -10,7 +10,7 @@ import 'package:modugo/src/interfaces/manager_interface.dart';
 
 final class Manager implements ManagerInterface {
   Timer? _timer;
-  Module? _appModule;
+  Module? _module;
   List<Type> bindsToDispose = [];
 
   final Map<Type, int> _bindReferences = {};
@@ -23,6 +23,14 @@ final class Manager implements ManagerInterface {
   factory Manager() => _instance;
 
   @override
+  Module? get module => _module;
+
+  @override
+  set module(Module? module) {
+    _module = module;
+  }
+
+  @override
   Map<Type, int> get bindReferences => _bindReferences;
 
   @override
@@ -30,9 +38,9 @@ final class Manager implements ManagerInterface {
 
   @override
   void registerBindsAppModule(Module module) {
-    if (_appModule != null) return;
+    if (_module != null) return;
 
-    _appModule = module;
+    _module = module;
     registerBindsIfNeeded(module);
   }
 
@@ -40,23 +48,8 @@ final class Manager implements ManagerInterface {
   void registerBindsIfNeeded(Module module) {
     if (_activeRoutes.containsKey(module)) return;
 
-    final allAsyncBinds = <AsyncBind>[
-      ...module.asyncBinds,
-      for (final imported in module.imports) ...imported.asyncBinds,
-    ];
-    for (final asyncBind in allAsyncBinds) {
-      AsyncBind.register(asyncBind);
-
-      if (Modugo.debugLogDiagnostics) {
-        log('REGISTERING ASYNC BIND: ${asyncBind.type}', name: '💉');
-      }
-    }
-
-    final allSyncBinds = <SyncBind>[
-      ...module.syncBinds,
-      for (final imported in module.imports) ...imported.syncBinds,
-    ];
-    _recursiveRegisterBinds(allSyncBinds);
+    _registerSyncBinds(module);
+    _resisterAsyncBinds(module);
 
     _activeRoutes[module] = {};
 
@@ -68,6 +61,28 @@ final class Manager implements ManagerInterface {
     }
   }
 
+  void _registerSyncBinds(Module module) {
+    final allSyncBinds = <SyncBind>[
+      ...module.syncBinds,
+      for (final imported in module.imports) ...imported.syncBinds,
+    ];
+    _recursiveRegisterBinds(allSyncBinds);
+  }
+
+  void _resisterAsyncBinds(Module module) {
+    final allAsyncBinds = <AsyncBind>[
+      ...module.asyncBinds,
+      for (final imported in module.imports) ...imported.asyncBinds,
+    ];
+    for (final asyncBind in allAsyncBinds) {
+      AsyncBind.register(asyncBind);
+
+      if (Modugo.debugLogDiagnostics) {
+        log('REGISTERING ASYNC BIND: ${asyncBind.type}', name: '💉');
+      }
+    }
+  }
+
   @override
   void registerRoute(String route, Module module) {
     _activeRoutes.putIfAbsent(module, () => {});
@@ -76,7 +91,7 @@ final class Manager implements ManagerInterface {
 
   @override
   void unregisterRoute(String route, Module module) {
-    if (module == _appModule) return;
+    if (module == _module) return;
 
     _activeRoutes[module]?.remove(route);
     _timer?.cancel();
@@ -91,7 +106,7 @@ final class Manager implements ManagerInterface {
 
   @override
   Future<void> unregisterBinds(Module module) async {
-    if (_appModule == module) return;
+    if (_module == module) return;
     if (_activeRoutes[module]?.isNotEmpty ?? false) return;
 
     if (Modugo.debugLogDiagnostics) {
@@ -101,14 +116,13 @@ final class Manager implements ManagerInterface {
       );
     }
 
-    // Dispose sync binds
     for (final bind in module.syncBinds) {
       _decrementBindReference(_resolveBindType(bind));
     }
 
     for (final importedModule in module.imports) {
       for (final bind in importedModule.syncBinds) {
-        if (_appModule?.syncBinds.contains(bind) ?? false) continue;
+        if (_module?.syncBinds.contains(bind) ?? false) continue;
         _decrementBindReference(_resolveBindType(bind));
       }
     }
@@ -122,7 +136,7 @@ final class Manager implements ManagerInterface {
 
     for (final imported in module.imports) {
       for (final asyncBind in imported.asyncBinds) {
-        if (_appModule?.asyncBinds.contains(asyncBind) ?? false) continue;
+        if (_module?.asyncBinds.contains(asyncBind) ?? false) continue;
         await AsyncBind.disposeByType(asyncBind.runtimeType);
       }
     }
@@ -186,6 +200,7 @@ final class Manager implements ManagerInterface {
       for (final m in module.imports)
         ...m.asyncBinds.map((b) => b.runtimeType.toString()),
     ];
+
     return types.toString();
   }
 }

@@ -59,15 +59,13 @@ final class SyncBind<T> {
   }
 
   static T get<T>() {
-    {
-      final bind = _binds[T];
+    final bind = _binds[T];
 
-      if (bind == null) {
-        throw Exception('SyncBind not found for type ${T.toString()}');
-      }
-
-      return (bind as SyncBind<T>).instance;
+    if (bind == null) {
+      throw Exception('SyncBind not found for type ${T.toString()}');
     }
+
+    return (bind as SyncBind<T>).instance;
   }
 
   void disposeInstance() {

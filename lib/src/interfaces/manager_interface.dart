@@ -1,6 +1,8 @@
 import 'package:modugo/src/module.dart';
 
 abstract interface class ManagerInterface {
+  Module? get module;
+  set module(Module? module);
   Map<Type, int> get bindReferences;
   bool isModuleActive(Module module);
   void registerBindsIfNeeded(Module module);
