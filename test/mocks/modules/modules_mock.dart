@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import 'package:modugo/src/module.dart';
-import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
+import 'package:modugo/src/injectors/sync_injector.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
 
@@ -11,12 +11,14 @@ import '../services_mock.dart';
 
 final class InnerModuleMock extends Module {
   @override
-  List<Bind<Object>> get binds => [Bind.factory((i) => CounterServiceMock())];
+  List<SyncBind<Object>> get syncBinds => [
+    SyncBind.factory((i) => SyncServiceMock()),
+  ];
 }
 
 final class AnotherModuleMock extends Module {
   @override
-  List<Bind<Object>> get binds => [];
+  List<SyncBind<Object>> get syncBinds => [];
 
   @override
   List<Module> get imports => [InnerModuleMock()];
@@ -24,7 +26,7 @@ final class AnotherModuleMock extends Module {
 
 final class RootModuleMock extends Module {
   @override
-  List<Bind<Object>> get binds => [];
+  List<SyncBind<Object>> get syncBinds => [];
 
   @override
   List<Module> get imports => [InnerModuleMock()];

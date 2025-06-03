@@ -2,12 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 
-final class Injector {
-  T get<T>() => Bind.get<T>();
-}
+import 'package:modugo/src/injectors/injector.dart';
 
-final class Bind<T> {
-  static final Map<Type, Bind> _binds = {};
+final class SyncBind<T> {
+  static final Map<Type, SyncBind> _binds = {};
 
   T? _cachedInstance;
 
@@ -16,7 +14,7 @@ final class Bind<T> {
   final bool isSingleton;
   final T Function(Injector i) factoryFunction;
 
-  Bind(this.factoryFunction, {this.isSingleton = true, this.isLazy = true});
+  SyncBind(this.factoryFunction, {this.isSingleton = true, this.isLazy = true});
 
   T? get maybeInstance => _cachedInstance;
 
@@ -27,18 +25,18 @@ final class Bind<T> {
 
   static T get<T>() => _find<T>();
 
-  static Bind? getBindByType(Type type) => _binds[type];
+  static SyncBind? getBindByType(Type type) => _binds[type];
 
-  static Bind<T> factory<T>(T Function(Injector i) builder) =>
-      Bind<T>(builder, isSingleton: false, isLazy: false);
+  static SyncBind<T> factory<T>(T Function(Injector i) builder) =>
+      SyncBind<T>(builder, isSingleton: false, isLazy: false);
 
-  static Bind<T> singleton<T>(T Function(Injector i) builder) =>
-      Bind<T>(builder, isSingleton: true, isLazy: false);
+  static SyncBind<T> singleton<T>(T Function(Injector i) builder) =>
+      SyncBind<T>(builder, isSingleton: true, isLazy: false);
 
-  static Bind<T> lazySingleton<T>(T Function(Injector i) builder) =>
-      Bind<T>(builder, isSingleton: true, isLazy: true);
+  static SyncBind<T> lazySingleton<T>(T Function(Injector i) builder) =>
+      SyncBind<T>(builder, isSingleton: true, isLazy: true);
 
-  static void register<T>(Bind<T> bind) {
+  static void register<T>(SyncBind<T> bind) {
     _binds[bind.type] = bind;
 
     if (!bind.isLazy && bind.isSingleton) {
@@ -85,9 +83,9 @@ final class Bind<T> {
     final bind = _binds[T];
 
     if (bind == null) {
-      throw Exception('Bind not found for type ${T.toString()}');
+      throw Exception('SyncBind not found for type ${T.toString()}');
     }
 
-    return (bind as Bind<T>).instance;
+    return (bind as SyncBind<T>).instance;
   }
 }

@@ -1,5 +1,5 @@
 import 'package:modugo/src/module.dart';
-import 'package:modugo/src/injector.dart';
+import 'package:modugo/src/injectors/sync_injector.dart';
 
 final class CyclicAMock {
   final CyclicBMock b;
@@ -13,8 +13,8 @@ final class CyclicBMock {
 
 final class CyclicModuleMock extends Module {
   @override
-  List<Bind> get binds => [
-    Bind.factory<CyclicAMock>((i) => CyclicAMock(i.get<CyclicBMock>())),
-    Bind.factory<CyclicBMock>((i) => CyclicBMock(i.get<CyclicAMock>())),
+  List<SyncBind> get syncBinds => [
+    SyncBind.factory<CyclicAMock>((i) => CyclicAMock(i.getSync<CyclicBMock>())),
+    SyncBind.factory<CyclicBMock>((i) => CyclicBMock(i.getSync<CyclicAMock>())),
   ];
 }

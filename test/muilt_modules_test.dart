@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/manager.dart';
-import 'package:modugo/src/injector.dart';
+import 'package:modugo/src/injectors/sync_injector.dart';
 
 import 'mocks/modugo_mock.dart';
-import 'mocks/modules/implementations_mock.dart';
 import 'mocks/modules/multi_modules_mock.dart';
+import 'mocks/modules/implementations_mock.dart';
 
 void main() {
   late final Manager manager;
@@ -18,7 +18,7 @@ void main() {
     innerModule = MultiModulesInnerModuleMock();
 
     manager.bindReferences.clear();
-    Bind.clearAll();
+    SyncBind.clearAll();
   });
 
   test('Inner module resolves root module dependencies', () async {
@@ -26,21 +26,21 @@ void main() {
 
     manager.registerBindsIfNeeded(innerModule);
 
-    final cubit = Bind.get<ModulesCubitMock>();
+    final cubit = SyncBind.get<ModulesCubitMock>();
     expect(cubit, isNotNull);
     expect(cubit.repository, isA<ModulesRepositoryMock>());
 
-    final repository = Bind.get<ModulesRepositoryMock>();
+    final repository = SyncBind.get<ModulesRepositoryMock>();
     expect(repository, isNotNull);
     expect(repository is ModulesRepositoryMockImpl, isTrue);
 
-    final client = Bind.get<ModulesClientMock>();
+    final client = SyncBind.get<ModulesClientMock>();
     expect(client, isNotNull);
     expect(client is ModulesClientMockImpl, isTrue);
 
     final repoImpl = cubit.repository as ModulesRepositoryMockImpl;
     final clientFromRepo = repoImpl.client;
-    final clientFromContainer = Bind.get<ModulesClientMock>();
+    final clientFromContainer = SyncBind.get<ModulesClientMock>();
     expect(identical(clientFromRepo, clientFromContainer), isTrue);
   });
 
@@ -52,14 +52,16 @@ void main() {
       manager.registerBindsIfNeeded(innerModule);
       manager.unregisterBinds(innerModule);
 
-      final cubitBindType = Bind.getBindByType(ModulesCubitMock)?.runtimeType;
+      final cubitBindType =
+          SyncBind.getBindByType(ModulesCubitMock)?.runtimeType;
       expect(manager.bindReferences.containsKey(cubitBindType), isTrue);
 
-      final clientBindType = Bind.getBindByType(ModulesClientMock)?.runtimeType;
+      final clientBindType =
+          SyncBind.getBindByType(ModulesClientMock)?.runtimeType;
       expect(manager.bindReferences.containsKey(clientBindType), isTrue);
 
       final repositoryBindType =
-          Bind.getBindByType(ModulesRepositoryMock)?.runtimeType;
+          SyncBind.getBindByType(ModulesRepositoryMock)?.runtimeType;
       expect(manager.bindReferences.containsKey(repositoryBindType), isTrue);
     },
   );
@@ -71,11 +73,11 @@ void main() {
 
       manager.registerBindsIfNeeded(rootModule);
 
-      final repository = Bind.get<ModulesRepositoryMock>();
+      final repository = SyncBind.get<ModulesRepositoryMock>();
       expect(repository, isNotNull);
       expect(repository is ModulesRepositoryMockImpl, isTrue);
 
-      final client = Bind.get<ModulesClientMock>();
+      final client = SyncBind.get<ModulesClientMock>();
       expect(client, isNotNull);
       expect(client is ModulesClientMockImpl, isTrue);
     },
@@ -89,14 +91,15 @@ void main() {
 
     manager.unregisterBinds(rootModule);
 
-    final cubitBindType = Bind.getBindByType(ModulesCubitMock)?.runtimeType;
+    final cubitBindType = SyncBind.getBindByType(ModulesCubitMock)?.runtimeType;
     expect(manager.bindReferences.containsKey(cubitBindType), isTrue);
 
-    final clientBindType = Bind.getBindByType(ModulesClientMock)?.runtimeType;
+    final clientBindType =
+        SyncBind.getBindByType(ModulesClientMock)?.runtimeType;
     expect(manager.bindReferences.containsKey(clientBindType), isTrue);
 
     final repositoryBindType =
-        Bind.getBindByType(ModulesRepositoryMock)?.runtimeType;
+        SyncBind.getBindByType(ModulesRepositoryMock)?.runtimeType;
     expect(manager.bindReferences.containsKey(repositoryBindType), isTrue);
   });
 }

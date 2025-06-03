@@ -1,14 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/dispose.dart';
-import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/manager.dart';
+import 'package:modugo/src/injectors/sync_injector.dart';
 import 'package:modugo/src/interfaces/manager_interface.dart';
 
 import 'mocks/modugo_mock.dart';
-import 'mocks/modules/cycle_modules_mock.dart';
-import 'mocks/modules/modules_mock.dart';
 import 'mocks/services_mock.dart';
+import 'mocks/modules/modules_mock.dart';
+import 'mocks/modules/cycle_modules_mock.dart';
 
 void main() {
   late final ManagerInterface manager;
@@ -100,7 +100,7 @@ void main() {
   test('bind reference count should decrease correctly', () async {
     manager.registerBindsIfNeeded(innerModule);
 
-    final type = innerModule.binds.first.instance.runtimeType;
+    final type = innerModule.syncBinds.first.instance.runtimeType;
     print('Captured type after register: $type');
 
     expect(manager.isModuleActive(innerModule), isTrue);
@@ -118,16 +118,16 @@ void main() {
     manager.unregisterBinds(innerModule);
 
     expect(manager.isModuleActive(innerModule), isFalse);
-    expect(() => Bind.get<ExampleServiceMock>(), throwsException);
+    expect(() => SyncBind.get<SyncOtherServiceMock>(), throwsException);
   });
 
   test('Injector clearAll removes all binds', () {
     manager.registerBindsIfNeeded(innerModule);
     manager.registerBindsIfNeeded(rootModule);
 
-    Bind.clearAll();
+    SyncBind.clearAll();
 
-    expect(() => Bind.get<ExampleServiceMock>(), throwsException);
+    expect(() => SyncBind.get<SyncOtherServiceMock>(), throwsException);
   });
 
   test('should throw on cyclic dependencies at resolution', () {
@@ -135,6 +135,6 @@ void main() {
 
     manager.registerBindsIfNeeded(cyclicModule);
 
-    expect(() => Bind.get<CyclicAMock>(), throwsA(isA<Error>()));
+    expect(() => SyncBind.get<CyclicAMock>(), throwsA(isA<Error>()));
   });
 }
