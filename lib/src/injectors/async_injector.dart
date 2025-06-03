@@ -11,14 +11,14 @@ final class AsyncBind<T> {
 
   final Type type = T;
   final bool isSingleton;
+  final List<Type> dependsOn;
   final Future<T> Function(Injector i) factoryFunction;
   final Future<void> Function(T instance)? disposeAsync;
-  final List<Type> dependsOn;
 
   AsyncBind(
     this.factoryFunction, {
-    this.isSingleton = true,
     this.disposeAsync,
+    this.isSingleton = true,
     this.dependsOn = const [],
   });
 
@@ -58,7 +58,6 @@ final class AsyncBind<T> {
           try {
             await bind.instance;
           } catch (_) {
-            // If it fails, we still remove the bind to retry logic or debug
             _binds.remove(bind.type);
             rethrow;
           }
