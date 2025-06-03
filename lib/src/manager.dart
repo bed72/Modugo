@@ -37,7 +37,7 @@ final class Manager implements ManagerInterface {
   bool isModuleActive(Module module) => _activeRoutes.containsKey(module);
 
   @override
-  void registerBindsAppModule(Module module) {
+  Future<void> registerBindsAppModule(Module module) async {
     if (_module != null) return;
 
     _module = module;
@@ -45,11 +45,11 @@ final class Manager implements ManagerInterface {
   }
 
   @override
-  void registerBindsIfNeeded(Module module) {
+  Future<void> registerBindsIfNeeded(Module module) async {
     if (_activeRoutes.containsKey(module)) return;
 
     _registerSyncBinds(module);
-    _resisterAsyncBinds(module);
+    _registerAsyncBinds(module);
 
     _activeRoutes[module] = {};
 
@@ -69,17 +69,16 @@ final class Manager implements ManagerInterface {
     _recursiveRegisterBinds(allSyncBinds);
   }
 
-  void _resisterAsyncBinds(Module module) {
+  Future<void> _registerAsyncBinds(Module module) async {
     final allAsyncBinds = <AsyncBind>[
       ...module.asyncBinds,
       for (final imported in module.imports) ...imported.asyncBinds,
     ];
-    for (final asyncBind in allAsyncBinds) {
-      AsyncBind.register(asyncBind);
 
-      if (Modugo.debugLogDiagnostics) {
-        log('REGISTERING ASYNC BIND: ${asyncBind.type}', name: '💉');
-      }
+    await AsyncBind.registerAllWithDependencies(allAsyncBinds);
+
+    if (Modugo.debugLogDiagnostics) {
+      log('REGISTERED ASYNC BINDS WITH DEPENDENCIES', name: '💉');
     }
   }
 

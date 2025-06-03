@@ -80,6 +80,8 @@ class ModugoConfiguration {
     _debugLogDiagnostics = debugLogDiagnostics;
     GoRouter.optionURLReflectsImperativeAPIs = true;
 
+    final routes = await module.configureRoutes(topLevel: true);
+
     assert(
       delayDisposeMilliseconds > 500,
       '❌ delayDisposeMilliseconds must be at least 500ms - Check `go_router_modular main.dart`.',
@@ -87,6 +89,7 @@ class ModugoConfiguration {
     setDisposeMiliseconds(delayDisposeMilliseconds);
 
     _router = GoRouter(
+      routes: routes,
       redirect: redirect,
       observers: observers,
       extraCodec: extraCodec,
@@ -102,7 +105,6 @@ class ModugoConfiguration {
       refreshListenable: refreshListenable,
       restorationScopeId: restorationScopeId,
       debugLogDiagnostics: debugLogDiagnosticsGoRouter,
-      routes: module.configureRoutes(topLevel: true),
       overridePlatformDefaultLocation: overridePlatformDefaultLocation,
     );
     debugLogDiagnostics = debugLogDiagnostics;

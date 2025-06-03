@@ -20,22 +20,22 @@ abstract class Module {
 
   final _routerManager = Manager();
 
-  List<RouteBase> configureRoutes({
+  Future<List<RouteBase>> configureRoutes({
     bool topLevel = false,
     String modulePath = '',
-  }) {
+  }) async {
     if (!_routerManager.isModuleActive(this)) {
-      _routerManager.registerBindsAppModule(this);
+      await _routerManager.registerBindsAppModule(this);
     }
 
-    List<RouteBase> result = [];
-    result.addAll(_createShellRoutes(topLevel));
-    result.addAll(_createChildRoutes(topLevel: topLevel));
-    result.addAll(
-      _createModuleRoutes(topLevel: topLevel, modulePath: modulePath),
+    final shellRoutes = await _createShellRoutes(topLevel);
+    final childRoutes = _createChildRoutes(topLevel: topLevel);
+    final moduleRoutes = await _createModuleRoutes(
+      topLevel: topLevel,
+      modulePath: modulePath,
     );
 
-    return result;
+    return [...shellRoutes, ...childRoutes, ...moduleRoutes];
   }
 
   GoRoute _createChild({
@@ -73,11 +73,11 @@ abstract class Module {
           .map((route) => _createChild(childRoute: route, topLevel: topLevel))
           .toList();
 
-  GoRoute _createModule({
+  Future<GoRoute> _createModule({
     required bool topLevel,
     required String modulePath,
     required ModuleRoute module,
-  }) {
+  }) async {
     final childRoute =
         module.module.routes
             .whereType<ChildRoute>()
@@ -95,7 +95,7 @@ abstract class Module {
             module: module,
             route: childRoute,
           ),
-      routes: module.module.configureRoutes(
+      routes: await module.module.configureRoutes(
         modulePath: module.path,
         topLevel: false,
       ),
@@ -116,31 +116,54 @@ abstract class Module {
     );
   }
 
-  List<GoRoute> _createModuleRoutes({
+  Future<List<GoRoute>> _createModuleRoutes({
     required bool topLevel,
     required String modulePath,
-  }) =>
-      routes
-          .whereType<ModuleRoute>()
-          .map(
-            (module) => _createModule(
-              module: module,
-              topLevel: topLevel,
-              modulePath: modulePath,
-            ),
-          )
-          .toList();
+  }) async {
+    return await Future.wait(
+      routes.whereType<ModuleRoute>().map(
+        (module) => _createModule(
+          module: module,
+          topLevel: topLevel,
+          modulePath: modulePath,
+        ),
+      ),
+    );
+  }
 
-  List<RouteBase> _createShellRoutes(bool topLevel) =>
-      routes.whereType<ShellModuleRoute>().map((shellRoute) {
-        if (shellRoute.routes
-            .whereType<ChildRoute>()
-            .where((element) => element.path == '/')
-            .isNotEmpty) {
+  Future<List<RouteBase>> _createShellRoutes(bool topLevel) async {
+    final shellRoutes = routes.whereType<ShellModuleRoute>();
+
+    return await Future.wait(
+      shellRoutes.map((shellRoute) async {
+        if (shellRoute.routes.whereType<ChildRoute>().any(
+          (element) => element.path == '/',
+        )) {
           throw Exception(
             'ShellModularRoute cannot contain ChildRoute with path /',
           );
         }
+
+        final innerRoutes = await Future.wait(
+          shellRoute.routes.map((routeOrModule) async {
+            if (routeOrModule is ChildRoute) {
+              return _createChild(
+                topLevel: topLevel,
+                childRoute: routeOrModule,
+              );
+            }
+
+            if (routeOrModule is ModuleRoute) {
+              return await _createModule(
+                topLevel: topLevel,
+                module: routeOrModule,
+                modulePath: routeOrModule.path,
+              );
+            }
+
+            return null;
+          }),
+        );
 
         return ShellRoute(
           redirect: shellRoute.redirect,
@@ -156,30 +179,11 @@ abstract class Module {
                   ? (context, state, child) =>
                       shellRoute.pageBuilder!(context, state, child)
                   : null,
-          routes:
-              shellRoute.routes
-                  .map((routeOrModule) {
-                    if (routeOrModule is ChildRoute) {
-                      return _createChild(
-                        topLevel: topLevel,
-                        childRoute: routeOrModule,
-                      );
-                    }
-
-                    if (routeOrModule is ModuleRoute) {
-                      return _createModule(
-                        topLevel: topLevel,
-                        module: routeOrModule,
-                        modulePath: routeOrModule.path,
-                      );
-                    }
-
-                    return null;
-                  })
-                  .whereType<RouteBase>()
-                  .toList(),
+          routes: innerRoutes.whereType<RouteBase>().toList(),
         );
-      }).toList();
+      }),
+    );
+  }
 
   String _adjustRoute(String route) =>
       (route == '/' || route.startsWith('/:')) ? '/' : route;

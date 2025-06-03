@@ -13,8 +13,14 @@ final class AsyncBind<T> {
   final bool isSingleton;
   final Future<T> Function(Injector i) factoryFunction;
   final Future<void> Function(T instance)? disposeAsync;
+  final List<Type> dependsOn;
 
-  AsyncBind(this.factoryFunction, {this.isSingleton = true, this.disposeAsync});
+  AsyncBind(
+    this.factoryFunction, {
+    this.isSingleton = true,
+    this.disposeAsync,
+    this.dependsOn = const [],
+  });
 
   Future<T> get instance async {
     if (!isSingleton) return await factoryFunction(Injector());
@@ -35,9 +41,38 @@ final class AsyncBind<T> {
 
   static void register<T>(AsyncBind<T> bind) {
     _binds[bind.type] = bind;
+  }
 
-    if (bind.isSingleton) {
-      bind._cachedFuture = bind.factoryFunction(Injector());
+  static Future<void> registerAllWithDependencies(List<AsyncBind> binds) async {
+    final queue = List<AsyncBind>.from(binds);
+    final resolved = <Type>{};
+
+    while (queue.isNotEmpty) {
+      final bind = queue.removeAt(0);
+
+      final allDepsMet = bind.dependsOn.every(resolved.contains);
+      if (allDepsMet) {
+        _binds[bind.type] = bind;
+
+        if (bind.isSingleton) {
+          try {
+            await bind.instance;
+          } catch (_) {
+            // If it fails, we still remove the bind to retry logic or debug
+            _binds.remove(bind.type);
+            rethrow;
+          }
+        }
+
+        resolved.add(bind.type);
+      } else {
+        queue.add(bind); // Retry later
+        if (queue.length == binds.length) {
+          throw Exception(
+            'Circular or unresolved async dependencies: ${queue.map((b) => b.type).toList()}',
+          );
+        }
+      }
     }
   }
 

@@ -1,9 +1,9 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:modugo/src/injectors/async_injector.dart';
-import 'package:modugo/src/injectors/sync_injector.dart';
 import 'package:modugo/src/manager.dart';
+import 'package:modugo/src/injectors/sync_injector.dart';
+import 'package:modugo/src/injectors/async_injector.dart';
 
 import 'mocks/modugo_mock.dart';
 import 'mocks/services_mock.dart';
@@ -24,7 +24,7 @@ void main() {
   test('Module.configureRoutes registers async binds', () async {
     final module = ModuleWithAsyncMock();
     await startModugoMock(module: module, debugLogDiagnostics: true);
-    final routes = module.configureRoutes(topLevel: true);
+    final routes = await module.configureRoutes(topLevel: true);
 
     expect(routes, isA<List<RouteBase>>());
     expect(routes.length, 1);
@@ -43,7 +43,7 @@ void main() {
   test('Module.configureRoutes creates valid RouteBase list', () async {
     final module = OtherModuleMock();
     await startModugoMock(module: module, debugLogDiagnostics: true);
-    final routes = module.configureRoutes(topLevel: true);
+    final routes = await module.configureRoutes(topLevel: true);
 
     expect(routes, isA<List<RouteBase>>());
     expect(routes.length, 3);
