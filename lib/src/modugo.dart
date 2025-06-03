@@ -1,13 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
-import 'package:modugo/src/injectors/sync_injector.dart';
-import 'package:modugo/src/injectors/async_injector.dart';
-import 'package:modugo/src/manager.dart';
+
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/dispose.dart';
+import 'package:modugo/src/manager.dart';
 import 'package:modugo/src/transitions/transition.dart';
+import 'package:modugo/src/injectors/sync_injector.dart';
+import 'package:modugo/src/injectors/async_injector.dart';
 
 typedef Modugo = ModugoConfiguration;
 
@@ -53,7 +55,7 @@ class ModugoConfiguration {
   static GoRouterState stateOf(BuildContext context) =>
       GoRouterState.of(context);
 
-  static Future<FutureOr<GoRouter>> configure({
+  static FutureOr<GoRouter> configure({
     required Module module,
     Object? initialExtra,
     int redirectLimit = 5,
