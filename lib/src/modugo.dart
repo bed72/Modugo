@@ -1,14 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:flutter/widgets.dart';
-
 import 'package:go_router/go_router.dart';
+import 'package:modugo/src/injectors/sync_injector.dart';
+import 'package:modugo/src/injectors/async_injector.dart';
 import 'package:modugo/src/manager.dart';
-
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/dispose.dart';
-import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/transitions/transition.dart';
 
 typedef Modugo = ModugoConfiguration;
@@ -31,10 +29,10 @@ class ModugoConfiguration {
 
   static TypeTransition get getDefaultPageTransition {
     assert(
-      _pageTansition != null,
+      _transition != null,
       'Add ModugoConfiguration.configure in main.dart',
     );
-    return _pageTansition!;
+    return _transition!;
   }
 
   static GoRouter? _router;
@@ -43,9 +41,11 @@ class ModugoConfiguration {
 
   static bool? _debugLogDiagnostics;
 
-  static TypeTransition? _pageTansition;
+  static TypeTransition? _transition;
 
-  static T get<T>() => Bind.get<T>();
+  static T getSync<T>() => SyncBind.get<T>();
+
+  static Future<T> getAsync<T>() => AsyncBind.get<T>();
 
   static String getCurrentPathOf(BuildContext context) =>
       GoRouterState.of(context).path ?? '';
@@ -71,12 +71,12 @@ class ModugoConfiguration {
     bool overridePlatformDefaultLocation = false,
     TypeTransition pageTransition = TypeTransition.fade,
     Widget Function(BuildContext, GoRouterState)? errorBuilder,
-    FutureOr<String?> Function(BuildContext, GoRouterState)? redirect,
     void Function(BuildContext, GoRouterState, GoRouter)? onException,
+    FutureOr<String?> Function(BuildContext, GoRouterState)? redirect,
     Page<dynamic> Function(BuildContext, GoRouterState)? errorPageBuilder,
   }) async {
     if (_router != null) return _router!;
-    _pageTansition = pageTransition;
+    _transition = pageTransition;
     _debugLogDiagnostics = debugLogDiagnostics;
     GoRouter.optionURLReflectsImperativeAPIs = true;
 

@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/manager.dart';
-import 'package:modugo/src/injector.dart';
+import 'package:modugo/src/injectors/sync_injector.dart';
 
 import 'mocks/modugo_mock.dart';
-import 'mocks/modules/implementations_mock.dart';
 import 'mocks/modules/single_module_mock.dart';
+import 'mocks/modules/implementations_mock.dart';
 
 void main() {
   late final Manager manager;
@@ -16,7 +16,7 @@ void main() {
     module = SingleModuleModuleMock();
 
     manager.bindReferences.clear();
-    Bind.clearAll();
+    SyncBind.clearAll();
 
     await startModugoMock(module: module, debugLogDiagnostics: true);
   });
@@ -24,22 +24,22 @@ void main() {
   test('Register DemoModule binds and resolve CompleteCubitMock', () {
     manager.registerBindsIfNeeded(module);
 
-    final cubit = Bind.get<ModulesCubitMock>();
+    final cubit = SyncBind.get<ModulesCubitMock>();
 
     expect(cubit, isNotNull);
     expect(cubit, isA<ModulesCubitMock>());
     expect(cubit.repository, isA<ModulesRepositoryMock>());
 
     expect(
-      manager.bindReferences[Bind<ModulesClientMock>],
+      manager.bindReferences[SyncBind<ModulesClientMock>],
       greaterThanOrEqualTo(1),
     );
     expect(
-      manager.bindReferences[Bind<ModulesRepositoryMock>],
+      manager.bindReferences[SyncBind<ModulesRepositoryMock>],
       greaterThanOrEqualTo(1),
     );
     expect(
-      manager.bindReferences[Bind<ModulesCubitMock>],
+      manager.bindReferences[SyncBind<ModulesCubitMock>],
       greaterThanOrEqualTo(1),
     );
   });

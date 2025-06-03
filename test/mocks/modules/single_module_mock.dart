@@ -1,17 +1,17 @@
 import 'package:modugo/src/module.dart';
-import 'package:modugo/src/injector.dart';
+import 'package:modugo/src/injectors/sync_injector.dart';
 
 import 'implementations_mock.dart';
 
 final class SingleModuleModuleMock extends Module {
   @override
-  List<Bind> get binds => [
-    Bind.singleton<ModulesClientMock>((_) => ModulesClientMockImpl()),
-    Bind.factory<ModulesRepositoryMock>(
-      (i) => ModulesRepositoryMockImpl(client: i.get<ModulesClientMock>()),
+  List<SyncBind> get syncBinds => [
+    SyncBind.singleton<ModulesClientMock>((_) => ModulesClientMockImpl()),
+    SyncBind.factory<ModulesRepositoryMock>(
+      (i) => ModulesRepositoryMockImpl(client: i.getSync<ModulesClientMock>()),
     ),
-    Bind.factory<ModulesCubitMock>(
-      (i) => ModulesCubitMock(repository: i.get<ModulesRepositoryMock>()),
+    SyncBind.factory<ModulesCubitMock>(
+      (i) => ModulesCubitMock(repository: i.getSync<ModulesRepositoryMock>()),
     ),
   ];
 }

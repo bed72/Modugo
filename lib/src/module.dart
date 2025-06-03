@@ -4,16 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/manager.dart';
 import 'package:go_router/go_router.dart';
-import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/transitions/transition.dart';
+import 'package:modugo/src/injectors/sync_injector.dart';
+import 'package:modugo/src/injectors/async_injector.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
 
 abstract class Module {
   List<Module> get imports => const [];
-  List<Bind> get binds => const [];
+  List<SyncBind> get syncBinds => const [];
+  List<AsyncBind> get asyncBinds => const [];
   List<ModuleInterface> get routes => const [];
 
   final _routerManager = Manager();

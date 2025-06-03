@@ -1,8 +1,20 @@
-final class CounterServiceMock {
+final class SyncServiceMock {
   int value = 0;
 }
 
-final class ExampleServiceMock {
+final class SyncOtherServiceMock {
   final int id;
-  ExampleServiceMock({this.id = 0});
+  SyncOtherServiceMock({this.id = 0});
+}
+
+final class AsyncServiceMock {
+  final void Function() onClose;
+  AsyncServiceMock({required this.onClose});
+  void close() => onClose();
+}
+
+final class AsyncOtherServiceMock {
+  final void Function() onClose;
+  AsyncOtherServiceMock({required this.onClose});
+  void close() => onClose();
 }
