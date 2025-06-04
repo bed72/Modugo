@@ -152,21 +152,31 @@ final class Manager implements ManagerInterface {
   }
 
   void _logModuleBindsTypes(Module module) {
-    void logGroup(String title, Iterable<String> items) {
+    void logGroup(String title, bool isInject, Iterable<String> items) {
       if (items.isEmpty) return;
-      ModugoLogger.injection('$title:');
-      for (final item in items) {
-        ModugoLogger.injection('    → $item');
+
+      if (isInject) {
+        ModugoLogger.injection('$title:');
+        for (final item in items) {
+          ModugoLogger.injection('    → $item');
+        }
+      } else {
+        ModugoLogger.info('$title:');
+        for (final item in items) {
+          ModugoLogger.info('    → $item');
+        }
       }
     }
 
     logGroup(
       '🔗 Binds',
+      true,
       module.binds.map((b) => _resolveBindType(b).toString()),
     );
 
     logGroup(
       '📦 Imported Binds',
+      false,
       module.imports
           .expand((m) => m.binds)
           .map((b) => _resolveBindType(b).toString()),

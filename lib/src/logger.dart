@@ -2,6 +2,7 @@
 
 import 'package:logger/logger.dart';
 import 'package:modugo/src/modugo.dart';
+import 'package:intl/intl.dart';
 
 final class ModugoLogger {
   static bool enabled = true;
@@ -11,43 +12,50 @@ final class ModugoLogger {
     printer: _ModugoPrettyPrinter(),
   );
 
-  static void log(String message, {String tag = 'Modugo', String emoji = ''}) {
+  static void log(
+    String message, {
+    String tag = 'Modugo',
+    String emoji = '',
+    Level level = Level.info,
+  }) {
     if (!enabled || !Modugo.debugLogDiagnostics) return;
 
     final formatted = '$emoji [$tag] $message';
-    _logger.log(Level.info, formatted);
+    _logger.log(level, formatted);
   }
 
   static void info(String message, {String tag = 'INFO'}) =>
-      log(message, tag: tag, emoji: 'ℹ️');
+      log(message, tag: tag, emoji: '👀', level: Level.info);
 
   static void warn(String message, {String tag = 'WARN'}) =>
-      log(message, tag: tag, emoji: '⚠️');
+      log(message, tag: tag, emoji: '😟', level: Level.warning);
 
   static void error(String message, {String tag = 'ERROR'}) =>
-      log(message, tag: tag, emoji: '❌');
+      log(message, tag: tag, emoji: '❌', level: Level.error);
 
   static void injection(String message, {String tag = 'INJECT'}) =>
-      log(message, tag: tag, emoji: '💉');
+      log(message, tag: tag, emoji: '💉', level: Level.debug);
 
   static void dispose(String message, {String tag = 'DISPOSE'}) =>
-      log(message, tag: tag, emoji: '🗑️');
+      log(message, tag: tag, emoji: '🗑️', level: Level.debug);
 }
 
 final class _ModugoPrettyPrinter extends LogPrinter {
   final Map<Level, AnsiColor> _levelColors = {
     Level.trace: AnsiColor.fg(12),
-    Level.debug: AnsiColor.fg(7),
     Level.info: AnsiColor.fg(10),
-    Level.warning: AnsiColor.fg(208),
     Level.error: AnsiColor.fg(196),
+    Level.debug: AnsiColor.fg(208),
     Level.fatal: AnsiColor.fg(199),
+    Level.warning: AnsiColor.fg(208),
   };
+
+  final _timeFormat = DateFormat('HH:mm:ss');
 
   @override
   List<String> log(LogEvent event) {
     final message = event.message.toString();
-    final now = DateTime.now().toIso8601String();
+    final now = _timeFormat.format(DateTime.now());
     final color = _levelColors[event.level] ?? AnsiColor.none();
 
     return ['${color('[$now]')} ${color(message)}'];

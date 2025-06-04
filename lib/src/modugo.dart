@@ -61,7 +61,7 @@ class ModugoConfiguration {
     String? restorationScopeId,
     bool routerNeglect = false,
     Listenable? refreshListenable,
-    bool debugLogDiagnostics = true,
+    bool debugLogDiagnostics = false,
     List<NavigatorObserver>? observers,
     Codec<Object?, Object?>? extraCodec,
     int delayDisposeMilliseconds = 1000,
