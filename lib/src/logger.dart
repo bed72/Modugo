@@ -1,8 +1,9 @@
 // coverage:ignore-file
 
-import 'package:logger/logger.dart';
-import 'package:modugo/src/modugo.dart';
 import 'package:intl/intl.dart';
+import 'package:logger/logger.dart';
+
+import 'package:modugo/src/modugo.dart';
 
 final class ModugoLogger {
   static bool enabled = true;
@@ -14,8 +15,8 @@ final class ModugoLogger {
 
   static void log(
     String message, {
-    String tag = 'Modugo',
     String emoji = '',
+    String tag = 'Modugo',
     Level level = Level.info,
   }) {
     if (!enabled || !Modugo.debugLogDiagnostics) return;
@@ -42,8 +43,8 @@ final class ModugoLogger {
 
 final class _ModugoPrettyPrinter extends LogPrinter {
   final Map<Level, AnsiColor> _levelColors = {
-    Level.trace: AnsiColor.fg(12),
     Level.info: AnsiColor.fg(10),
+    Level.trace: AnsiColor.fg(12),
     Level.error: AnsiColor.fg(196),
     Level.debug: AnsiColor.fg(208),
     Level.fatal: AnsiColor.fg(199),
