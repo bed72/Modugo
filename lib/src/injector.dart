@@ -1,11 +1,20 @@
 import 'dart:async';
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
+import 'package:modugo/src/logger.dart';
 
-import 'package:modugo/src/injectors/injector.dart';
+base class Injector {
+  static final Injector _instance = Injector._();
 
-final class SyncBind<T> {
-  static final Map<Type, SyncBind> _binds = {};
+  Injector._();
+
+  factory Injector() => _instance;
+
+  T get<T>() => Bind.get<T>();
+}
+
+final class Bind<T> {
+  static final Map<Type, Bind> _binds = {};
 
   T? _cachedInstance;
 
@@ -14,7 +23,7 @@ final class SyncBind<T> {
   final bool isSingleton;
   final T Function(Injector i) factoryFunction;
 
-  SyncBind(this.factoryFunction, {this.isSingleton = true, this.isLazy = true});
+  Bind(this.factoryFunction, {this.isSingleton = true, this.isLazy = true});
 
   T? get maybeInstance => _cachedInstance;
 
@@ -23,18 +32,20 @@ final class SyncBind<T> {
     return _cachedInstance ??= factoryFunction(Injector());
   }
 
-  static SyncBind? getBindByType(Type type) => _binds[type];
+  static bool isRegistered<T>() => _binds.containsKey(T);
 
-  static SyncBind<T> factory<T>(T Function(Injector i) builder) =>
-      SyncBind<T>(builder, isSingleton: false, isLazy: false);
+  static Bind? getBindByType(Type type) => _binds[type];
 
-  static SyncBind<T> singleton<T>(T Function(Injector i) builder) =>
-      SyncBind<T>(builder, isSingleton: true, isLazy: false);
+  static Bind<T> factory<T>(T Function(Injector i) builder) =>
+      Bind<T>(builder, isSingleton: false, isLazy: false);
 
-  static SyncBind<T> lazySingleton<T>(T Function(Injector i) builder) =>
-      SyncBind<T>(builder, isSingleton: true, isLazy: true);
+  static Bind<T> singleton<T>(T Function(Injector i) builder) =>
+      Bind<T>(builder, isSingleton: true, isLazy: false);
 
-  static void register<T>(SyncBind<T> bind) {
+  static Bind<T> lazySingleton<T>(T Function(Injector i) builder) =>
+      Bind<T>(builder, isSingleton: true, isLazy: true);
+
+  static void register<T>(Bind<T> bind) {
     _binds[bind.type] = bind;
 
     if (!bind.isLazy && bind.isSingleton) {
@@ -62,10 +73,10 @@ final class SyncBind<T> {
     final bind = _binds[T];
 
     if (bind == null) {
-      throw Exception('SyncBind not found for type ${T.toString()}');
+      throw Exception('Bind not found for type ${T.toString()}');
     }
 
-    return (bind as SyncBind<T>).instance;
+    return (bind as Bind<T>).instance;
   }
 
   void disposeInstance() {
@@ -78,10 +89,10 @@ final class SyncBind<T> {
       if (instance is ChangeNotifier) instance.dispose();
       if (instance is StreamController) instance.close();
     } catch (e, stack) {
-      debugPrint(
+      ModugoLogger.error(
         'Error disposing instance of type ${instance.runtimeType}: $e',
       );
-      debugPrint('$stack');
+      ModugoLogger.error('$stack');
     }
 
     _cachedInstance = null;

@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/routes/module_route.dart';
 
-import '../mocks/modules/modules_mock.dart';
+import '../mocks/modules_mock.dart';
 
 void main() {
   group('ModuleRoute', () {

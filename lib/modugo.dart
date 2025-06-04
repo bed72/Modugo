@@ -3,9 +3,7 @@ export 'src/module.dart';
 export 'src/dispose.dart';
 export 'src/manager.dart';
 
-export 'src/injectors/injector.dart';
-export 'src/injectors/sync_injector.dart';
-export 'src/injectors/async_injector.dart';
+export 'src/injector.dart';
 
 export 'src/transitions/transition.dart';
 

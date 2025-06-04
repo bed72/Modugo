@@ -1,17 +1,16 @@
 # Modugo
 
-**Modugo** é um gerenciador modular de dependências e rotas para Flutter/Dart que organiza o ciclo de vida de módulos, dependências (binds) e rotas, inspirado na arquitetura modular proposta pelo pacote [go_router_modular](https://pub.dev/packages/go_router_modular).
+**Modugo** é um gerenciador modular de dependências e rotas para Flutter/Dart que organiza o ciclo de vida de módulos, binds e rotas, inspirado na arquitetura modular proposta pelo pacote [go_router_modular](https://pub.dev/packages/go_router_modular).
 
-A diferença principal é que o Modugo oferece controle completo de injeção e descarte de dependências por rota ativa, utilizando uma abordagem desacoplada e extensível.
+A diferença principal é que o Modugo oferece controle completo e desacoplado da **injeção e descarte automático de dependências conforme a navegação**, com logs detalhados e estrutura extensível.
 
 ---
 
 ## 📦 Recursos
 
-- Registro de **binds** por módulo (singleton, factory, async, lazy, etc.)
+- Registro de **binds** por módulo (singleton, factory, lazy)
 - **Ciclo de vida automático** das dependências conforme a rota é acessada ou abandonada
 - Suporte a **módulos importados** (aninhamento)
-- Injeção **assíncrona** com controle de dependências (`dependsOn`)
 - **Descarte automático** das dependências não utilizadas
 - Integração com **GoRouter** para gerenciamento das rotas
 - Suporte a **ShellRoutes** (estilo Flutter Modular)
@@ -50,10 +49,10 @@ main.dart
 ### main.dart
 
 ```dart
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Modugo.configure(module: AppModule(), initialRoute: '/');
+  Modugo.configure(module: AppModule(), initialRoute: '/');
 
   runApp(const AppWidget());
 }
@@ -80,8 +79,8 @@ class AppWidget extends StatelessWidget {
 ```dart
 class AppModule extends Module {
   @override
-  List<SyncBind> get syncBinds => [
-    SyncBind.singleton<AuthService>((_) => AuthService()),
+  List<Bind> get binds => [
+    Bind.singleton<AuthService>((_) => AuthService()),
   ];
 
   @override
@@ -98,29 +97,24 @@ class AppModule extends Module {
 
 ### Tipos suportados:
 
-- `SyncBind.singleton<T>`
-- `SyncBind.lazySingleton<T>`
-- `SyncBind.factory<T>`
-- `AsyncBind<T>` com ou sem `dispose`
-- `dependsOn` para declarar dependências entre asyncBinds
+- `Bind.singleton<T>`
+- `Bind.lazySingleton<T>`
+- `Bind.factory<T>`
 
-### Exemplo com `dependsOn`:
+### Exemplo:
 
 ```dart
-class MyModule extends Module {
+class HomeModule extends Module {
   @override
-  List<AsyncBind> get asyncBinds => [
-    AsyncBind<SharedPreferences>(
-      (_) async => await SharedPreferences.getInstance(),
-    ),
+  List<Bind> get binds => [
+    Bind.singleton<HomeController>((i) => HomeController()),
+    Bind.lazySingleton<Repository>((i) => RepositoryImpl()),
+    Bind.factory<DateTime>((_) => DateTime.now()),
+  ];
 
-    AsyncBind<MyRepository>(
-      (i) async {
-        final prefs = await i.getAsync<SharedPreferences>();
-        return MyRepository(prefs);
-      },
-      dependsOn: [SharedPreferences],
-    ),
+  @override
+  List<ModuleInterface> get routes => [
+    ChildRoute('/home', child: (context, state) => const HomePage()),
   ];
 }
 ```
@@ -130,26 +124,27 @@ class MyModule extends Module {
 ## ⚖️ Ciclo de Vida
 
 - As dependências são registradas **automaticamente** ao navegar para uma rota de módulo.
-- Quando todas as rotas do módulo são removidas da árvore, os binds são **descartados automaticamente** (com suporte a dispose).
+- Quando todas as rotas do módulo são removidas da árvore, os binds são **descartados automaticamente**, com suporte a `.dispose`, `.close`, `StreamController` etc.
 - O `AppModule` é permanente e seus binds nunca são descartados.
+- Módulos importados compartilham dependências entre si e respeitam o tempo de vida dos módulos ativos.
 
 ---
 
-## 🛣️ Navegação com rotas
+## 🚣️ Navegação com rotas
 
-### ChildRoute (equivalente ao GoRoute):
+### `ChildRoute` (equivalente ao `GoRoute`):
 
 ```dart
 ChildRoute('/home', child: (context, state) => const HomePage()),
 ```
 
-### ModuleRoute (rota que instancia um módulo completo):
+### `ModuleRoute` (rota que instancia um módulo completo):
 
 ```dart
 ModuleRoute('/profile', module: ProfileModule()),
 ```
 
-### ShellModuleRoute (similar ao ShellRoute do GoRouter):
+### `ShellModuleRoute` (similar ao `ShellRoute` do `GoRouter`):
 
 ```dart
 ShellModuleRoute(
@@ -163,17 +158,47 @@ ShellModuleRoute(
 
 ---
 
+## 🔍 Acesso às dependências
+
+```dart
+final controller = Modugo.get<HomeController>();
+```
+
+Também é possível usar o `Injector`:
+
+```dart
+final injector = Injector();
+final repository = injector.get<Repository>();
+```
+
+---
+
+## 🧰 Logs e Diagnóstico
+
+- Os logs de injeção, descarte e navegação são controlados por:
+
+```dart
+Modugo.configure(
+  module: AppModule(),
+  debugLogDiagnostics: true,
+);
+```
+
+- Os logs usam a classe `ModugoLogger`, que pode ser estendida ou substituída.
+
+---
+
 ## 🚧 Boas práticas
 
 - Sempre tipar as dependências no bind:
 
 ```dart
-✅ SyncBind.singleton<MyService>((i) => MyService())
-❌ SyncBind.singleton((i) => MyService())
+📈 Bind.singleton<MyService>((i) => MyService())
+🔴 Bind.singleton((i) => MyService())
 ```
 
-- Utilize `AsyncBind` para objetos que dependem de inicialização como `SharedPreferences`, conexões ou caches assíncronos.
-- Prefira dividir sua aplicação em pequenos módulos e usar `ModuleRoute` para composição.
+- Prefira dividir sua aplicação em **módulos coesos** e usar `ModuleRoute` para composição e isolamento.
+- Evite estados compartilhados globalmente — use `AppModule` para estados globais e outros módulos para recursos locais.
 
 ---
 
@@ -191,7 +216,7 @@ Inspirado diretamente por [go_router_modular](https://pub.dev/packages/go_router
 
 ---
 
-## 🙋‍ Contribuições
+## 🤛 Contribuições
 
 Pull requests, feedbacks e melhorias são super bem-vindos!
 

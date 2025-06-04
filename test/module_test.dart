@@ -2,18 +2,15 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/manager.dart';
-import 'package:modugo/src/injectors/sync_injector.dart';
-import 'package:modugo/src/injectors/async_injector.dart';
+import 'package:modugo/src/injector.dart';
 
 import 'mocks/modugo_mock.dart';
+import 'mocks/modules_mock.dart';
 import 'mocks/services_mock.dart';
-import 'mocks/modules/modules_mock.dart';
-import 'mocks/modules/async_modules_mock.dart';
 
 void main() {
   setUp(() async {
-    SyncBind.clearAll();
-    await AsyncBind.clearAll();
+    Bind.clearAll();
 
     final manager = Manager();
     manager.module = null;
@@ -21,48 +18,19 @@ void main() {
     manager.bindReferences.clear();
   });
 
-  test('Module.registerBindsIfNeeded handles imported modules', () async {
-    final module = ModuleWithSyncAndAsyncMock();
-    await startModugoMock(module: module, debugLogDiagnostics: true);
-    final routes = await module.configureRoutes(topLevel: true);
+  test('Imported modules register their binds', () async {
+    final module = MultiModulesInnerModuleMock();
+    await startModugoMock(module: module);
 
-    final child = routes.whereType<GoRoute>().firstWhere(
-      (r) => r.path == '/home',
-    );
-    expect(child, isNotNull);
+    final imported = Bind.get<ModulesRepositoryMock>();
 
-    final asyncService = await AsyncBind.get<AsyncServiceMock>();
-    expect(asyncService, isNotNull);
-    expect(asyncService, isA<AsyncServiceMock>());
-
-    final syncService = SyncBind.get<SyncServiceMock>();
-    expect(syncService, isNotNull);
-    expect(syncService, isA<SyncServiceMock>());
-  });
-
-  test('Module.configureRoutes registers async binds', () async {
-    final module = ModuleWithAsyncMock();
-    await startModugoMock(module: module, debugLogDiagnostics: true);
-    final routes = await module.configureRoutes(topLevel: true);
-
-    expect(routes, isA<List<RouteBase>>());
-    expect(routes.length, 1);
-
-    final child = routes.whereType<GoRoute>().firstWhere(
-      (r) => r.path == '/home',
-    );
-    expect(child, isNotNull);
-
-    final asyncService = await AsyncBind.get<AsyncServiceMock>();
-
-    expect(asyncService, isNotNull);
-    expect(asyncService, isA<AsyncServiceMock>());
+    expect(imported, isA<ModulesRepositoryMock>());
   });
 
   test('Module.configureRoutes creates valid RouteBase list', () async {
     final module = OtherModuleMock();
     await startModugoMock(module: module, debugLogDiagnostics: true);
-    final routes = await module.configureRoutes(topLevel: true);
+    final routes = module.configureRoutes(topLevel: true);
 
     expect(routes, isA<List<RouteBase>>());
     expect(routes.length, 3);
@@ -80,21 +48,31 @@ void main() {
     final shell = routes.whereType<ShellRoute>().first;
     expect(shell, isNotNull);
 
-    final syncService = SyncBind.get<SyncServiceMock>();
+    final syncService = Bind.get<ServiceMock>();
 
     expect(syncService, isNotNull);
-    expect(syncService, isA<SyncServiceMock>());
+    expect(syncService, isA<ServiceMock>());
   });
 
   test('ModuleRoute uses "/" ChildRoute as default', () async {
     final module = RootModuleMock();
     await startModugoMock(module: module);
 
-    final routes = await module.configureRoutes(topLevel: true);
+    final routes = module.configureRoutes(topLevel: true);
     final profileRoute = routes.whereType<GoRoute>().firstWhere(
       (r) => r.path == '/profile',
     );
 
     expect(profileRoute.name, equals('profile-root'));
+  });
+
+  test('ChildRoute with "/" is excluded from _createChildRoutes', () async {
+    final module = RootModuleMock();
+    await startModugoMock(module: module);
+
+    final routes = module.configureRoutes(topLevel: true);
+    final paths = routes.whereType<GoRoute>().map((r) => r.path);
+
+    expect(paths.contains('/'), isFalse);
   });
 }

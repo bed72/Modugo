@@ -3,13 +3,12 @@ import 'dart:convert';
 
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
+import 'package:modugo/src/injector.dart';
 
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/dispose.dart';
 import 'package:modugo/src/manager.dart';
 import 'package:modugo/src/transitions/transition.dart';
-import 'package:modugo/src/injectors/sync_injector.dart';
-import 'package:modugo/src/injectors/async_injector.dart';
 
 typedef Modugo = ModugoConfiguration;
 
@@ -45,9 +44,7 @@ class ModugoConfiguration {
 
   static TypeTransition? _transition;
 
-  static T getSync<T>() => SyncBind.get<T>();
-
-  static Future<T> getAsync<T>() => AsyncBind.get<T>();
+  static T get<T>() => Bind.get<T>();
 
   static String getCurrentPathOf(BuildContext context) =>
       GoRouterState.of(context).path ?? '';
@@ -83,7 +80,7 @@ class ModugoConfiguration {
     _debugLogDiagnostics = debugLogDiagnostics;
     GoRouter.optionURLReflectsImperativeAPIs = true;
 
-    final routes = await module.configureRoutes(topLevel: true);
+    final routes = module.configureRoutes(topLevel: true);
 
     assert(
       delayDisposeMilliseconds > 500,
@@ -110,7 +107,6 @@ class ModugoConfiguration {
       debugLogDiagnostics: debugLogDiagnosticsGoRouter,
       overridePlatformDefaultLocation: overridePlatformDefaultLocation,
     );
-    debugLogDiagnostics = debugLogDiagnostics;
     return _router!;
   }
 }

@@ -1,16 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/dispose.dart';
-import 'package:modugo/src/injectors/async_injector.dart';
 import 'package:modugo/src/manager.dart';
-import 'package:modugo/src/injectors/sync_injector.dart';
+import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/interfaces/manager_interface.dart';
 
 import 'mocks/modugo_mock.dart';
-import 'mocks/modules/async_modules_mock.dart';
 import 'mocks/services_mock.dart';
-import 'mocks/modules/modules_mock.dart';
-import 'mocks/modules/cycle_modules_mock.dart';
+import 'mocks/modules_mock.dart';
 
 void main() {
   late final ManagerInterface manager;
@@ -102,7 +99,7 @@ void main() {
   test('bind reference count should decrease correctly', () async {
     manager.registerBindsIfNeeded(innerModule);
 
-    final type = innerModule.syncBinds.first.instance.runtimeType;
+    final type = innerModule.binds.first.instance.runtimeType;
     print('Captured type after register: $type');
 
     expect(manager.isModuleActive(innerModule), isTrue);
@@ -120,16 +117,16 @@ void main() {
     manager.unregisterBinds(innerModule);
 
     expect(manager.isModuleActive(innerModule), isFalse);
-    expect(() => SyncBind.get<SyncOtherServiceMock>(), throwsException);
+    expect(() => Bind.get<OtherServiceMock>(), throwsException);
   });
 
   test('Injector clearAll removes all binds', () {
     manager.registerBindsIfNeeded(innerModule);
     manager.registerBindsIfNeeded(rootModule);
 
-    SyncBind.clearAll();
+    Bind.clearAll();
 
-    expect(() => SyncBind.get<SyncOtherServiceMock>(), throwsException);
+    expect(() => Bind.get<OtherServiceMock>(), throwsException);
   });
 
   test('should throw on cyclic dependencies at resolution', () {
@@ -137,40 +134,18 @@ void main() {
 
     manager.registerBindsIfNeeded(cyclicModule);
 
-    expect(() => SyncBind.get<CyclicAMock>(), throwsA(isA<Error>()));
+    expect(() => Bind.get<CyclicMock>(), throwsA(isA<Error>()));
   });
 
-  test('should register and resolve async binds', () async {
-    manager.registerBindsIfNeeded(ModuleWithAsyncMock());
+  test('isModuleActive returns true when module is active', () {
+    manager.registerBindsIfNeeded(innerModule);
 
-    final asyncService = await AsyncBind.get<AsyncServiceMock>();
-
-    expect(asyncService, isNotNull);
-    expect(asyncService, isA<AsyncServiceMock>());
+    expect(manager.isModuleActive(innerModule), isTrue);
   });
 
-  test('async and sync binds coexist without conflict', () async {
-    final combinedModule = ModuleWithSyncAndAsyncMock();
+  test('isModuleActive returns false when module is not active', () {
+    final inactiveModule = AnotherModuleMock(); // nunca registrado
 
-    manager.registerBindsIfNeeded(combinedModule);
-
-    final syncService = SyncBind.get<SyncServiceMock>();
-    final asyncService = await AsyncBind.get<AsyncServiceMock>();
-
-    expect(syncService, isNotNull);
-    expect(asyncService, isNotNull);
-  });
-
-  test('should clear all async binds with clearAll', () async {
-    final moduleWithAsync = ModuleWithAsyncMock();
-
-    manager.registerBindsIfNeeded(moduleWithAsync);
-
-    final service = await AsyncBind.get<AsyncServiceMock>();
-    expect(service, isNotNull);
-
-    await AsyncBind.clearAll();
-
-    expect(() => AsyncBind.get<AsyncServiceMock>(), throwsException);
+    expect(manager.isModuleActive(inactiveModule), isFalse);
   });
 }

@@ -1,11 +1,13 @@
+// coverage:ignore-file
+
 import 'package:flutter/material.dart';
 
 import 'package:go_router/go_router.dart';
-import 'package:modugo/src/injectors/sync_injector.dart';
+import 'package:modugo/src/injector.dart';
 
 extension BindContextExtension on BuildContext {
   T read<T>() {
-    final bind = SyncBind.get<T>();
+    final bind = Bind.get<T>();
     return bind;
   }
 

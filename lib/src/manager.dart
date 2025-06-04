@@ -1,12 +1,7 @@
 import 'dart:async';
 
+import 'package:modugo/modugo.dart';
 import 'package:modugo/src/logger.dart';
-import 'package:modugo/src/modugo.dart';
-import 'package:modugo/src/module.dart';
-import 'package:modugo/src/dispose.dart';
-import 'package:modugo/src/injectors/sync_injector.dart';
-import 'package:modugo/src/injectors/async_injector.dart';
-import 'package:modugo/src/interfaces/manager_interface.dart';
 
 final class Manager implements ManagerInterface {
   Timer? _timer;
@@ -37,19 +32,18 @@ final class Manager implements ManagerInterface {
   bool isModuleActive(Module module) => _activeRoutes.containsKey(module);
 
   @override
-  Future<void> registerBindsAppModule(Module module) async {
+  void registerBindsAppModule(Module module) {
     if (_module != null) return;
 
     _module = module;
-    await registerBindsIfNeeded(module);
+    registerBindsIfNeeded(module);
   }
 
   @override
-  Future<void> registerBindsIfNeeded(Module module) async {
+  void registerBindsIfNeeded(Module module) {
     if (_activeRoutes.containsKey(module)) return;
 
     _registerSyncBinds(module);
-    await _registerAsyncBinds(module);
 
     _activeRoutes[module] = {};
 
@@ -57,33 +51,11 @@ final class Manager implements ManagerInterface {
   }
 
   void _registerSyncBinds(Module module) {
-    final allSyncBinds = <SyncBind>[
-      ...module.syncBinds,
-      for (final imported in module.imports) ...imported.syncBinds,
+    final allSyncBinds = <Bind>[
+      ...module.binds,
+      for (final imported in module.imports) ...imported.binds,
     ];
     _recursiveRegisterBinds(allSyncBinds);
-  }
-
-  Future<void> _registerAsyncBinds(Module module) async {
-    final allAsyncBinds = <AsyncBind>[
-      ...module.asyncBinds,
-      for (final imported in module.imports) ...imported.asyncBinds,
-    ];
-
-    if (ModugoLogger.enabled) {
-      for (final bind in allAsyncBinds) {
-        final deps = bind.dependsOn.map((d) => d.toString()).join(', ');
-        ModugoLogger.injection(
-          'ASYNC BIND: ${bind.type} | singleton: ${bind.isSingleton} | dependsOn: [$deps]',
-        );
-      }
-    }
-
-    await AsyncBind.registerAllWithDependencies(allAsyncBinds);
-
-    if (ModugoLogger.enabled) {
-      ModugoLogger.injection('✅ Async binds registered com sucesso.');
-    }
   }
 
   @override
@@ -99,56 +71,44 @@ final class Manager implements ManagerInterface {
     _activeRoutes[module]?.remove(route);
     _timer?.cancel();
 
-    _timer = Timer(Duration(milliseconds: disposeMilisenconds), () async {
-      if (_activeRoutes[module]?.isEmpty ?? true) {
-        await unregisterBinds(module);
-      }
+    _timer = Timer(Duration(milliseconds: disposeMilisenconds), () {
+      if (_activeRoutes[module]?.isEmpty ?? true) unregisterBinds(module);
+
       _timer?.cancel();
     });
   }
 
   @override
-  Future<void> unregisterBinds(Module module) async {
+  void unregisterBinds(Module module) {
     if (_module == module) return;
     if (_activeRoutes[module]?.isNotEmpty ?? false) return;
 
     if (Modugo.debugLogDiagnostics) _logModuleBindsTypes(module);
 
-    for (final bind in module.syncBinds) {
+    for (final bind in module.binds) {
       _decrementBindReference(_resolveBindType(bind));
     }
 
     for (final importedModule in module.imports) {
-      for (final bind in importedModule.syncBinds) {
-        if (_module?.syncBinds.contains(bind) ?? false) continue;
+      for (final bind in importedModule.binds) {
+        if (_module?.binds.contains(bind) ?? false) continue;
         _decrementBindReference(_resolveBindType(bind));
       }
     }
 
-    bindsToDispose.map((type) => SyncBind.disposeByType(type)).toList();
+    bindsToDispose.map((type) => Bind.disposeByType(type)).toList();
     bindsToDispose.clear();
-
-    for (final asyncBind in module.asyncBinds) {
-      await AsyncBind.disposeByType(asyncBind.runtimeType);
-    }
-
-    for (final imported in module.imports) {
-      for (final asyncBind in imported.asyncBinds) {
-        if (_module?.asyncBinds.contains(asyncBind) ?? false) continue;
-        await AsyncBind.disposeByType(asyncBind.runtimeType);
-      }
-    }
 
     _activeRoutes.remove(module);
   }
 
-  Type _resolveBindType(SyncBind bind) =>
+  Type _resolveBindType(Bind bind) =>
       bind.maybeInstance?.runtimeType ?? bind.runtimeType;
 
-  void _recursiveRegisterBinds(List<SyncBind> binds, [int depth = 0]) {
+  void _recursiveRegisterBinds(List<Bind> binds, [int depth = 0]) {
     if (binds.isEmpty) return;
 
-    final queueBinds = <SyncBind>[];
+    final queueBinds = <Bind>[];
 
     for (final bind in binds) {
       try {
@@ -156,11 +116,11 @@ final class Manager implements ManagerInterface {
 
         if (ModugoLogger.enabled) {
           ModugoLogger.injection(
-            'SYNC BIND: ${bind.type} | singleton: ${bind.isSingleton} | lazy: ${bind.isLazy}',
+            'BIND: ${bind.type} | singleton: ${bind.isSingleton} | lazy: ${bind.isLazy}',
           );
         }
 
-        SyncBind.register(bind);
+        Bind.register(bind);
       } catch (_) {
         queueBinds.add(bind);
       }
@@ -201,27 +161,15 @@ final class Manager implements ManagerInterface {
     }
 
     logGroup(
-      '🔗 Sync Binds',
-      module.syncBinds.map((b) => _resolveBindType(b).toString()),
+      '🔗 Binds',
+      module.binds.map((b) => _resolveBindType(b).toString()),
     );
 
     logGroup(
-      '📦 Imported Sync Binds',
+      '📦 Imported Binds',
       module.imports
-          .expand((m) => m.syncBinds)
+          .expand((m) => m.binds)
           .map((b) => _resolveBindType(b).toString()),
-    );
-
-    logGroup(
-      '🌀 Async Binds',
-      module.asyncBinds.map((b) => b.runtimeType.toString()),
-    );
-
-    logGroup(
-      '📥 Imported Async Binds',
-      module.imports
-          .expand((m) => m.asyncBinds)
-          .map((b) => b.runtimeType.toString()),
     );
   }
 }
