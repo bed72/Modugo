@@ -41,7 +41,7 @@ final class Manager implements ManagerInterface {
     if (_module != null) return;
 
     _module = module;
-    registerBindsIfNeeded(module);
+    await registerBindsIfNeeded(module);
   }
 
   @override
@@ -49,7 +49,7 @@ final class Manager implements ManagerInterface {
     if (_activeRoutes.containsKey(module)) return;
 
     _registerSyncBinds(module);
-    _registerAsyncBinds(module);
+    await _registerAsyncBinds(module);
 
     _activeRoutes[module] = {};
 
