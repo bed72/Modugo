@@ -177,4 +177,75 @@ void main() {
 
     expect(callCount, equals(1));
   });
+
+  test(
+    'AsyncBind registerAllWithDependencies throws on circular dependency',
+    () async {
+      final bindA = AsyncBind<String>((_) async => 'A', dependsOn: [int]);
+      final bindB = AsyncBind<int>((_) async => 42, dependsOn: [String]);
+
+      await AsyncBind.clearAll();
+
+      expect(
+        () async => await AsyncBind.registerAllWithDependencies([bindA, bindB]),
+        throwsException,
+      );
+    },
+  );
+
+  test(
+    'AsyncBind registerAllWithDependencies resolves respecting dependsOn',
+    () async {
+      final resolved = <dynamic>[];
+
+      final bindA = AsyncBind<String>((_) async {
+        resolved.add('A');
+        return 'A';
+      });
+
+      final bindB = AsyncBind<bool>((_) async {
+        resolved.add(true);
+        return true;
+      }, dependsOn: [String]);
+
+      final bindC = AsyncBind<int>((_) async {
+        resolved.add(72);
+        return 72;
+      }, dependsOn: [String]);
+
+      await AsyncBind.clearAll();
+      await AsyncBind.registerAllWithDependencies([bindB, bindA, bindC]);
+
+      expect(resolved.length, 3);
+
+      final aIndex = resolved.indexOf('A');
+      final bIndex = resolved.indexOf(true);
+      final cIndex = resolved.indexOf(72);
+
+      expect(aIndex < bIndex, true);
+      expect(aIndex < cIndex, true);
+    },
+  );
+
+  test(
+    'AsyncBind.registerAllWithDependencies throws on circular dependency',
+    () async {
+      final bindA = AsyncBind<String>((_) async => 'A', dependsOn: [bool]);
+
+      final bindB = AsyncBind<bool>((_) async => true, dependsOn: [String]);
+
+      await AsyncBind.clearAll();
+
+      expect(
+        () => AsyncBind.registerAllWithDependencies([bindA, bindB]),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            contains('Circular or unresolved async dependencies'),
+          ),
+        ),
+      );
+    },
+  );
 }

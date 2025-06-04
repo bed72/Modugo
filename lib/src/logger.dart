@@ -1,0 +1,55 @@
+// coverage:ignore-file
+
+import 'package:logger/logger.dart';
+import 'package:modugo/src/modugo.dart';
+
+final class ModugoLogger {
+  static bool enabled = true;
+
+  static final Logger _logger = Logger(
+    level: Level.all,
+    printer: _ModugoPrettyPrinter(),
+  );
+
+  static void log(String message, {String tag = 'Modugo', String emoji = ''}) {
+    if (!enabled || !Modugo.debugLogDiagnostics) return;
+
+    final formatted = '$emoji [$tag] $message';
+    _logger.log(Level.info, formatted);
+  }
+
+  static void info(String message, {String tag = 'INFO'}) =>
+      log(message, tag: tag, emoji: 'ℹ️');
+
+  static void warn(String message, {String tag = 'WARN'}) =>
+      log(message, tag: tag, emoji: '⚠️');
+
+  static void error(String message, {String tag = 'ERROR'}) =>
+      log(message, tag: tag, emoji: '❌');
+
+  static void injection(String message, {String tag = 'INJECT'}) =>
+      log(message, tag: tag, emoji: '💉');
+
+  static void dispose(String message, {String tag = 'DISPOSE'}) =>
+      log(message, tag: tag, emoji: '🗑️');
+}
+
+final class _ModugoPrettyPrinter extends LogPrinter {
+  final Map<Level, AnsiColor> _levelColors = {
+    Level.trace: AnsiColor.fg(12),
+    Level.debug: AnsiColor.fg(7),
+    Level.info: AnsiColor.fg(10),
+    Level.warning: AnsiColor.fg(208),
+    Level.error: AnsiColor.fg(196),
+    Level.fatal: AnsiColor.fg(199),
+  };
+
+  @override
+  List<String> log(LogEvent event) {
+    final message = event.message.toString();
+    final now = DateTime.now().toIso8601String();
+    final color = _levelColors[event.level] ?? AnsiColor.none();
+
+    return ['${color('[$now]')} ${color(message)}'];
+  }
+}

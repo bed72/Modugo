@@ -30,6 +30,15 @@ final class RootModuleMock extends Module {
 
   @override
   List<Module> get imports => [InnerModuleMock()];
+
+  @override
+  List<ModuleInterface> get routes => [
+    ChildRoute(
+      '/profile',
+      name: 'profile-root',
+      child: (context, state) => const Placeholder(),
+    ),
+  ];
 }
 
 final class OtherInnerModuleMock extends Module {
@@ -56,5 +65,15 @@ final class OtherModuleMock extends Module {
   @override
   List<SyncBind> get syncBinds => [
     SyncBind.factory<SyncServiceMock>((i) => SyncServiceMock()),
+  ];
+}
+
+final class ShellModuleWithInvalidRouteMock extends Module {
+  @override
+  List<ModuleInterface> get routes => [
+    ShellModuleRoute(
+      builder: (_, __, child) => child,
+      routes: [ChildRoute('/', child: (_, __) => const Placeholder())],
+    ),
   ];
 }

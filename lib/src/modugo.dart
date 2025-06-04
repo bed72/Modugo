@@ -78,6 +78,7 @@ class ModugoConfiguration {
     Page<dynamic> Function(BuildContext, GoRouterState)? errorPageBuilder,
   }) async {
     if (_router != null) return _router!;
+
     _transition = pageTransition;
     _debugLogDiagnostics = debugLogDiagnostics;
     GoRouter.optionURLReflectsImperativeAPIs = true;

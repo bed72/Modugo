@@ -11,11 +11,11 @@ A diferença principal é que o Modugo oferece controle completo de injeção e 
 - Registro de **binds** por módulo (singleton, factory, async, lazy, etc.)
 - **Ciclo de vida automático** das dependências conforme a rota é acessada ou abandonada
 - Suporte a **módulos importados** (aninhamento)
-- Injeção **assíncrona** com controle de dependências
+- Injeção **assíncrona** com controle de dependências (`dependsOn`)
 - **Descarte automático** das dependências não utilizadas
 - Integração com **GoRouter** para gerenciamento das rotas
 - Suporte a **ShellRoutes** (estilo Flutter Modular)
-- Logs detalhados para debugging
+- Logs detalhados e personalizáveis com suporte à lib `logger`
 
 ---
 
@@ -102,28 +102,30 @@ class AppModule extends Module {
 - `SyncBind.lazySingleton<T>`
 - `SyncBind.factory<T>`
 - `AsyncBind<T>` com ou sem `dispose`
+- `dependsOn` para declarar dependências entre asyncBinds
 
-### Exemplo:
+### Exemplo com `dependsOn`:
 
 ```dart
-class HomeModule extends Module {
-  @override
-  List<SyncBind> get syncBinds => [
-    SyncBind.singleton<HomeController>((i) => HomeController()),
-    SyncBind.lazySingleton<Repository>((i) => RepositoryImpl()),
-  ];
-
+class MyModule extends Module {
   @override
   List<AsyncBind> get asyncBinds => [
-    AsyncBind<SharedPreferences>((_) async => await SharedPreferences.getInstance()),
-  ];
+    AsyncBind<SharedPreferences>(
+      (_) async => await SharedPreferences.getInstance(),
+    ),
 
-  @override
-  List<ModuleInterface> get routes => [
-    ChildRoute('/home', child: (context, state) => const HomePage()),
+    AsyncBind<MyRepository>(
+      (i) async {
+        final prefs = await i.getAsync<SharedPreferences>();
+        return MyRepository(prefs);
+      },
+      dependsOn: [SharedPreferences],
+    ),
   ];
 }
 ```
+
+---
 
 ## ⚖️ Ciclo de Vida
 
@@ -178,7 +180,7 @@ ShellModuleRoute(
 ## 📊 Status
 
 - Em desenvolvimento ativo
-- Totalmente testado com exemplos reais
+- Testado com exemplos reais
 - Planejado para publicação no Pub.dev em breve
 
 ---

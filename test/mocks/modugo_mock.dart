@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/module.dart';
 
-Future<FutureOr<GoRouter>> startModugoMock({
+FutureOr<GoRouter> startModugoMock({
   required Module module,
   bool debugLogDiagnostics = false,
 }) async =>

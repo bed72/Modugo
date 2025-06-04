@@ -1,3 +1,5 @@
+// coverage:ignore-file
+
 import 'package:modugo/src/module.dart';
 
 abstract interface class ManagerInterface {

@@ -21,6 +21,25 @@ void main() {
     manager.bindReferences.clear();
   });
 
+  test('Module.registerBindsIfNeeded handles imported modules', () async {
+    final module = ModuleWithSyncAndAsyncMock();
+    await startModugoMock(module: module, debugLogDiagnostics: true);
+    final routes = await module.configureRoutes(topLevel: true);
+
+    final child = routes.whereType<GoRoute>().firstWhere(
+      (r) => r.path == '/home',
+    );
+    expect(child, isNotNull);
+
+    final asyncService = await AsyncBind.get<AsyncServiceMock>();
+    expect(asyncService, isNotNull);
+    expect(asyncService, isA<AsyncServiceMock>());
+
+    final syncService = SyncBind.get<SyncServiceMock>();
+    expect(syncService, isNotNull);
+    expect(syncService, isA<SyncServiceMock>());
+  });
+
   test('Module.configureRoutes registers async binds', () async {
     final module = ModuleWithAsyncMock();
     await startModugoMock(module: module, debugLogDiagnostics: true);
@@ -65,5 +84,17 @@ void main() {
 
     expect(syncService, isNotNull);
     expect(syncService, isA<SyncServiceMock>());
+  });
+
+  test('ModuleRoute uses "/" ChildRoute as default', () async {
+    final module = RootModuleMock();
+    await startModugoMock(module: module);
+
+    final routes = await module.configureRoutes(topLevel: true);
+    final profileRoute = routes.whereType<GoRoute>().firstWhere(
+      (r) => r.path == '/profile',
+    );
+
+    expect(profileRoute.name, equals('profile-root'));
   });
 }

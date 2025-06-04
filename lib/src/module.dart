@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/manager.dart';
 import 'package:go_router/go_router.dart';
@@ -46,9 +47,13 @@ abstract class Module {
     redirect: childRoute.redirect,
     parentNavigatorKey: childRoute.parentNavigatorKey,
     path: _normalizePath(path: childRoute.path, topLevel: topLevel),
-    builder:
-        (context, state) =>
-            _buildRouteChild(context, state: state, route: childRoute),
+    builder: (context, state) {
+      if (Modugo.debugLogDiagnostics) {
+        ModugoLogger.info('📦 ModuleRoute → ${state.uri}');
+      }
+
+      return _buildRouteChild(context, state: state, route: childRoute);
+    },
     onExit:
         (context, state) => _handleRouteExit(
           context,
@@ -96,12 +101,12 @@ abstract class Module {
             route: childRoute,
           ),
       routes: await module.module.configureRoutes(
-        modulePath: module.path,
         topLevel: false,
+        modulePath: module.path,
       ),
       path: _normalizePath(
-        path: module.path + (childRoute?.path ?? ''),
         topLevel: topLevel,
+        path: module.path + (childRoute?.path ?? ''),
       ),
       onExit:
           (context, state) =>
@@ -119,17 +124,15 @@ abstract class Module {
   Future<List<GoRoute>> _createModuleRoutes({
     required bool topLevel,
     required String modulePath,
-  }) async {
-    return await Future.wait(
-      routes.whereType<ModuleRoute>().map(
-        (module) => _createModule(
-          module: module,
-          topLevel: topLevel,
-          modulePath: modulePath,
-        ),
+  }) async => await Future.wait(
+    routes.whereType<ModuleRoute>().map(
+      (module) => _createModule(
+        module: module,
+        topLevel: topLevel,
+        modulePath: modulePath,
       ),
-    );
-  }
+    ),
+  );
 
   Future<List<RouteBase>> _createShellRoutes(bool topLevel) async {
     final shellRoutes = routes.whereType<ShellModuleRoute>();
@@ -171,9 +174,13 @@ abstract class Module {
           navigatorKey: shellRoute.navigatorKey,
           parentNavigatorKey: shellRoute.parentNavigatorKey,
           restorationScopeId: shellRoute.restorationScopeId,
-          builder:
-              (context, state, child) =>
-                  shellRoute.builder!(context, state, child),
+          builder: (context, state, child) {
+            if (Modugo.debugLogDiagnostics) {
+              ModugoLogger.info('🧩 ShellRoute → ${state.uri}');
+            }
+
+            return shellRoute.builder!(context, state, child);
+          },
           pageBuilder:
               shellRoute.pageBuilder != null
                   ? (context, state, child) =>

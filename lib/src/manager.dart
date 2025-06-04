@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:developer';
 
+import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/dispose.dart';
@@ -53,12 +53,7 @@ final class Manager implements ManagerInterface {
 
     _activeRoutes[module] = {};
 
-    if (Modugo.debugLogDiagnostics) {
-      log(
-        'INJECTED: ${module.runtimeType} BINDS: ${_logModuleBindsTypes(module)}',
-        name: '💉',
-      );
-    }
+    if (Modugo.debugLogDiagnostics) _logModuleBindsTypes(module);
   }
 
   void _registerSyncBinds(Module module) {
@@ -75,10 +70,19 @@ final class Manager implements ManagerInterface {
       for (final imported in module.imports) ...imported.asyncBinds,
     ];
 
+    if (ModugoLogger.enabled) {
+      for (final bind in allAsyncBinds) {
+        final deps = bind.dependsOn.map((d) => d.toString()).join(', ');
+        ModugoLogger.injection(
+          'ASYNC BIND: ${bind.type} | singleton: ${bind.isSingleton} | dependsOn: [$deps]',
+        );
+      }
+    }
+
     await AsyncBind.registerAllWithDependencies(allAsyncBinds);
 
-    if (Modugo.debugLogDiagnostics) {
-      log('REGISTERED ASYNC BINDS WITH DEPENDENCIES', name: '💉');
+    if (ModugoLogger.enabled) {
+      ModugoLogger.injection('✅ Async binds registered com sucesso.');
     }
   }
 
@@ -108,12 +112,7 @@ final class Manager implements ManagerInterface {
     if (_module == module) return;
     if (_activeRoutes[module]?.isNotEmpty ?? false) return;
 
-    if (Modugo.debugLogDiagnostics) {
-      log(
-        'DISPOSED: ${module.runtimeType} BINDS: ${_logModuleBindsTypes(module)}',
-        name: '🗑️',
-      );
-    }
+    if (Modugo.debugLogDiagnostics) _logModuleBindsTypes(module);
 
     for (final bind in module.syncBinds) {
       _decrementBindReference(_resolveBindType(bind));
@@ -155,8 +154,10 @@ final class Manager implements ManagerInterface {
       try {
         _incrementBindReference(_resolveBindType(bind));
 
-        if (Modugo.debugLogDiagnostics) {
-          log('REGISTERING SYNC BIND: ${bind.type}', name: '💉');
+        if (ModugoLogger.enabled) {
+          ModugoLogger.injection(
+            'SYNC BIND: ${bind.type} | singleton: ${bind.isSingleton} | lazy: ${bind.isLazy}',
+          );
         }
 
         SyncBind.register(bind);
@@ -190,16 +191,37 @@ final class Manager implements ManagerInterface {
     }
   }
 
-  String _logModuleBindsTypes(Module module) {
-    final types = <String>[
-      ...module.syncBinds.map((b) => _resolveBindType(b).toString()),
-      for (final m in module.imports)
-        ...m.syncBinds.map((b) => _resolveBindType(b).toString()),
-      ...module.asyncBinds.map((b) => b.runtimeType.toString()),
-      for (final m in module.imports)
-        ...m.asyncBinds.map((b) => b.runtimeType.toString()),
-    ];
+  void _logModuleBindsTypes(Module module) {
+    void logGroup(String title, Iterable<String> items) {
+      if (items.isEmpty) return;
+      ModugoLogger.injection('$title:');
+      for (final item in items) {
+        ModugoLogger.injection('    → $item');
+      }
+    }
 
-    return types.toString();
+    logGroup(
+      '🔗 Sync Binds',
+      module.syncBinds.map((b) => _resolveBindType(b).toString()),
+    );
+
+    logGroup(
+      '📦 Imported Sync Binds',
+      module.imports
+          .expand((m) => m.syncBinds)
+          .map((b) => _resolveBindType(b).toString()),
+    );
+
+    logGroup(
+      '🌀 Async Binds',
+      module.asyncBinds.map((b) => b.runtimeType.toString()),
+    );
+
+    logGroup(
+      '📥 Imported Async Binds',
+      module.imports
+          .expand((m) => m.asyncBinds)
+          .map((b) => b.runtimeType.toString()),
+    );
   }
 }

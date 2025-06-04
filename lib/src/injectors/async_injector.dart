@@ -44,8 +44,10 @@ final class AsyncBind<T> {
   }
 
   static Future<void> registerAllWithDependencies(List<AsyncBind> binds) async {
-    final queue = List<AsyncBind>.from(binds);
     final resolved = <Type>{};
+    final queue = List<AsyncBind>.from(binds);
+
+    int noProgressRounds = 0;
 
     while (queue.isNotEmpty) {
       final bind = queue.removeAt(0);
@@ -64,9 +66,12 @@ final class AsyncBind<T> {
         }
 
         resolved.add(bind.type);
+        noProgressRounds = 0;
       } else {
-        queue.add(bind); // Retry later
-        if (queue.length == binds.length) {
+        queue.add(bind);
+        noProgressRounds++;
+
+        if (noProgressRounds >= queue.length) {
           throw Exception(
             'Circular or unresolved async dependencies: ${queue.map((b) => b.type).toList()}',
           );
