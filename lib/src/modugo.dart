@@ -8,6 +8,7 @@ import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/dispose.dart';
 import 'package:modugo/src/manager.dart';
+import 'package:modugo/src/observer.dart';
 import 'package:modugo/src/transitions/transition.dart';
 
 typedef Modugo = ModugoConfiguration;
@@ -91,7 +92,6 @@ class ModugoConfiguration {
     _router = GoRouter(
       routes: routes,
       redirect: redirect,
-      observers: observers,
       extraCodec: extraCodec,
       onException: onException,
       errorBuilder: errorBuilder,
@@ -105,6 +105,7 @@ class ModugoConfiguration {
       refreshListenable: refreshListenable,
       restorationScopeId: restorationScopeId,
       debugLogDiagnostics: debugLogDiagnosticsGoRouter,
+      observers: [...?observers, ModugoRouterObserver()],
       overridePlatformDefaultLocation: overridePlatformDefaultLocation,
     );
     return _router!;
