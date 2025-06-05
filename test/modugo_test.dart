@@ -18,7 +18,7 @@ void main() {
     expect(modugo, isA<GoRouter>());
     expect(Modugo.routerConfig, same(modugo));
     expect(Modugo.debugLogDiagnostics, isTrue);
-    expect(Modugo.getDefaultPageTransition, TypeTransition.fade);
+    expect(Modugo.getDefaultTransition, TypeTransition.fade);
   });
 
   test(

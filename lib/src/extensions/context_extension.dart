@@ -6,10 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:modugo/src/injector.dart';
 
 extension BindContextExtension on BuildContext {
-  T read<T>() {
-    final bind = Bind.get<T>();
-    return bind;
-  }
+  T read<T>() => Bind.get<T>();
 
   String? getPathParam(String param) =>
       GoRouterState.of(this).pathParameters[param];

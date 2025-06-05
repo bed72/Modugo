@@ -29,7 +29,7 @@ final class ModugoConfiguration {
     return _debugLogDiagnostics!;
   }
 
-  static TypeTransition get getDefaultPageTransition {
+  static TypeTransition get getDefaultTransition {
     assert(
       _transition != null,
       'Add ModugoConfiguration.configure in main.dart',
@@ -46,12 +46,6 @@ final class ModugoConfiguration {
   static TypeTransition? _transition;
 
   static T get<T>() => Bind.get<T>();
-
-  static String getCurrentPathOf(BuildContext context) =>
-      GoRouterState.of(context).path ?? '';
-
-  static GoRouterState stateOf(BuildContext context) =>
-      GoRouterState.of(context);
 
   static FutureOr<GoRouter> configure({
     required Module module,

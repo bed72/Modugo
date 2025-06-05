@@ -217,7 +217,7 @@ abstract class Module {
     child: route.child(context, state),
     transitionsBuilder: Transition.builder(
       config: () => _register(path: state.uri.toString()),
-      type: route.transition ?? Modugo.getDefaultPageTransition,
+      type: route.transition ?? Modugo.getDefaultTransition,
     ),
   );
 
