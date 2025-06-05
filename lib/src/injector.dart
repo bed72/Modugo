@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:modugo/src/logger.dart';
 
-base class Injector {
+final class Injector {
   static final Injector _instance = Injector._();
 
   Injector._();

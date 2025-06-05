@@ -13,7 +13,7 @@ import 'package:modugo/src/transitions/transition.dart';
 
 typedef Modugo = ModugoConfiguration;
 
-class ModugoConfiguration {
+final class ModugoConfiguration {
   ModugoConfiguration._();
 
   static GoRouter get routerConfig {
