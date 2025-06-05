@@ -125,4 +125,17 @@ void main() {
 
     expect(widget, isA<Placeholder>());
   });
+
+  test('should create ShellRoute and register shell binds', () async {
+    final module = ModuleWithShellMock();
+    await startModugoMock(module: module);
+    final routes = module.configureRoutes(topLevel: true);
+
+    final shell = routes.whereType<ShellRoute>().first;
+
+    expect(shell, isA<ShellRoute>());
+
+    final controller = Bind.get<ServiceMock>();
+    expect(controller, isA<ServiceMock>());
+  });
 }

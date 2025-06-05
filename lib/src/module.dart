@@ -98,8 +98,11 @@ abstract class Module {
 
     return GoRoute(
       name: childRoute?.name ?? module.name,
-      redirect: childRoute?.redirect ?? module.redirect,
       parentNavigatorKey: childRoute?.parentNavigatorKey,
+      redirect:
+          (context, state) =>
+              module.redirect?.call(context, state) ??
+              childRoute?.redirect?.call(context, state),
       builder:
           (context, state) => _buildModuleChild(
             context,
@@ -146,6 +149,19 @@ abstract class Module {
     final shellRoutes = routes.whereType<ShellModuleRoute>();
 
     return shellRoutes.map((shellRoute) {
+      if (shellRoute.binds.isNotEmpty) {
+        for (final bind in shellRoute.binds) {
+          final existing = Bind.getBindByType(bind.type);
+          if (existing == null) {
+            Bind.register(bind);
+
+            if (Modugo.debugLogDiagnostics) {
+              ModugoLogger.injection('🔐 ShellBind → ${bind.type}');
+            }
+          }
+        }
+      }
+
       if (shellRoute.routes.whereType<ChildRoute>().any(
         (element) => element.path == '/',
       )) {

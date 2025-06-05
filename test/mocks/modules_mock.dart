@@ -138,3 +138,17 @@ final class ModuleWithRedirectMock extends Module {
     ),
   ];
 }
+
+final class ModuleWithShellMock extends Module {
+  @override
+  List<Bind> get binds => [];
+
+  @override
+  List<ModuleInterface> get routes => [
+    ShellModuleRoute(
+      binds: [Bind.singleton<ServiceMock>((_) => ServiceMock())],
+      builder: (_, __, child) => Container(child: child),
+      routes: [ChildRoute('tab1', child: (_, __) => const Placeholder())],
+    ),
+  ];
+}

@@ -5,11 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:equatable/equatable.dart';
 
 import 'package:go_router/go_router.dart';
+import 'package:modugo/src/injector.dart';
 
 import 'package:modugo/src/interfaces/module_interface.dart';
 
 @immutable
 final class ShellModuleRoute extends Equatable implements ModuleInterface {
+  final List<Bind> binds;
   final String? restorationScopeId;
   final List<ModuleInterface> routes;
   final List<NavigatorObserver>? observers;
@@ -38,6 +40,7 @@ final class ShellModuleRoute extends Equatable implements ModuleInterface {
     this.observers,
     this.pageBuilder,
     this.navigatorKey,
+    this.binds = const [],
     this.parentNavigatorKey,
     this.restorationScopeId,
   });

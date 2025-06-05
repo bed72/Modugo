@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:modugo/src/injector.dart';
 
 import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
@@ -70,5 +71,32 @@ void main() {
 
     final result = await route.redirect!(BuildContextFake(), StateFake());
     expect(result, equals('/next'));
+  });
+
+  test('should store binds when provided', () {
+    final route = ShellModuleRoute(
+      binds: [Bind.singleton((_) => 'hello')],
+      routes: routes,
+      builder: (_, __, ___) => const SizedBox(),
+    );
+
+    expect(route.binds, isNotEmpty);
+    expect(route.binds.first.factoryFunction(Injector()), equals('hello'));
+  });
+
+  test('binds do not affect equality', () {
+    final route1 = ShellModuleRoute(
+      routes: routes,
+      binds: [Bind.singleton((_) => 1)],
+      builder: (_, __, ___) => const SizedBox(),
+    );
+
+    final route2 = ShellModuleRoute(
+      routes: routes,
+      binds: [Bind.singleton((_) => 2)],
+      builder: (_, __, ___) => const SizedBox(),
+    );
+
+    expect(route1, equals(route2));
   });
 }
