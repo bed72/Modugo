@@ -47,7 +47,10 @@ final class Manager implements ManagerInterface {
 
     _activeRoutes[module] = {};
 
-    if (Modugo.debugLogDiagnostics) _logModuleBindsTypes(module);
+    if (Modugo.debugLogDiagnostics) {
+      _logImportedBinds(module);
+      _logInjectionBinds(module);
+    }
   }
 
   void _registerSyncBinds(Module module) {
@@ -83,7 +86,7 @@ final class Manager implements ManagerInterface {
     if (_module == module) return;
     if (_activeRoutes[module]?.isNotEmpty ?? false) return;
 
-    if (Modugo.debugLogDiagnostics) _logModuleBindsTypes(module);
+    if (Modugo.debugLogDiagnostics) _logUnregisteredBinds(module);
 
     for (final bind in module.binds) {
       _decrementBindReference(_resolveBindType(bind));
@@ -151,35 +154,37 @@ final class Manager implements ManagerInterface {
     }
   }
 
-  void _logModuleBindsTypes(Module module) {
-    void logGroup(String title, bool isInject, Iterable<String> items) {
-      if (items.isEmpty) return;
+  void _logInjectionBinds(Module module) {
+    final types = module.binds.map((b) => _resolveBindType(b)).toList();
+    if (types.isEmpty) return;
 
-      if (isInject) {
-        ModugoLogger.injection('$title:');
-        for (final item in items) {
-          ModugoLogger.injection('    → $item');
-        }
-      } else {
-        ModugoLogger.info('$title:');
-        for (final item in items) {
-          ModugoLogger.info('    → $item');
-        }
-      }
+    ModugoLogger.injection('🔗 Binds:');
+    for (final type in types) {
+      ModugoLogger.injection('    → $type');
     }
+  }
 
-    logGroup(
-      '🔗 Binds',
-      true,
-      module.binds.map((b) => _resolveBindType(b).toString()),
-    );
+  void _logImportedBinds(Module module) {
+    final types =
+        module.imports.expand((m) => m.binds).map(_resolveBindType).toList();
+    if (types.isEmpty) return;
 
-    logGroup(
-      '📦 Imported Binds',
-      false,
-      module.imports
-          .expand((m) => m.binds)
-          .map((b) => _resolveBindType(b).toString()),
-    );
+    ModugoLogger.info('📦 Imported Binds:');
+    for (final type in types) {
+      ModugoLogger.info('    → $type');
+    }
+  }
+
+  void _logUnregisteredBinds(Module module) {
+    final allTypes = [
+      ...module.binds.map(_resolveBindType),
+      ...module.imports.expand((m) => m.binds).map(_resolveBindType),
+    ];
+    if (allTypes.isEmpty) return;
+
+    ModugoLogger.dispose('❌ Unregistering Binds from ${module.runtimeType}');
+    for (final type in allTypes) {
+      ModugoLogger.dispose('    → $type');
+    }
   }
 }

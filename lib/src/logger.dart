@@ -28,17 +28,20 @@ final class ModugoLogger {
   static void info(String message, {String tag = 'INFO'}) =>
       log(message, tag: tag, emoji: '👀', level: Level.info);
 
-  static void warn(String message, {String tag = 'WARN'}) =>
-      log(message, tag: tag, emoji: '😟', level: Level.warning);
-
   static void error(String message, {String tag = 'ERROR'}) =>
       log(message, tag: tag, emoji: '❌', level: Level.error);
 
-  static void injection(String message, {String tag = 'INJECT'}) =>
-      log(message, tag: tag, emoji: '💉', level: Level.debug);
+  static void warn(String message, {String tag = 'WARN'}) =>
+      log(message, tag: tag, emoji: '😟', level: Level.warning);
+
+  static void navigation(String message, {String tag = 'NAV'}) =>
+      log(message, tag: tag, emoji: '🧭', level: Level.trace);
 
   static void dispose(String message, {String tag = 'DISPOSE'}) =>
-      log(message, tag: tag, emoji: '🗑️', level: Level.debug);
+      log(message, tag: tag, emoji: '🗑️', level: Level.fatal);
+
+  static void injection(String message, {String tag = 'INJECT'}) =>
+      log(message, tag: tag, emoji: '💉', level: Level.debug);
 }
 
 final class _ModugoPrettyPrinter extends LogPrinter {
