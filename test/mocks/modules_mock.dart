@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import 'package:modugo/src/module.dart';
+import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
-import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
 

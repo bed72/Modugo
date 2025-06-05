@@ -207,27 +207,22 @@ abstract class Module {
     return path == '/' ? path : path.substring(0, path.length - 1);
   }
 
-  // Widget _buildRouteChild(
-  //   BuildContext context, {
-  //   required ChildRoute route,
-  //   required GoRouterState state,
-  // }) {
-  //   _register(path: state.uri.toString());
-  //   return route.child(context, state);
-  // }
-
   Page<void> _buildCustomTransitionPage(
     BuildContext context, {
     required ChildRoute route,
     required GoRouterState state,
-  }) => CustomTransitionPage(
-    key: state.pageKey,
-    child: route.child(context, state),
-    transitionsBuilder: Transition.builder(
-      config: () => _register(path: state.uri.toString()),
-      type: route.transition ?? Modugo.getDefaultTransition,
-    ),
-  );
+  }) {
+    _register(path: state.uri.toString());
+
+    return CustomTransitionPage(
+      key: state.pageKey,
+      child: route.child(context, state),
+      transitionsBuilder: Transition.builder(
+        config: () {},
+        type: route.transition ?? Modugo.getDefaultTransition,
+      ),
+    );
+  }
 
   Widget _buildModuleChild(
     BuildContext context, {

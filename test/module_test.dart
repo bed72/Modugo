@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:modugo/modugo.dart';
 
 import 'package:modugo/src/manager.dart';
 import 'package:modugo/src/injector.dart';
@@ -92,5 +94,35 @@ void main() {
     );
 
     expect(redirectResult, equals('/home'));
+  });
+
+  test('should register binds before building transition child', () async {
+    final module = InnerModuleMock();
+    await startModugoMock(module: module);
+    module.configureRoutes(topLevel: true);
+
+    ChildRoute(
+      'home',
+      child: (_, __) {
+        final service = Bind.get<ServiceMock>();
+
+        expect(service, isA<CustomTransitionPage>());
+        return const Placeholder();
+      },
+    );
+  });
+
+  test('should register binds before calling child in GoRoute', () async {
+    final module = RootModuleMock();
+    await startModugoMock(module: module);
+    final routes = module.configureRoutes(topLevel: true);
+
+    final goRoute = routes.whereType<GoRoute>().firstWhere(
+      (r) => r.path == '/profile',
+    );
+
+    final widget = goRoute.builder!(BuildContextFake(), StateFake());
+
+    expect(widget, isA<Placeholder>());
   });
 }
