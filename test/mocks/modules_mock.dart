@@ -152,3 +152,17 @@ final class ModuleWithShellMock extends Module {
     ),
   ];
 }
+
+final class ModuleWithRoot extends Module {
+  @override
+  List<ChildRoute> get routes => [
+    ChildRoute('/', name: 'root', child: (_, __) => Container()),
+  ];
+}
+
+final class ModuleWithEmpty extends Module {
+  @override
+  List<ChildRoute> get routes => [
+    ChildRoute('', name: 'empty', child: (_, __) => Container()),
+  ];
+}

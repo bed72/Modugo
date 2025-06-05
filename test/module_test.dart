@@ -138,4 +138,28 @@ void main() {
     final controller = Bind.get<ServiceMock>();
     expect(controller, isA<ServiceMock>());
   });
+
+  test('includes "/" when topLevel is true', () async {
+    final module = ModuleWithRoot();
+    await startModugoMock(module: module);
+    final routes = module.configureRoutes(topLevel: true);
+
+    expect(routes.whereType<GoRoute>().any((r) => r.path == '/'), isTrue);
+  });
+
+  test('excludes "/" when topLevel is false', () async {
+    final module = ModuleWithRoot();
+    await startModugoMock(module: module);
+    final routes = module.configureRoutes(topLevel: false);
+
+    expect(routes.whereType<GoRoute>().any((r) => r.path == '/'), isFalse);
+  });
+
+  test('includes "" as "/" when topLevel is true', () async {
+    final module = ModuleWithEmpty();
+    await startModugoMock(module: module);
+    final routes = module.configureRoutes(topLevel: true);
+
+    expect(routes.whereType<GoRoute>().any((r) => r.path == '/'), isTrue);
+  });
 }

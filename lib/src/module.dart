@@ -81,7 +81,7 @@ abstract class Module {
   List<GoRoute> _createChildRoutes({required bool topLevel}) =>
       routes
           .whereType<ChildRoute>()
-          .where((route) => _adjustRoute(route.path) != '/')
+          .where((route) => topLevel || _adjustRoute(route.path) != '/')
           .map((route) => _createChild(childRoute: route, topLevel: topLevel))
           .toList();
 
