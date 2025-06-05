@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:modugo/modugo.dart';
 
 import 'package:modugo/src/manager.dart';
 import 'package:modugo/src/injector.dart';
+import 'package:modugo/src/routes/child_route.dart';
 
 import 'fakes/fakes.dart';
 import 'mocks/modugo_mock.dart';
