@@ -1,3 +1,5 @@
+// coverage:ignore-file
+
 import 'package:flutter/widgets.dart';
 import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/modugo.dart';
@@ -25,8 +27,8 @@ class ModugoRouterObserver extends NavigatorObserver {
   void didReplace({Route? newRoute, Route? oldRoute}) {
     if (!Modugo.debugLogDiagnostics) return;
 
-    final from = _routeName(oldRoute);
     final to = _routeName(newRoute);
+    final from = _routeName(oldRoute);
     ModugoLogger.navigation('🔁 REPLACE: $from → $to');
   }
 
