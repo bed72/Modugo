@@ -47,11 +47,19 @@ abstract class Module {
     parentNavigatorKey: childRoute.parentNavigatorKey,
     path: _normalizePath(path: childRoute.path, topLevel: topLevel),
     builder: (context, state) {
-      if (Modugo.debugLogDiagnostics) {
-        ModugoLogger.info('📦 ModuleRoute → ${state.uri}');
-      }
+      try {
+        _register(path: state.uri.toString());
 
-      return _buildRouteChild(context, state: state, route: childRoute);
+        if (Modugo.debugLogDiagnostics) {
+          ModugoLogger.info('📦 ModuleRoute → ${state.uri}');
+        }
+
+        return childRoute.child(context, state);
+      } catch (e, s) {
+        _unregister(state.uri.toString());
+        ModugoLogger.error('Erro ao construir rota ${state.uri}: $e\n$s');
+        rethrow;
+      }
     },
     onExit:
         (context, state) => _handleRouteExit(
@@ -199,14 +207,14 @@ abstract class Module {
     return path == '/' ? path : path.substring(0, path.length - 1);
   }
 
-  Widget _buildRouteChild(
-    BuildContext context, {
-    required ChildRoute route,
-    required GoRouterState state,
-  }) {
-    _register(path: state.uri.toString());
-    return route.child(context, state);
-  }
+  // Widget _buildRouteChild(
+  //   BuildContext context, {
+  //   required ChildRoute route,
+  //   required GoRouterState state,
+  // }) {
+  //   _register(path: state.uri.toString());
+  //   return route.child(context, state);
+  // }
 
   Page<void> _buildCustomTransitionPage(
     BuildContext context, {
