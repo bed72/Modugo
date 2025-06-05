@@ -89,8 +89,8 @@ abstract class Module {
             .firstOrNull;
 
     return GoRoute(
-      redirect: childRoute?.redirect,
       name: childRoute?.name ?? module.name,
+      redirect: childRoute?.redirect ?? module.redirect,
       parentNavigatorKey: childRoute?.parentNavigatorKey,
       builder:
           (context, state) => _buildModuleChild(

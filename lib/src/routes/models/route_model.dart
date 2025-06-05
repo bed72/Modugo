@@ -49,14 +49,18 @@ final class RouteModuleModel extends Equatable {
   }) {
     final module_ = '/$module';
     final args_ = params.map((e) => ':$e').join('/');
-    final childRoute = '/${routeName == module ? '' : '$routeName/'}';
+    final sanitizedRouteName = routeName.replaceAll(RegExp(r'/+$'), '');
+    final childRoute =
+        '/${sanitizedRouteName == module ? '' : '$sanitizedRouteName/'}';
 
     return RouteModuleModel(
       params: params,
-      name: _extractName(routeName),
       child: _buildPath(childRoute + args_),
+      name: _extractName(sanitizedRouteName),
       module: _buildPath('$module_${module == '/' ? '' : '/'}'),
-      route: _buildPath('$module_${routeName == module ? '/' : childRoute}'),
+      route: _buildPath(
+        '$module_${sanitizedRouteName == module ? '/' : childRoute}',
+      ),
     );
   }
 

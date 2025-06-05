@@ -93,4 +93,36 @@ void main() {
       expect(model.route, '/profile/edit');
     });
   });
+
+  test('buildPath works with child path without parameters', () {
+    final model = RouteModuleModel(
+      route: '/home',
+      module: '/home',
+      child: '/dashboard',
+    );
+
+    final result = model.buildPath(params: ['extra'], subParams: ['user']);
+    expect(result, '/home/user/dashboard/extra');
+  });
+
+  test('build normalizes redundant slashes', () {
+    final model = RouteModuleModel(
+      route: '//a//b/',
+      module: '//a//',
+      child: '//b/:id/',
+    );
+
+    final result = model.buildPath(params: ['1'], subParams: []);
+    expect(result, '/a/b/1');
+  });
+
+  test('build extracts correct name when routeName has trailing slash', () {
+    final model = RouteModuleModel.build(
+      module: 'settings',
+      routeName: 'preferences/',
+      params: [],
+    );
+
+    expect(model.name, 'preferences');
+  });
 }

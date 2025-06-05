@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/routes/module_route.dart';
 
+import '../fakes/fakes.dart';
 import '../mocks/modules_mock.dart';
 
 void main() {
@@ -40,5 +41,35 @@ void main() {
 
       expect(route1 == route4, isFalse);
     });
+  });
+
+  test('should ignore redirect in equality check', () {
+    final module = InnerModuleMock();
+
+    final route1 = ModuleRoute(
+      '/home',
+      module: module,
+      name: 'home',
+      redirect: (_, __) => '/a',
+    );
+
+    final route2 = ModuleRoute(
+      '/home',
+      module: module,
+      name: 'home',
+      redirect: (_, __) => '/b',
+    );
+
+    expect(route1, equals(route2));
+  });
+
+  test('should instantiate with redirect function', () {
+    final module = InnerModuleMock();
+    redirectFn(context, state) => '/login';
+
+    final route = ModuleRoute('/', module: module, redirect: redirectFn);
+
+    expect(route.redirect, isNotNull);
+    expect(route.redirect!(BuildContextFake(), StateFake()), '/login');
   });
 }

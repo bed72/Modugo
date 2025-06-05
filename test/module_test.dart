@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:modugo/src/manager.dart';
 import 'package:modugo/src/injector.dart';
 
+import 'fakes/fakes.dart';
 import 'mocks/modugo_mock.dart';
 import 'mocks/modules_mock.dart';
 import 'mocks/services_mock.dart';
@@ -74,5 +75,22 @@ void main() {
     final paths = routes.whereType<GoRoute>().map((r) => r.path);
 
     expect(paths.contains('/'), isFalse);
+  });
+
+  test('ModuleRoute redirect is passed to GoRoute', () async {
+    final module = ModuleWithRedirectMock();
+    await startModugoMock(module: module);
+    final routes = module.configureRoutes(topLevel: true);
+
+    final redirected = routes.whereType<GoRoute>().firstWhere(
+      (r) => r.path == '/',
+    );
+
+    final redirectResult = redirected.redirect?.call(
+      BuildContextFake(),
+      StateFake(),
+    );
+
+    expect(redirectResult, equals('/home'));
   });
 }

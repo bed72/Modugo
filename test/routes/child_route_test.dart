@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/transitions/transition.dart';
 
+import '../fakes/fakes.dart';
+
 void main() {
   test('should create a valid instance with required parameters', () {
     final route = ChildRoute('/home', child: (_, __) => const Text('Home'));
@@ -53,5 +55,16 @@ void main() {
     );
 
     expect(route1 == route2, isFalse);
+  });
+
+  test('should execute redirect callback when provided', () async {
+    final route = ChildRoute(
+      '/redirect',
+      child: (_, __) => const SizedBox(),
+      redirect: (context, state) => Future.value('/login'),
+    );
+
+    final result = await route.redirect!(BuildContextFake(), StateFake());
+    expect(result, equals('/login'));
   });
 }

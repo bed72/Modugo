@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
 
+import '../fakes/fakes.dart';
 import '../mocks/route_mock.dart';
 
 void main() {
@@ -58,5 +59,16 @@ void main() {
     );
 
     expect(shellRoute == differentShellRoute, isFalse);
+  });
+
+  test('should execute redirect and return expected path', () async {
+    final route = ShellModuleRoute(
+      routes: routes,
+      builder: (_, __, ___) => const SizedBox(),
+      redirect: (_, __) async => '/next',
+    );
+
+    final result = await route.redirect!(BuildContextFake(), StateFake());
+    expect(result, equals('/next'));
   });
 }

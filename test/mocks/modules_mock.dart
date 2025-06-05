@@ -126,3 +126,15 @@ final class SingleModuleModuleMock extends Module {
     ),
   ];
 }
+
+final class ModuleWithRedirectMock extends Module {
+  @override
+  List<ModuleInterface> get routes => [
+    ModuleRoute(
+      '/',
+      name: 'root',
+      module: InnerModuleMock(),
+      redirect: (_, __) => '/home',
+    ),
+  ];
+}

@@ -7,6 +7,9 @@ import 'package:modugo/src/module.dart';
 
 FutureOr<GoRouter> startModugoMock({
   required Module module,
-  bool debugLogDiagnostics = false,
-}) async =>
-    Modugo.configure(module: module, debugLogDiagnostics: debugLogDiagnostics);
+  bool debugLogDiagnostics = true,
+}) async => Modugo.configure(
+  module: module,
+  debugLogDiagnostics: debugLogDiagnostics,
+  debugLogDiagnosticsGoRouter: debugLogDiagnostics,
+);
