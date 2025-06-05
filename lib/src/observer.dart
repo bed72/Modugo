@@ -1,5 +1,4 @@
 import 'package:flutter/widgets.dart';
-
 import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/modugo.dart';
 
@@ -8,24 +7,26 @@ class ModugoRouterObserver extends NavigatorObserver {
   void didPush(Route route, Route? previousRoute) {
     if (!Modugo.debugLogDiagnostics) return;
 
-    final name = _routeName(route);
-    ModugoLogger.navigation('🔼 PUSH → $name');
+    final to = _routeName(route);
+    final from = _routeName(previousRoute);
+    ModugoLogger.navigation('🔼 PUSH: $from → $to');
   }
 
   @override
   void didPop(Route route, Route? previousRoute) {
     if (!Modugo.debugLogDiagnostics) return;
 
-    final name = _routeName(route);
-    ModugoLogger.navigation('🔽 POP ← $name');
+    final from = _routeName(route);
+    final to = _routeName(previousRoute);
+    ModugoLogger.navigation('🔽 POP: $from ← $to');
   }
 
   @override
   void didReplace({Route? newRoute, Route? oldRoute}) {
     if (!Modugo.debugLogDiagnostics) return;
 
-    final to = _routeName(newRoute);
     final from = _routeName(oldRoute);
+    final to = _routeName(newRoute);
     ModugoLogger.navigation('🔁 REPLACE: $from → $to');
   }
 
@@ -34,7 +35,7 @@ class ModugoRouterObserver extends NavigatorObserver {
     if (!Modugo.debugLogDiagnostics) return;
 
     final name = _routeName(route);
-    ModugoLogger.navigation('🗑️ REMOVE → $name');
+    ModugoLogger.navigation('🗑️ REMOVE: $name');
   }
 
   String _routeName(Route? route) {
