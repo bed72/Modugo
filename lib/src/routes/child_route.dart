@@ -6,7 +6,7 @@ import 'package:equatable/equatable.dart';
 
 import 'package:go_router/go_router.dart';
 
-import 'package:modugo/src/transitions/transition.dart';
+import 'package:modugo/src/transition.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
 
 @immutable

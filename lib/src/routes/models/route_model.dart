@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:equatable/equatable.dart';
 
-import 'package:modugo/src/transitions/transition.dart';
+import 'package:modugo/src/transition.dart';
 
 @immutable
 final class RouteModuleModel extends Equatable {

@@ -1,97 +1,95 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:modugo/src/transitions/transition.dart';
+import 'package:modugo/src/transition.dart';
 import 'package:modugo/src/routes/models/route_model.dart';
 
 void main() {
-  group('RouteModuleModel', () {
-    test('instance with default values', () {
-      final model = RouteModuleModel(
-        route: '/home',
-        module: '/home',
-        child: '/home/:id',
-      );
+  test('instance with default values', () {
+    final model = RouteModuleModel(
+      route: '/home',
+      module: '/home',
+      child: '/home/:id',
+    );
 
-      expect(model.name, '');
-      expect(model.params, isNull);
-      expect(model.transition, TypeTransition.fade);
-    });
+    expect(model.name, '');
+    expect(model.params, isNull);
+    expect(model.transition, TypeTransition.fade);
+  });
 
-    test('instance with custom values', () {
-      final model = RouteModuleModel(
-        name: 'home',
-        params: ['id'],
-        route: '/home',
-        module: '/home',
-        child: '/home/:id',
-        transition: TypeTransition.slideDown,
-      );
+  test('instance with custom values', () {
+    final model = RouteModuleModel(
+      name: 'home',
+      params: ['id'],
+      route: '/home',
+      module: '/home',
+      child: '/home/:id',
+      transition: TypeTransition.slideDown,
+    );
 
-      expect(model.name, 'home');
-      expect(model.params, ['id']);
-      expect(model.transition, TypeTransition.slideDown);
-    });
+    expect(model.name, 'home');
+    expect(model.params, ['id']);
+    expect(model.transition, TypeTransition.slideDown);
+  });
 
-    test('use Equatable correctly (==)', () {
-      final model1 = RouteModuleModel(
-        name: 'home',
-        params: ['id'],
-        route: '/home',
-        module: '/home',
-        child: '/home/:id',
-        transition: TypeTransition.fade,
-      );
+  test('use Equatable correctly (==)', () {
+    final model1 = RouteModuleModel(
+      name: 'home',
+      params: ['id'],
+      route: '/home',
+      module: '/home',
+      child: '/home/:id',
+      transition: TypeTransition.fade,
+    );
 
-      final model2 = RouteModuleModel(
-        name: 'home',
-        params: ['id'],
-        route: '/home',
-        module: '/home',
-        child: '/home/:id',
-        transition: TypeTransition.fade,
-      );
+    final model2 = RouteModuleModel(
+      name: 'home',
+      params: ['id'],
+      route: '/home',
+      module: '/home',
+      child: '/home/:id',
+      transition: TypeTransition.fade,
+    );
 
-      expect(model1, equals(model2));
-    });
+    expect(model1, equals(model2));
+  });
 
-    test('toString returns expected value', () {
-      final model = RouteModuleModel(
-        route: '/home',
-        params: ['id'],
-        module: '/home',
-        child: '/home/:id',
-      );
+  test('toString returns expected value', () {
+    final model = RouteModuleModel(
+      route: '/home',
+      params: ['id'],
+      module: '/home',
+      child: '/home/:id',
+    );
 
-      expect(
-        model.toString(),
-        'RouteModuleModel(module: /home, child: /home/:id, route: /home, params: [id])',
-      );
-    });
+    expect(
+      model.toString(),
+      'RouteModuleModel(module: /home, child: /home/:id, route: /home, params: [id])',
+    );
+  });
 
-    test('buildPath builds the path correctly', () {
-      final model = RouteModuleModel(
-        route: '/products',
-        module: '/products',
-        child: '/products/:category',
-      );
+  test('buildPath builds the path correctly', () {
+    final model = RouteModuleModel(
+      route: '/products',
+      module: '/products',
+      child: '/products/:category',
+    );
 
-      final path = model.buildPath(params: ['electronics'], subParams: ['br']);
-      expect(path, '/products/br/products/electronics');
-    });
+    final path = model.buildPath(params: ['electronics'], subParams: ['br']);
+    expect(path, '/products/br/products/electronics');
+  });
 
-    test('static method build generates model correctly', () {
-      final model = RouteModuleModel.build(
-        module: 'profile',
-        routeName: 'edit',
-        params: ['userId'],
-      );
+  test('static method build generates model correctly', () {
+    final model = RouteModuleModel.build(
+      module: 'profile',
+      routeName: 'edit',
+      params: ['userId'],
+    );
 
-      expect(model.name, 'edit');
-      expect(model.module, '/profile');
-      expect(model.params, ['userId']);
-      expect(model.child, '/edit/:userId');
-      expect(model.route, '/profile/edit');
-    });
+    expect(model.name, 'edit');
+    expect(model.module, '/profile');
+    expect(model.params, ['userId']);
+    expect(model.child, '/edit/:userId');
+    expect(model.route, '/profile/edit');
   });
 
   test('buildPath works with child path without parameters', () {

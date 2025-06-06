@@ -9,7 +9,7 @@ import 'package:modugo/src/module.dart';
 import 'package:modugo/src/dispose.dart';
 import 'package:modugo/src/manager.dart';
 import 'package:modugo/src/observer.dart';
-import 'package:modugo/src/transitions/transition.dart';
+import 'package:modugo/src/transition.dart';
 
 typedef Modugo = ModugoConfiguration;
 

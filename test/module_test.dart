@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:modugo/src/manager.dart';
 import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/routes/child_route.dart';
+import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 import 'fakes/fakes.dart';
 import 'mocks/modugo_mock.dart';
@@ -162,4 +163,43 @@ void main() {
 
     expect(routes.whereType<GoRoute>().any((r) => r.path == '/'), isTrue);
   });
+
+  test('should include StatefulShellRoute when declared in routes', () async {
+    final module = ModuleWithStatefulShellMock();
+    await startModugoMock(module: module);
+    final routes = module.configureRoutes(topLevel: true);
+
+    expect(routes.whereType<StatefulShellRoute>().length, 1);
+  });
+
+  test(
+    'should build branches from ModuleRoute inside StatefulShellModuleRoute',
+    () async {
+      final module = ModuleWithStatefulShellMock();
+      await startModugoMock(module: module);
+
+      final routes = module.configureRoutes(topLevel: true);
+      final shellRoute = routes.whereType<StatefulShellRoute>().first;
+
+      final branches = shellRoute.branches;
+      expect(branches.length, equals(2));
+
+      for (final branch in branches) {
+        final goRoutes = branch.routes.whereType<GoRoute>();
+        expect(goRoutes.isNotEmpty, isTrue);
+      }
+    },
+  );
+
+  test(
+    'should throw UnsupportedError if unknown route type in StatefulShellModuleRoute',
+    () {
+      expect(() {
+        StatefulShellModuleRoute(
+          builder: (ctx, state, shell) => const Placeholder(),
+          routes: [ModuleInterfaceMock()],
+        ).toRoute(topLevel: true, path: '');
+      }, throwsA(isA<UnsupportedError>()));
+    },
+  );
 }

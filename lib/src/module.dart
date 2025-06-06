@@ -1,17 +1,18 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:flutter/material.dart';
 import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/manager.dart';
 import 'package:modugo/src/injector.dart';
+import 'package:modugo/src/transition.dart';
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
-import 'package:modugo/src/transitions/transition.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 abstract class Module {
   List<Bind> get binds => const [];
@@ -20,20 +21,29 @@ abstract class Module {
 
   final _routerManager = Manager();
 
-  List<RouteBase> configureRoutes({
-    bool topLevel = false,
-    String modulePath = '',
-  }) {
+  List<RouteBase> configureRoutes({bool topLevel = false, String path = ''}) {
     if (!_routerManager.isModuleActive(this)) {
       _routerManager.registerBindsAppModule(this);
     }
 
-    final shellRoutes = _createShellRoutes(topLevel);
-    final childRoutes = _createChildRoutes(topLevel: topLevel);
+    final childRoutes = _createChildRoutes(topLevel);
+    final shellRoutes = _createShellRoutes(topLevel, path);
     final moduleRoutes = _createModuleRoutes(
+      modulePath: path,
       topLevel: topLevel,
-      modulePath: modulePath,
     );
+
+    if (Modugo.debugLogDiagnostics) {
+      final paths = [
+        ...shellRoutes,
+        ...childRoutes,
+        ...moduleRoutes,
+      ].whereType<GoRoute>().map((r) => r.path);
+
+      ModugoLogger.info(
+        '🛤️  Final recorded routes: ${paths.isEmpty ? "(/) or ('')" : "$paths"}',
+      );
+    }
 
     return [...shellRoutes, ...childRoutes, ...moduleRoutes];
   }
@@ -57,7 +67,7 @@ abstract class Module {
         return childRoute.child(context, state);
       } catch (e, s) {
         _unregister(state.uri.toString());
-        ModugoLogger.error('Erro ao construir rota ${state.uri}: $e\n$s');
+        ModugoLogger.error('Error building route ${state.uri}: $e\n$s');
         rethrow;
       }
     },
@@ -78,7 +88,7 @@ abstract class Module {
             ),
   );
 
-  List<GoRoute> _createChildRoutes({required bool topLevel}) =>
+  List<GoRoute> _createChildRoutes(bool topLevel) =>
       routes
           .whereType<ChildRoute>()
           .where((route) => topLevel || _adjustRoute(route.path) != '/')
@@ -86,8 +96,8 @@ abstract class Module {
           .toList();
 
   GoRoute _createModule({
+    required String path,
     required bool topLevel,
-    required String modulePath,
     required ModuleRoute module,
   }) {
     final childRoute =
@@ -110,10 +120,7 @@ abstract class Module {
             module: module,
             route: childRoute,
           ),
-      routes: module.module.configureRoutes(
-        topLevel: false,
-        modulePath: module.path,
-      ),
+      routes: module.module.configureRoutes(topLevel: false, path: module.path),
       path: _normalizePath(
         topLevel: topLevel,
         path: module.path + (childRoute?.path ?? ''),
@@ -137,76 +144,93 @@ abstract class Module {
   }) => routes
       .whereType<ModuleRoute>()
       .map(
-        (module) => _createModule(
-          module: module,
-          topLevel: topLevel,
-          modulePath: modulePath,
-        ),
+        (module) =>
+            _createModule(module: module, topLevel: topLevel, path: modulePath),
       )
       .toList(growable: false);
 
-  List<RouteBase> _createShellRoutes(bool topLevel) {
-    final shellRoutes = routes.whereType<ShellModuleRoute>();
+  List<RouteBase> _createShellRoutes(bool topLevel, String path) {
+    final shellRoutes = <RouteBase>[];
 
-    return shellRoutes.map((shellRoute) {
-      if (shellRoute.binds.isNotEmpty) {
-        for (final bind in shellRoute.binds) {
-          final existing = Bind.getBindByType(bind.type);
-          if (existing == null) {
-            Bind.register(bind);
+    for (final route in routes) {
+      if (route is ShellModuleRoute) {
+        if (route.binds.isNotEmpty) {
+          for (final bind in route.binds) {
+            final existing = Bind.getBindByType(bind.type);
+            if (existing == null) {
+              Bind.register(bind);
 
-            if (Modugo.debugLogDiagnostics) {
-              ModugoLogger.injection('🔐 ShellBind → ${bind.type}');
+              if (Modugo.debugLogDiagnostics) {
+                ModugoLogger.injection('🔐 ShellBind → ${bind.type}');
+              }
             }
           }
         }
-      }
 
-      if (shellRoute.routes.whereType<ChildRoute>().any(
-        (element) => element.path == '/',
-      )) {
-        throw Exception(
-          'ShellModularRoute cannot contain ChildRoute with path /',
+        if (route.routes.whereType<ChildRoute>().any((r) => r.path == '/')) {
+          if (Modugo.debugLogDiagnostics) {
+            ModugoLogger.warn(
+              '⚠️ Shell ModuleRoute contains Child Route with path "/". Make sure this is the only root route.',
+            );
+          }
+        }
+
+        final innerRoutes =
+            route.routes
+                .map((routeOrModule) {
+                  if (routeOrModule is ChildRoute) {
+                    return _createChild(
+                      topLevel: topLevel,
+                      childRoute: routeOrModule,
+                    );
+                  }
+
+                  if (routeOrModule is ModuleRoute) {
+                    return _createModule(
+                      topLevel: topLevel,
+                      module: routeOrModule,
+                      path: routeOrModule.path,
+                    );
+                  }
+
+                  return null;
+                })
+                .whereType<RouteBase>()
+                .toList();
+
+        shellRoutes.add(
+          ShellRoute(
+            redirect: route.redirect,
+            observers: route.observers,
+            navigatorKey: route.navigatorKey,
+            parentNavigatorKey: route.parentNavigatorKey,
+            restorationScopeId: route.restorationScopeId,
+            builder: (context, state, child) {
+              if (Modugo.debugLogDiagnostics) {
+                ModugoLogger.info('🧩 ShellRoute → \${state.uri}');
+              }
+              return route.builder!(context, state, child);
+            },
+            pageBuilder:
+                route.pageBuilder != null
+                    ? (context, state, child) =>
+                        route.pageBuilder!(context, state, child)
+                    : null,
+            routes: innerRoutes,
+          ),
         );
       }
 
-      final innerRoutes = shellRoute.routes.map((routeOrModule) {
-        if (routeOrModule is ChildRoute) {
-          return _createChild(topLevel: topLevel, childRoute: routeOrModule);
+      if (route is StatefulShellModuleRoute) {
+        shellRoutes.add(route.toRoute(topLevel: topLevel, path: path));
+
+        if (Modugo.debugLogDiagnostics) {
+          ModugoLogger.info('🧩 StatefulShellModuleRoute registrada.');
         }
+      }
+    }
 
-        if (routeOrModule is ModuleRoute) {
-          return _createModule(
-            topLevel: topLevel,
-            module: routeOrModule,
-            modulePath: routeOrModule.path,
-          );
-        }
-
-        return null;
-      });
-
-      return ShellRoute(
-        redirect: shellRoute.redirect,
-        observers: shellRoute.observers,
-        navigatorKey: shellRoute.navigatorKey,
-        parentNavigatorKey: shellRoute.parentNavigatorKey,
-        restorationScopeId: shellRoute.restorationScopeId,
-        builder: (context, state, child) {
-          if (Modugo.debugLogDiagnostics) {
-            ModugoLogger.info('🧩 ShellRoute → ${state.uri}');
-          }
-
-          return shellRoute.builder!(context, state, child);
-        },
-        pageBuilder:
-            shellRoute.pageBuilder != null
-                ? (context, state, child) =>
-                    shellRoute.pageBuilder!(context, state, child)
-                : null,
-        routes: innerRoutes.whereType<RouteBase>().toList(),
-      );
-    }).toList();
+    return shellRoutes;
   }
 
   String _adjustRoute(String route) =>

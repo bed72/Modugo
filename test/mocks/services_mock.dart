@@ -1,4 +1,8 @@
+import 'package:modugo/modugo.dart';
+
 final class NoDisposeMock {}
+
+final class ModuleInterfaceMock implements ModuleInterface {}
 
 final class ServiceMock {
   int value = 0;

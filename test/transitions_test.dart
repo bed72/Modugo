@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:modugo/src/transitions/transition.dart';
+import 'package:modugo/src/transition.dart';
 
 void main() {
   late bool configCalled;

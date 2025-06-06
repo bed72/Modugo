@@ -61,7 +61,6 @@ final class Transition {
         turns: animation,
         child: child,
       ),
-      _ => child,
     };
   };
 }

@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:modugo/src/injector.dart';
 
 import 'package:modugo/src/modugo.dart';
-import 'package:modugo/src/transitions/transition.dart';
+import 'package:modugo/src/transition.dart';
 
 import 'mocks/modugo_mock.dart';
 import 'mocks/modules_mock.dart';

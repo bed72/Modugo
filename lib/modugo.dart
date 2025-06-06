@@ -5,7 +5,7 @@ export 'src/manager.dart';
 
 export 'src/injector.dart';
 
-export 'src/transitions/transition.dart';
+export 'src/transition.dart';
 
 export 'src/routes/child_route.dart';
 export 'src/routes/module_route.dart';

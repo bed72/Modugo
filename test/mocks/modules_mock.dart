@@ -6,6 +6,7 @@ import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 import 'services_mock.dart';
 
@@ -164,5 +165,18 @@ final class ModuleWithEmpty extends Module {
   @override
   List<ChildRoute> get routes => [
     ChildRoute('', name: 'empty', child: (_, __) => Container()),
+  ];
+}
+
+final class ModuleWithStatefulShellMock extends Module {
+  @override
+  List<ModuleInterface> get routes => [
+    StatefulShellModuleRoute(
+      builder: (ctx, state, shell) => const Placeholder(),
+      routes: [
+        ModuleRoute('/', module: OtherInnerModuleMock()),
+        ModuleRoute('/profile', module: OtherInnerModuleMock()),
+      ],
+    ),
   ];
 }
