@@ -13,7 +13,7 @@ A diferença principal é que o Modugo oferece controle completo e desacoplado d
 - Suporte a **módulos importados** (aninhamento)
 - **Descarte automático** das dependências não utilizadas
 - Integração com **GoRouter** para gerenciamento das rotas
-- Suporte a **ShellRoutes** (estilo Flutter Modular)
+- Suporte a **ShellRoutes** e **StatefulShellRoutes**
 - Logs detalhados e personalizáveis com suporte à lib `logger`
 
 ---
@@ -155,6 +155,23 @@ ShellModuleRoute(
   ],
 ),
 ```
+
+### `StatefulShellModuleRoute` (tabs com estado preservado)
+
+Use quando quiser criar uma bottom navigation bar ou tabs onde o estado de cada aba é preservado automaticamente.
+
+```dart
+StatefulShellModuleRoute(
+  builder: (context, state, shell) => BottomNavBar(shell: shell),
+  routes: [
+    ModuleRoute(path: '/', module: HomeModule()),
+    ModuleRoute(path: '/profile', module: ProfileModule()),
+    ModuleRoute(path: '/favorites', module: FavoritesModule()),
+  ],
+)
+```
+
+Cada `ModuleRoute` dentro do `StatefulShellModuleRoute` vira uma aba/tab com sua própria pilha de navegação. Ao alternar entre elas com `navigationShell.goBranch(index)`, o estado de cada tab é preservado.
 
 ---
 
