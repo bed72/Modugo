@@ -67,7 +67,9 @@ abstract class Module {
         return childRoute.child(context, state);
       } catch (e, s) {
         _unregister(state.uri.toString());
-        ModugoLogger.error('Error building route ${state.uri}: $e\n$s');
+        if (Modugo.debugLogDiagnostics) {
+          ModugoLogger.error('Error building route ${state.uri}: $e\n$s');
+        }
         rethrow;
       }
     },
