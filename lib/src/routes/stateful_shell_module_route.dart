@@ -81,6 +81,7 @@ final class StatefulShellModuleRoute extends Equatable
     final s = sub.trim().replaceAll(RegExp(r'^/+|/+$'), '');
 
     final composed = [b, s].where((p) => p.isNotEmpty).join('/');
-    return composed.isEmpty ? '/' : '/$composed';
+    final normalized = composed.isEmpty ? '/' : '/$composed';
+    return normalized.replaceAll(RegExp(r'/+'), '/');
   }
 }

@@ -45,6 +45,34 @@ void main() {
     expect(route.normalizePath('/settings'), '/settings');
   });
 
+  test('base "/" + sub "/" → "/" (normaliza múltiplas barras)', () {
+    expect(route.composePath('/', '/'), '/');
+  });
+
+  test('base "//" + sub "//" → "/"', () {
+    expect(route.composePath('//', '//'), '/');
+  });
+
+  test('base "///user" + sub "///details///" → "/user/details"', () {
+    expect(route.composePath('///user', '///details///'), '/user/details');
+  });
+
+  test('base "" + sub "" → "/"', () {
+    expect(route.composePath('', ''), '/');
+  });
+
+  test('base "home" + sub "" → "/home"', () {
+    expect(route.composePath('home', ''), '/home');
+  });
+
+  test('base "" + sub "dashboard/" → "/dashboard"', () {
+    expect(route.composePath('', 'dashboard/'), '/dashboard');
+  });
+
+  test('base "///" + sub "profile///settings" → "/profile/settings"', () {
+    expect(route.composePath('///', 'profile///settings'), '/profile/settings');
+  });
+
   test('should create StatefulShellRoute with ChildRoute', () {
     final route = StatefulShellModuleRoute(
       routes: [
