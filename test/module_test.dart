@@ -31,45 +31,6 @@ void main() {
     expect(imported, isA<ModulesRepositoryMock>());
   });
 
-  test('Module.configureRoutes creates valid RouteBase list', () async {
-    final module = OtherModuleMock();
-    await startModugoMock(module: module, debugLogDiagnostics: true);
-    final routes = module.configureRoutes(topLevel: true);
-
-    expect(routes, isA<List<RouteBase>>());
-    expect(routes.length, 3);
-
-    final child = routes.whereType<GoRoute>().firstWhere(
-      (r) => r.path == '/home',
-    );
-    expect(child, isNotNull);
-
-    final moduleRoute = routes.whereType<GoRoute>().firstWhere(
-      (r) => r.path == '/profile',
-    );
-    expect(moduleRoute.routes.length, 1);
-
-    final shell = routes.whereType<ShellRoute>().first;
-    expect(shell, isNotNull);
-
-    final syncService = Bind.get<ServiceMock>();
-
-    expect(syncService, isNotNull);
-    expect(syncService, isA<ServiceMock>());
-  });
-
-  test('ModuleRoute uses "/" ChildRoute as default', () async {
-    final module = RootModuleMock();
-    await startModugoMock(module: module);
-
-    final routes = module.configureRoutes(topLevel: true);
-    final profileRoute = routes.whereType<GoRoute>().firstWhere(
-      (r) => r.path == '/profile',
-    );
-
-    expect(profileRoute.name, equals('profile-root'));
-  });
-
   test('ChildRoute with "/" is excluded from _createChildRoutes', () async {
     final module = RootModuleMock();
     await startModugoMock(module: module);
@@ -113,20 +74,6 @@ void main() {
     );
   });
 
-  test('should register binds before calling child in GoRoute', () async {
-    final module = RootModuleMock();
-    await startModugoMock(module: module);
-    final routes = module.configureRoutes(topLevel: true);
-
-    final goRoute = routes.whereType<GoRoute>().firstWhere(
-      (r) => r.path == '/profile',
-    );
-
-    final widget = goRoute.builder!(BuildContextFake(), StateFake());
-
-    expect(widget, isA<Placeholder>());
-  });
-
   test('should create ShellRoute and register shell binds', () async {
     final module = ModuleWithShellMock();
     await startModugoMock(module: module);
@@ -141,23 +88,7 @@ void main() {
   });
 
   test('includes "/" when topLevel is true', () async {
-    final module = ModuleWithRoot();
-    await startModugoMock(module: module);
-    final routes = module.configureRoutes(topLevel: true);
-
-    expect(routes.whereType<GoRoute>().any((r) => r.path == '/'), isTrue);
-  });
-
-  test('excludes "/" when topLevel is false', () async {
-    final module = ModuleWithRoot();
-    await startModugoMock(module: module);
-    final routes = module.configureRoutes(topLevel: false);
-
-    expect(routes.whereType<GoRoute>().any((r) => r.path == '/'), isFalse);
-  });
-
-  test('includes "" as "/" when topLevel is true', () async {
-    final module = ModuleWithEmpty();
+    final module = ModuleWithDashMock();
     await startModugoMock(module: module);
     final routes = module.configureRoutes(topLevel: true);
 
@@ -170,6 +101,69 @@ void main() {
     final routes = module.configureRoutes(topLevel: true);
 
     expect(routes.whereType<StatefulShellRoute>().length, 1);
+  });
+
+  test(
+    'should throw UnsupportedError if unknown route type in StatefulShellModuleRoute',
+    () {
+      expect(() {
+        StatefulShellModuleRoute(
+          builder: (ctx, state, shell) => const Placeholder(),
+          routes: [ModuleInterfaceMock()],
+        ).toRoute(topLevel: true, path: '');
+      }, throwsA(isA<UnsupportedError>()));
+    },
+  );
+
+  test('includes "" as "/" when topLevel is true', () async {
+    final module = ModuleWithEmptyMock();
+    await startModugoMock(module: module);
+    final routes = module.configureRoutes(topLevel: true);
+
+    expect(routes.whereType<GoRoute>().any((r) => r.path == '/'), isTrue);
+  });
+
+  test('ModuleRoute uses "/" ChildRoute as default', () async {
+    final module = RootModuleMock();
+    await startModugoMock(module: module);
+
+    final routes = module.configureRoutes(topLevel: true);
+    final profileRoute = routes.whereType<GoRoute>().firstWhere(
+      (r) => r.path == '/profile',
+    );
+
+    expect(profileRoute.name, equals('profile-root'));
+  });
+
+  test('should register binds before calling child in GoRoute', () async {
+    final module = RootModuleMock();
+    await startModugoMock(module: module);
+    final routes = module.configureRoutes(topLevel: true);
+
+    final goRoute = routes.whereType<GoRoute>().firstWhere(
+      (r) => r.path == '/profile',
+    );
+
+    final widget = goRoute.builder!(BuildContextFake(), StateFake());
+
+    expect(widget, isA<Placeholder>());
+  });
+
+  test('StatefulShellModuleRoute recognaze "/" the secundary branch', () async {
+    final module = ModuleWithStatefulShellMock();
+    await startModugoMock(module: module);
+
+    final routes = module.configureRoutes(topLevel: true);
+    final shellRoute = routes.whereType<StatefulShellRoute>().first;
+
+    final homeBranch = shellRoute.branches.first;
+    final settingsBranch = shellRoute.branches[1];
+
+    final homeRoute = homeBranch.routes.whereType<GoRoute>().first;
+    final settingsRoute = settingsBranch.routes.whereType<GoRoute>().first;
+
+    expect(homeRoute.path, equals('/'));
+    expect(settingsRoute.path, equals('settings'));
   });
 
   test(
@@ -191,15 +185,36 @@ void main() {
     },
   );
 
-  test(
-    'should throw UnsupportedError if unknown route type in StatefulShellModuleRoute',
-    () {
-      expect(() {
-        StatefulShellModuleRoute(
-          builder: (ctx, state, shell) => const Placeholder(),
-          routes: [ModuleInterfaceMock()],
-        ).toRoute(topLevel: true, path: '');
-      }, throwsA(isA<UnsupportedError>()));
-    },
-  );
+  test('Module.configureRoutes creates valid RouteBase list', () async {
+    final module = OtherModuleMock();
+    await startModugoMock(module: module, debugLogDiagnostics: true);
+    final routes = module.configureRoutes(topLevel: true);
+
+    expect(routes, isA<List<RouteBase>>());
+    expect(routes.length, 3);
+
+    final child = routes.whereType<GoRoute>().firstWhere(
+      (r) => r.path == '/home',
+    );
+    expect(child, isNotNull);
+
+    final moduleRoute = routes.whereType<GoRoute>().firstWhere(
+      (r) => r.path == '/profile',
+    );
+    final moduleRouteChildren =
+        moduleRoute.routes.whereType<GoRoute>().toList();
+
+    expect(moduleRouteChildren.length, 2);
+    expect(
+      moduleRouteChildren.map((r) => r.path),
+      containsAll(['/', 'settings']),
+    );
+
+    final shell = routes.whereType<ShellRoute>().first;
+    expect(shell, isNotNull);
+
+    final syncService = Bind.get<ServiceMock>();
+    expect(syncService, isNotNull);
+    expect(syncService, isA<ServiceMock>());
+  });
 }

@@ -154,17 +154,28 @@ final class ModuleWithShellMock extends Module {
   ];
 }
 
-final class ModuleWithRoot extends Module {
-  @override
-  List<ChildRoute> get routes => [
-    ChildRoute('/', name: 'root', child: (_, __) => Container()),
-  ];
-}
-
-final class ModuleWithEmpty extends Module {
+final class ModuleWithEmptyMock extends Module {
   @override
   List<ChildRoute> get routes => [
     ChildRoute('', name: 'empty', child: (_, __) => Container()),
+  ];
+}
+
+final class ModuleWithDashMock extends Module {
+  @override
+  List<ChildRoute> get routes => [
+    ChildRoute('/', name: 'root', child: (_, __) => const Placeholder()),
+  ];
+}
+
+final class ModuleWithSettingsMock extends Module {
+  @override
+  List<ModuleInterface> get routes => [
+    ChildRoute(
+      'settings',
+      name: 'settings',
+      child: (_, __) => const Placeholder(),
+    ),
   ];
 }
 
@@ -174,8 +185,8 @@ final class ModuleWithStatefulShellMock extends Module {
     StatefulShellModuleRoute(
       builder: (ctx, state, shell) => const Placeholder(),
       routes: [
-        ModuleRoute('/', module: OtherInnerModuleMock()),
-        ModuleRoute('/profile', module: OtherInnerModuleMock()),
+        ModuleRoute('/', module: ModuleWithDashMock()),
+        ModuleRoute('/settings', module: ModuleWithSettingsMock()),
       ],
     ),
   ];

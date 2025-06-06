@@ -91,11 +91,23 @@ abstract class Module {
   );
 
   List<GoRoute> _createChildRoutes(bool topLevel) =>
-      routes
-          .whereType<ChildRoute>()
-          .where((route) => topLevel || _adjustRoute(route.path) != '/')
-          .map((route) => _createChild(childRoute: route, topLevel: topLevel))
-          .toList();
+      routes.whereType<ChildRoute>().map((route) {
+        final normalizedPath = route.path.trim().isEmpty ? '/' : route.path;
+
+        return _createChild(
+          childRoute: ChildRoute(
+            normalizedPath,
+            name: route.name,
+            child: route.child,
+            onExit: route.onExit,
+            redirect: route.redirect,
+            transition: route.transition,
+            pageBuilder: route.pageBuilder,
+            parentNavigatorKey: route.parentNavigatorKey,
+          ),
+          topLevel: topLevel,
+        );
+      }).toList();
 
   GoRoute _createModule({
     required String path,
@@ -209,7 +221,7 @@ abstract class Module {
             restorationScopeId: route.restorationScopeId,
             builder: (context, state, child) {
               if (Modugo.debugLogDiagnostics) {
-                ModugoLogger.info('🧩 ShellRoute → \${state.uri}');
+                ModugoLogger.info('🧩 ShellRoute → ${state.uri}');
               }
               return route.builder!(context, state, child);
             },
@@ -227,7 +239,7 @@ abstract class Module {
         shellRoutes.add(route.toRoute(topLevel: topLevel, path: path));
 
         if (Modugo.debugLogDiagnostics) {
-          ModugoLogger.info('🧩 StatefulShellModuleRoute registrada.');
+          ModugoLogger.info('🧩 StatefulShellModuleRoute registered.');
         }
       }
     }

@@ -22,8 +22,8 @@ final class StatefulShellModuleRoute extends Equatable
   const StatefulShellModuleRoute({required this.routes, required this.builder});
 
   RouteBase toRoute({
-    required bool topLevel,
     required String path,
+    required bool topLevel,
   }) => StatefulShellRoute.indexedStack(
     builder: builder,
     branches:
@@ -53,10 +53,10 @@ final class StatefulShellModuleRoute extends Equatable
             return StatefulShellBranch(
               routes: [
                 GoRoute(
-                  path: route.path,
                   name: route.name,
                   builder: route.child,
                   redirect: route.redirect,
+                  path: normalizePath(route.path),
                   parentNavigatorKey: route.parentNavigatorKey,
                   pageBuilder:
                       route.pageBuilder != null
@@ -77,12 +77,13 @@ final class StatefulShellModuleRoute extends Equatable
   @override
   List<Object?> get props => [routes, builder];
 
+  String normalizePath(String path) => path.trim().isEmpty ? '/' : path;
+
   String composePath(String base, String sub) {
-    if (base == '/') base = '';
-    if (sub == '/') sub = '';
-    return [
-      base,
-      sub,
-    ].where((s) => s.isNotEmpty).join('/').replaceAll(RegExp(r'/+'), '/');
+    final b = base.trim().replaceAll(RegExp(r'^/+|/+$'), '');
+    final s = sub.trim().replaceAll(RegExp(r'^/+|/+$'), '');
+
+    final composed = [b, s].where((p) => p.isNotEmpty).join('/');
+    return composed.isEmpty ? '/' : '/$composed';
   }
 }
