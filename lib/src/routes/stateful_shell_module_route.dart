@@ -21,52 +21,58 @@ final class StatefulShellModuleRoute extends Equatable
 
   const StatefulShellModuleRoute({required this.routes, required this.builder});
 
-  RouteBase toRoute({required bool topLevel, required String path}) =>
-      StatefulShellRoute.indexedStack(
-        builder: builder,
-        branches:
-            routes.map((route) {
-              if (route is ModuleRoute) {
-                final composedPath = composePath(path, route.path);
+  RouteBase toRoute({
+    required bool topLevel,
+    required String path,
+  }) => StatefulShellRoute.indexedStack(
+    builder: builder,
+    branches:
+        routes.map((route) {
+          if (route is ModuleRoute) {
+            final composedPath = composePath(path, route.path);
+            final configuredRoutes = route.module.configureRoutes(
+              topLevel: false,
+              path: composedPath,
+            );
 
-                if (Modugo.debugLogDiagnostics) {
-                  ModugoLogger.info(
-                    '🧭 Composed path para branch: $composedPath',
-                  );
-                }
-
-                return StatefulShellBranch(
-                  routes: route.module.configureRoutes(
-                    topLevel: false,
-                    path: composedPath,
-                  ),
-                );
-              }
-
-              if (route is ChildRoute) {
-                return StatefulShellBranch(
-                  routes: [
-                    GoRoute(
-                      path: route.path,
-                      name: route.name,
-                      builder: route.child,
-                      redirect: route.redirect,
-                      parentNavigatorKey: route.parentNavigatorKey,
-                      pageBuilder:
-                          route.pageBuilder != null
-                              ? (context, state) =>
-                                  route.pageBuilder!(context, state)
-                              : null,
-                    ),
-                  ],
-                );
-              }
-
-              throw UnsupportedError(
-                'Invalid route type in Stateful Shell Module Route',
+            if (Modugo.debugLogDiagnostics) {
+              final goPaths =
+                  configuredRoutes
+                      .whereType<GoRoute>()
+                      .map((r) => r.path)
+                      .toList();
+              ModugoLogger.info(
+                '🧭 Branch "${route.path}" → composedPath="$composedPath" → registered GoRoutes: $goPaths',
               );
-            }).toList(),
-      );
+            }
+
+            return StatefulShellBranch(routes: configuredRoutes);
+          }
+
+          if (route is ChildRoute) {
+            return StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: route.path,
+                  name: route.name,
+                  builder: route.child,
+                  redirect: route.redirect,
+                  parentNavigatorKey: route.parentNavigatorKey,
+                  pageBuilder:
+                      route.pageBuilder != null
+                          ? (context, state) =>
+                              route.pageBuilder!(context, state)
+                          : null,
+                ),
+              ],
+            );
+          }
+
+          throw UnsupportedError(
+            'Invalid route type in Stateful Shell Module Route',
+          );
+        }).toList(),
+  );
 
   @override
   List<Object?> get props => [routes, builder];
