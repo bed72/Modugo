@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:equatable/equatable.dart';
+
 import 'package:modugo/modugo.dart';
 import 'package:modugo/src/logger.dart';
-
-import 'package:modugo/src/routes/child_route.dart';
-import 'package:modugo/src/routes/module_route.dart';
-import 'package:modugo/src/interfaces/module_interface.dart';
 
 @immutable
 final class StatefulShellModuleRoute extends Equatable

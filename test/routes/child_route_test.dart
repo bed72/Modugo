@@ -67,4 +67,15 @@ void main() {
     final result = await route.redirect!(BuildContextFake(), StateFake());
     expect(result, equals('/login'));
   });
+
+  test('should store and expose onExit callback', () async {
+    final route = ChildRoute(
+      '/exit',
+      child: (_, __) => const SizedBox(),
+      onExit: (_, __) => Future.value(false),
+    );
+
+    final result = await route.onExit!(BuildContextFake(), StateFake());
+    expect(result, isFalse);
+  });
 }

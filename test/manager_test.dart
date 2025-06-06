@@ -144,7 +144,7 @@ void main() {
   });
 
   test('isModuleActive returns false when module is not active', () {
-    final inactiveModule = AnotherModuleMock(); // nunca registrado
+    final inactiveModule = AnotherModuleMock();
 
     expect(manager.isModuleActive(inactiveModule), isFalse);
   });

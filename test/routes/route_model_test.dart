@@ -123,4 +123,15 @@ void main() {
 
     expect(model.name, 'preferences');
   });
+
+  test('buildPath handles empty params and subParams', () {
+    final model = RouteModuleModel(
+      route: '/base',
+      child: '/list',
+      module: '/base',
+    );
+
+    final result = model.buildPath(params: [], subParams: []);
+    expect(result, '/base/list');
+  });
 }

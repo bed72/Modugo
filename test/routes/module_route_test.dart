@@ -70,4 +70,13 @@ void main() {
     expect(route.redirect, isNotNull);
     expect(route.redirect!(BuildContextFake(), StateFake()), '/login');
   });
+
+  test('should generate consistent hashCode for equal ModuleRoutes', () {
+    final module = InnerModuleMock();
+    final a = ModuleRoute('/home', module: module, name: 'r');
+    final b = ModuleRoute('/home', module: module, name: 'r');
+
+    expect(a, equals(b));
+    expect(a.hashCode, equals(b.hashCode));
+  });
 }

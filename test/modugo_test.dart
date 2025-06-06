@@ -37,4 +37,13 @@ void main() {
 
     expect(Modugo.get<RootModuleMock>(), same(instance));
   });
+
+  test('configure applies custom default transition', () async {
+    await Modugo.configure(
+      module: RootModuleMock(),
+      pageTransition: TypeTransition.fade,
+    );
+
+    expect(Modugo.getDefaultTransition, TypeTransition.fade);
+  });
 }

@@ -17,15 +17,15 @@ void main() {
     routes = [DummyModuleRouteMock()];
     shellRoute = ShellModuleRoute(
       routes: routes,
-      builder: (context, state, child) => Container(child: child),
+      restorationScopeId: 'scope-1',
       redirect: (context, state) async => null,
+      navigatorKey: GlobalKey<NavigatorState>(),
+      parentNavigatorKey: GlobalKey<NavigatorState>(),
+      builder: (context, state, child) => Container(child: child),
       observers: [NavigatorObserver()],
       pageBuilder:
           (context, state, child) =>
               MaterialPage(child: child, key: ValueKey('page')),
-      navigatorKey: GlobalKey<NavigatorState>(),
-      parentNavigatorKey: GlobalKey<NavigatorState>(),
-      restorationScopeId: 'scope-1',
     );
   });
 
@@ -65,18 +65,19 @@ void main() {
   test('should execute redirect and return expected path', () async {
     final route = ShellModuleRoute(
       routes: routes,
-      builder: (_, __, ___) => const SizedBox(),
       redirect: (_, __) async => '/next',
+      builder: (_, __, ___) => const SizedBox(),
     );
 
     final result = await route.redirect!(BuildContextFake(), StateFake());
+
     expect(result, equals('/next'));
   });
 
   test('should store binds when provided', () {
     final route = ShellModuleRoute(
-      binds: [Bind.singleton((_) => 'hello')],
       routes: routes,
+      binds: [Bind.singleton((_) => 'hello')],
       builder: (_, __, ___) => const SizedBox(),
     );
 
@@ -98,5 +99,22 @@ void main() {
     );
 
     expect(route1, equals(route2));
+  });
+
+  test('builder builds widget with child', () {
+    final route = ShellModuleRoute(
+      routes: [],
+      builder:
+          (_, __, child) =>
+              Container(key: const ValueKey('test'), child: child),
+    );
+
+    final widget = route.builder!(
+      BuildContextFake(),
+      StateFake(),
+      const Text('Child'),
+    );
+    expect(widget is Container, isTrue);
+    expect(widget.key, const ValueKey('test'));
   });
 }

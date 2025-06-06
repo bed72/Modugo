@@ -8,6 +8,43 @@ import '../mocks/modules_mock.dart';
 import '../mocks/services_mock.dart';
 
 void main() {
+  final route = StatefulShellModuleRoute(
+    routes: [],
+    builder: (_, __, ___) => Container(),
+  );
+
+  test('base "/" + sub "/" → "/"', () {
+    expect(route.composePath('/', '/'), '/');
+  });
+
+  test('base "/" + sub "home" → "/home"', () {
+    expect(route.composePath('/', 'home'), '/home');
+  });
+
+  test('base "" + sub "home" → "/home"', () {
+    expect(route.composePath('', 'home'), '/home');
+  });
+
+  test('base "/app/" + sub "/settings/" → "/app/settings"', () {
+    expect(route.composePath('/app/', '/settings/'), '/app/settings');
+  });
+
+  test('base "/" + sub "" → "/"', () {
+    expect(route.composePath('/', ''), '/');
+  });
+
+  test('base "/app" + sub "/" → "/app"', () {
+    expect(route.composePath('/app', '/'), '/app');
+  });
+
+  test('normalizePath retorna "/" quando vazio', () {
+    expect(route.normalizePath(''), '/');
+  });
+
+  test('normalizePath retorna o path original quando não está vazio', () {
+    expect(route.normalizePath('/settings'), '/settings');
+  });
+
   test('should create StatefulShellRoute with ChildRoute', () {
     final route = StatefulShellModuleRoute(
       routes: [
@@ -51,42 +88,16 @@ void main() {
     );
   });
 
-  group('composePath', () {
+  test('should compose path correctly with nested ModuleRoute', () async {
+    final module = OtherInnerModuleMock();
+    await startModugoMock(module: module);
+
     final route = StatefulShellModuleRoute(
-      routes: [],
-      builder: (_, __, ___) => Container(),
+      routes: [ModuleRoute('/settings', module: module)],
+      builder: (context, state, shell) => shell,
     );
 
-    test('base "/" + sub "/" → "/"', () {
-      expect(route.composePath('/', '/'), '/');
-    });
-
-    test('base "/" + sub "home" → "/home"', () {
-      expect(route.composePath('/', 'home'), '/home');
-    });
-
-    test('base "" + sub "home" → "/home"', () {
-      expect(route.composePath('', 'home'), '/home');
-    });
-
-    test('base "/app/" + sub "/settings/" → "/app/settings"', () {
-      expect(route.composePath('/app/', '/settings/'), '/app/settings');
-    });
-
-    test('base "/" + sub "" → "/"', () {
-      expect(route.composePath('/', ''), '/');
-    });
-
-    test('base "/app" + sub "/" → "/app"', () {
-      expect(route.composePath('/app', '/'), '/app');
-    });
-
-    test('normalizePath retorna "/" quando vazio', () {
-      expect(route.normalizePath(''), '/');
-    });
-
-    test('normalizePath retorna o path original quando não está vazio', () {
-      expect(route.normalizePath('/settings'), '/settings');
-    });
+    final result = route.toRoute(topLevel: true, path: '/app');
+    expect(result, isA<StatefulShellRoute>());
   });
 }

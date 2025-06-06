@@ -41,7 +41,7 @@ abstract class Module {
       ].whereType<GoRoute>().map((r) => r.path);
 
       ModugoLogger.info(
-        '🛤️  Final recorded routes: ${paths.isEmpty ? "(/) or ('')" : "$paths"}',
+        '🧭  Final recorded routes: ${paths.isEmpty ? "(/) or ('')" : "$paths"}',
       );
     }
 
@@ -121,8 +121,8 @@ abstract class Module {
             .firstOrNull;
 
     return GoRoute(
-      name: childRoute?.name ?? module.name,
       parentNavigatorKey: childRoute?.parentNavigatorKey,
+      name: module.name?.isNotEmpty == true ? module.name : null,
       redirect:
           (context, state) =>
               module.redirect?.call(context, state) ??
@@ -184,7 +184,7 @@ abstract class Module {
         if (route.routes.whereType<ChildRoute>().any((r) => r.path == '/')) {
           if (Modugo.debugLogDiagnostics) {
             ModugoLogger.warn(
-              '⚠️ Shell ModuleRoute contains Child Route with path "/". Make sure this is the only root route.',
+              '🧭 Shell ModuleRoute contains Child Route with path "/". Make sure this is the only root route.',
             );
           }
         }
@@ -221,7 +221,7 @@ abstract class Module {
             restorationScopeId: route.restorationScopeId,
             builder: (context, state, child) {
               if (Modugo.debugLogDiagnostics) {
-                ModugoLogger.info('🧩 ShellRoute → ${state.uri}');
+                ModugoLogger.info('🧭 ShellRoute → ${state.uri}');
               }
               return route.builder!(context, state, child);
             },
@@ -239,7 +239,7 @@ abstract class Module {
         shellRoutes.add(route.toRoute(topLevel: topLevel, path: path));
 
         if (Modugo.debugLogDiagnostics) {
-          ModugoLogger.info('🧩 StatefulShellModuleRoute registered.');
+          ModugoLogger.info('🧭 StatefulShellModuleRoute registered.');
         }
       }
     }
@@ -251,6 +251,8 @@ abstract class Module {
       (route == '/' || route.startsWith('/:')) ? '/' : route;
 
   String _normalizePath({required String path, required bool topLevel}) {
+    if (path.trim().isEmpty) return '/';
+
     if (path.startsWith('/') && !topLevel && !path.startsWith('/:')) {
       path = path.substring(1);
     }

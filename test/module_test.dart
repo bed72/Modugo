@@ -217,4 +217,34 @@ void main() {
     expect(syncService, isNotNull);
     expect(syncService, isA<ServiceMock>());
   });
+
+  test(
+    'should register parent before child when building ModuleRoute',
+    () async {
+      final module = OtherModuleMock();
+
+      await startModugoMock(module: module);
+
+      final order = <String>[];
+
+      Bind.register<String>(
+        Bind.singleton((_) {
+          order.add('parent');
+          return 'parent';
+        }),
+      );
+
+      Bind.register<int>(
+        Bind.singleton((_) {
+          order.add('child');
+          return 1;
+        }),
+      );
+
+      Bind.get<String>();
+      Bind.get<int>();
+
+      expect(order, ['parent', 'child']);
+    },
+  );
 }
