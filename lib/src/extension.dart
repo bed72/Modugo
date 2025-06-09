@@ -1,5 +1,3 @@
-// coverage:ignore-file
-
 import 'package:flutter/material.dart';
 
 import 'package:go_router/go_router.dart';
@@ -8,32 +6,62 @@ import 'package:modugo/src/injector.dart';
 extension BindContextExtension on BuildContext {
   T read<T>() => Bind.get<T>();
 
-  String? getPathParam(String param) =>
-      GoRouterState.of(this).pathParameters[param];
-
-  String? get path => GoRouterState.of(this).path;
+  GoRouter get goRouter => GoRouter.of(this);
 
   GoRouterState get state => GoRouterState.of(this);
 
-  bool canPop() => GoRouter.of(this).canPop();
+  String? get path => state.path;
+
+  T? getExtra<T>() => state.extra as T?;
+
+  bool isCurrentRoute(String name) => state.name == name;
+
+  bool get isInitialRoute => state.matchedLocation == '/';
+
+  List<String> get locationSegments => state.uri.pathSegments;
+
+  String? getPathParam(String param) => state.pathParameters[param];
+
+  String? getStringQueryParam(String key) => state.uri.queryParameters[key];
+
+  int? getIntQueryParam(String key) =>
+      int.tryParse(state.uri.queryParameters[key] ?? '');
+
+  bool? getBoolQueryParam(String key) {
+    final value = state.uri.queryParameters[key];
+    if (value == null) return null;
+    return value.toLowerCase() == 'true';
+  }
+
+  T argumentsOrThrow<T>() {
+    final extra = state.extra;
+    if (extra is T) return extra;
+    throw Exception('Expected extra of type $T, got: $extra');
+  }
+
+  void reload() {
+    goRouter.go(state.uri.toString());
+  }
+
+  bool canPop() => goRouter.canPop();
 
   void go(String location, {Object? extra}) =>
-      GoRouter.of(this).go(location, extra: extra);
+      goRouter.go(location, extra: extra);
 
-  void pop<T extends Object?>([T? result]) => GoRouter.of(this).pop(result);
+  void pop<T extends Object?>([T? result]) => goRouter.pop(result);
 
   void replace(String location, {Object? extra}) =>
-      GoRouter.of(this).replace<Object?>(location, extra: extra);
+      goRouter.replace<Object?>(location, extra: extra);
 
   void pushReplacement(String location, {Object? extra}) =>
-      GoRouter.of(this).pushReplacement(location, extra: extra);
+      goRouter.pushReplacement(location, extra: extra);
 
   void replaceNamed(
     String name, {
     Map<String, String> pathParameters = const <String, String>{},
     Map<String, dynamic> queryParameters = const <String, dynamic>{},
     Object? extra,
-  }) => GoRouter.of(this).replaceNamed<Object?>(
+  }) => goRouter.replaceNamed<Object?>(
     name,
     extra: extra,
     pathParameters: pathParameters,
@@ -45,7 +73,7 @@ extension BindContextExtension on BuildContext {
     Map<String, String> pathParameters = const <String, String>{},
     Map<String, dynamic> queryParameters = const <String, dynamic>{},
     Object? extra,
-  }) => GoRouter.of(this).pushNamed<T>(
+  }) => goRouter.pushNamed<T>(
     name,
     extra: extra,
     pathParameters: pathParameters,
@@ -57,7 +85,7 @@ extension BindContextExtension on BuildContext {
     Map<String, String> pathParameters = const <String, String>{},
     Map<String, dynamic> queryParameters = const <String, dynamic>{},
     Object? extra,
-  }) => GoRouter.of(this).pushReplacementNamed(
+  }) => goRouter.pushReplacementNamed(
     name,
     extra: extra,
     pathParameters: pathParameters,
@@ -70,7 +98,7 @@ extension BindContextExtension on BuildContext {
     Map<String, dynamic> queryParameters = const <String, dynamic>{},
     Object? extra,
     String? fragment,
-  }) => GoRouter.of(this).goNamed(
+  }) => goRouter.goNamed(
     name,
     extra: extra,
     fragment: fragment,
