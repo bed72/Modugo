@@ -68,6 +68,26 @@ void main() {
     final uriAfter = context.state.uri.toString();
     expect(uriBefore, equals(uriAfter));
   });
+
+  testWidgets('getIntQueryParam parses int correctly', (tester) async {
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+
+    router.go('/next?value=42');
+    await tester.pumpAndSettle();
+
+    final context = tester.element(find.byType(_DummyScreen));
+    expect(context.getIntQueryParam('value'), equals(42));
+  });
+
+  testWidgets('getBoolQueryParam parses bool correctly', (tester) async {
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+
+    router.go('/next?flag=true');
+    await tester.pumpAndSettle();
+
+    final context = tester.element(find.byType(_DummyScreen));
+    expect(context.getBoolQueryParam('flag'), isTrue);
+  });
 }
 
 final class _DummyExtra {
