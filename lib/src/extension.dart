@@ -39,6 +39,12 @@ extension BindContextExtension on BuildContext {
     throw Exception('Expected extra of type $T, got: $extra');
   }
 
+  bool isKnownPath(String path) =>
+      _matchPath(path, GoRouter.of(this).configuration.routes);
+
+  bool isKnownRouteName(String name) =>
+      _matchName(name, GoRouter.of(this).configuration.routes);
+
   void reload() {
     goRouter.go(state.uri.toString());
   }
@@ -105,4 +111,24 @@ extension BindContextExtension on BuildContext {
     pathParameters: pathParameters,
     queryParameters: queryParameters,
   );
+
+  bool _matchPath(String path, List<RouteBase> routes) {
+    for (final route in routes) {
+      if (route is GoRoute && route.path == path) return true;
+      if (route is ShellRoute) {
+        if (_matchPath(path, route.routes)) return true;
+      }
+    }
+    return false;
+  }
+
+  bool _matchName(String name, List<RouteBase> routes) {
+    for (final route in routes) {
+      if (route is GoRoute && route.name == name) return true;
+      if (route is ShellRoute) {
+        if (_matchName(name, route.routes)) return true;
+      }
+    }
+    return false;
+  }
 }

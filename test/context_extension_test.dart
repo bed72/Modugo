@@ -10,11 +10,25 @@ void main() {
   setUp(() {
     router = GoRouter(
       routes: [
-        GoRoute(path: '/', builder: (context, state) => const _DummyScreen()),
+        GoRoute(
+          path: '/',
+          name: 'home',
+          builder: (context, state) => const _DummyScreen(),
+        ),
         GoRoute(
           path: '/next',
           name: 'next',
           builder: (context, state) => const _DummyScreen(),
+        ),
+        ShellRoute(
+          builder: (context, state, child) => Scaffold(body: child),
+          routes: [
+            GoRoute(
+              path: '/shell-child',
+              name: 'shell-child',
+              builder: (context, state) => const _DummyScreen(),
+            ),
+          ],
         ),
       ],
     );
@@ -87,6 +101,114 @@ void main() {
 
     final context = tester.element(find.byType(_DummyScreen));
     expect(context.getBoolQueryParam('flag'), isTrue);
+  });
+
+  testWidgets('isKnownPath finds direct GoRoute', (tester) async {
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    final context = tester.element(find.byType(_DummyScreen));
+    expect(context.isKnownPath('/next'), isTrue);
+  });
+
+  testWidgets('isKnownPath finds ShellRoute child', (tester) async {
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    final context = tester.element(find.byType(_DummyScreen));
+    expect(context.isKnownPath('/shell-child'), isTrue);
+  });
+
+  testWidgets('isKnownPath returns false for unknown path', (tester) async {
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    final context = tester.element(find.byType(_DummyScreen));
+    expect(context.isKnownPath('/not-found'), isFalse);
+  });
+
+  testWidgets('isKnownRouteName finds direct GoRoute name', (tester) async {
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    final context = tester.element(find.byType(_DummyScreen));
+    expect(context.isKnownRouteName('home'), isTrue);
+  });
+
+  testWidgets('isKnownRouteName finds ShellRoute child name', (tester) async {
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    final context = tester.element(find.byType(_DummyScreen));
+    expect(context.isKnownRouteName('shell-child'), isTrue);
+  });
+
+  testWidgets('isKnownRouteName returns false for unknown name', (
+    tester,
+  ) async {
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    final context = tester.element(find.byType(_DummyScreen));
+    expect(context.isKnownRouteName('invalid-name'), isFalse);
+  });
+
+  testWidgets('isKnownPath recognize route with dynamic path (:id)', (
+    tester,
+  ) async {
+    final dynamicRouter = GoRouter(
+      initialLocation: '/product/123',
+      routes: [
+        GoRoute(
+          path: '/product/:id',
+          name: 'product-details',
+          builder: (context, state) => const _DummyScreen(),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: dynamicRouter));
+    await tester.pumpAndSettle();
+
+    final context = tester.element(find.byType(_DummyScreen));
+
+    expect(context.isKnownPath('/product/:id'), isTrue);
+    expect(context.isKnownPath('/product/123'), isFalse);
+    expect(context.isKnownRouteName('product-details'), isTrue);
+  });
+
+  testWidgets('Query parameters do not affect isKnownPath', (tester) async {
+    final queryRouter = GoRouter(
+      initialLocation: '/search?term=modugo',
+      routes: [
+        GoRoute(
+          path: '/search',
+          name: 'search',
+          builder: (context, state) => const _DummyScreen(),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: queryRouter));
+    await tester.pumpAndSettle();
+
+    final context = tester.element(find.byType(_DummyScreen));
+
+    expect(context.isKnownPath('/search'), isTrue);
+    expect(context.isKnownPath('/search?term=modugo'), isFalse);
+  });
+
+  testWidgets('Redirect route is still considered a known route', (
+    tester,
+  ) async {
+    final redirectRouter = GoRouter(
+      initialLocation: '/legacy',
+      routes: [
+        GoRoute(path: '/legacy', redirect: (_, __) => '/modern'),
+        GoRoute(
+          path: '/modern',
+          name: 'modern',
+          builder: (context, state) => const _DummyScreen(),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: redirectRouter));
+    await tester.pumpAndSettle();
+
+    final context = tester.element(find.byType(_DummyScreen));
+
+    expect(context.isKnownPath('/legacy'), isTrue);
+    expect(context.isKnownPath('/modern'), isTrue);
+    expect(context.isKnownRouteName('modern'), isTrue);
   });
 }
 
