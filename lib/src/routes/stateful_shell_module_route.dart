@@ -74,14 +74,17 @@ final class StatefulShellModuleRoute extends Equatable
   @override
   List<Object?> get props => [routes, builder];
 
-  String normalizePath(String path) => path.trim().isEmpty ? '/' : path;
+  String normalizePath(String path) =>
+      path.trim().isEmpty ? '/' : path.replaceAll(RegExp(r'/+'), '/');
 
   String composePath(String base, String sub) {
     final b = base.trim().replaceAll(RegExp(r'^/+|/+$'), '');
     final s = sub.trim().replaceAll(RegExp(r'^/+|/+$'), '');
 
+    if (b.isEmpty && s.isEmpty) return '/';
+
     final composed = [b, s].where((p) => p.isNotEmpty).join('/');
-    final normalized = composed.isEmpty ? '/' : '/$composed';
-    return normalized.replaceAll(RegExp(r'/+'), '/');
+
+    return '/${composed.replaceAll(RegExp(r'/+'), '/')}';
   }
 }
