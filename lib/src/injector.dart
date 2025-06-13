@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:modugo/src/logger.dart';
+import 'package:modugo/src/modugo.dart';
 
 final class Injector {
   static final Injector _instance = Injector._();
@@ -89,10 +90,12 @@ final class Bind<T> {
       if (instance is ChangeNotifier) instance.dispose();
       if (instance is StreamController) instance.close();
     } catch (e, stack) {
-      ModugoLogger.error(
-        'Error disposing instance of type ${instance.runtimeType}: $e',
-      );
-      ModugoLogger.error('$stack');
+      if (Modugo.debugLogDiagnostics) {
+        ModugoLogger.error(
+          'Error disposing instance of type ${instance.runtimeType}: $e',
+        );
+        ModugoLogger.error('$stack');
+      }
     }
 
     _cachedInstance = null;

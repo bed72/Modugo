@@ -1,46 +1,55 @@
 import 'package:flutter_test/flutter_test.dart';
+
 import 'package:modugo/src/routes/models/route_access_model.dart';
 
 void main() {
-  test('should be equal when path and branch are the same', () {
-    final a = RouteAccessModel('/cart', '1');
-    final b = RouteAccessModel('/cart', '1');
-    expect(a, equals(b));
+  group('RouteAccessModel - equality and hashCode', () {
+    test('should be equal when path and branch are the same', () {
+      const a = RouteAccessModel('/home', 'main');
+      const b = RouteAccessModel('/home', 'main');
+
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+    });
+
+    test('should not be equal when path is different', () {
+      const a = RouteAccessModel('/home', 'main');
+      const b = RouteAccessModel('/dashboard', 'main');
+
+      expect(a, isNot(equals(b)));
+    });
+
+    test('should not be equal when branch is different', () {
+      const a = RouteAccessModel('/home', 'main');
+      const b = RouteAccessModel('/home', 'alt');
+
+      expect(a, isNot(equals(b)));
+    });
+
+    test('should be equal when both branches are null', () {
+      const a = RouteAccessModel('/home');
+      const b = RouteAccessModel('/home');
+
+      expect(a, equals(b));
+    });
+
+    test('should not be equal when one branch is null and other is not', () {
+      const a = RouteAccessModel('/home');
+      const b = RouteAccessModel('/home', 'main');
+
+      expect(a, isNot(equals(b)));
+    });
   });
 
-  test('should not be equal when paths are different', () {
-    final a = RouteAccessModel('/cart', '1');
-    final b = RouteAccessModel('/home', '1');
-    expect(a, isNot(equals(b)));
-  });
+  group('RouteAccessModel - toString', () {
+    test('should return correct string representation with branch', () {
+      const model = RouteAccessModel('/home', 'main');
+      expect(model.toString(), equals('RouteAccessModel(/home, main)'));
+    });
 
-  test('should not be equal when branches are different', () {
-    final a = RouteAccessModel('/cart', '1');
-    final b = RouteAccessModel('/cart', '2');
-    expect(a, isNot(equals(b)));
-  });
-
-  test('should not be equal when one branch is null', () {
-    final a = RouteAccessModel('/cart', null);
-    final b = RouteAccessModel('/cart', '1');
-    expect(a, isNot(equals(b)));
-  });
-
-  test('should be equal when branch is null or not provided', () {
-    final a = RouteAccessModel('/cart');
-    final b = RouteAccessModel('/cart', null);
-    expect(a, equals(b));
-  });
-
-  test('should have same hashCode when equal', () {
-    final a = RouteAccessModel('/cart', '1');
-    final b = RouteAccessModel('/cart', '1');
-    expect(a.hashCode, equals(b.hashCode));
-  });
-
-  test('should have different hashCodes when not equal', () {
-    final a = RouteAccessModel('/cart', '1');
-    final b = RouteAccessModel('/cart', '2');
-    expect(a.hashCode, isNot(equals(b.hashCode)));
+    test('should return correct string representation without branch', () {
+      const model = RouteAccessModel('/home');
+      expect(model.toString(), equals('RouteAccessModel(/home, null)'));
+    });
   });
 }

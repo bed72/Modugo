@@ -2,15 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import 'package:equatable/equatable.dart';
-
 import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/transition.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
 
 @immutable
-final class ChildRoute extends Equatable implements ModuleInterface {
+final class ChildRoute implements ModuleInterface {
   final String path;
   final String? name;
   final TypeTransition? transition;
@@ -35,5 +33,19 @@ final class ChildRoute extends Equatable implements ModuleInterface {
   });
 
   @override
-  List<Object?> get props => [path, name, transition, parentNavigatorKey];
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ChildRoute &&
+          path == other.path &&
+          name == other.name &&
+          transition == other.transition &&
+          runtimeType == other.runtimeType &&
+          parentNavigatorKey == other.parentNavigatorKey;
+
+  @override
+  int get hashCode =>
+      path.hashCode ^
+      name.hashCode ^
+      transition.hashCode ^
+      parentNavigatorKey.hashCode;
 }

@@ -3,8 +3,10 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/dispose.dart';
+import 'package:modugo/src/interfaces/module_interface.dart';
 import 'package:modugo/src/manager.dart';
 import 'package:modugo/src/injector.dart';
+import 'package:modugo/src/module.dart';
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
@@ -165,7 +167,7 @@ void main() {
     final settingsRoute = settingsBranch.routes.whereType<GoRoute>().first;
 
     expect(homeRoute.path, equals('/'));
-    expect(settingsRoute.path, equals('/'));
+    expect(settingsRoute.path, equals('settings'));
   });
 
   test(
@@ -209,7 +211,7 @@ void main() {
     expect(moduleRouteChildren.length, 2);
     expect(
       moduleRouteChildren.map((r) => r.path),
-      containsAll(['/', 'settings']),
+      containsAll(['profile', 'profile/settings']),
     );
 
     final shell = routes.whereType<ShellRoute>().first;
@@ -303,7 +305,8 @@ void main() {
               .map((r) => r.path)
               .toList();
 
-      expect(allPaths, everyElement(equals('/')));
+      expect(allPaths[0], equals('/'));
+      expect(allPaths[1], equals('settings'));
       expect(allPaths.length, 2);
     },
   );
@@ -363,4 +366,55 @@ void main() {
 
     expect(isActive, isTrue);
   });
+
+  test(
+    'should compose correct paths and support initialPathsPerBranch',
+    () async {
+      final module = AppModule();
+      await startModugoMock(module: module);
+      final routes = module.configureRoutes(topLevel: true, path: '');
+
+      final shell = routes.whereType<StatefulShellRoute>().first;
+
+      expect(shell.branches.length, 2);
+
+      final branchPaths =
+          shell.branches
+              .expand((b) => b.routes)
+              .whereType<GoRoute>()
+              .map((r) => r.path)
+              .toList();
+
+      expect(branchPaths, contains('/'));
+      expect(branchPaths, contains('/cart.do'));
+    },
+  );
+}
+
+final class HomeModule extends Module {
+  @override
+  List<ModuleInterface> get routes => [
+    ChildRoute('/', name: 'home', child: (_, __) => const Text('Home')),
+  ];
+}
+
+final class CartModule extends Module {
+  @override
+  List<ModuleInterface> get routes => [
+    ChildRoute('/', name: 'cart', child: (_, __) => const Text('Cart')),
+  ];
+}
+
+final class AppModule extends Module {
+  @override
+  List<ModuleInterface> get routes => [
+    StatefulShellModuleRoute(
+      builder: (_, __, shell) => shell,
+      initialPathsPerBranch: ['/', '/cart.do'],
+      routes: [
+        ModuleRoute('/', module: HomeModule(), name: 'home-module'),
+        ModuleRoute('/cart.do', module: CartModule(), name: 'cart-module'),
+      ],
+    ),
+  ];
 }

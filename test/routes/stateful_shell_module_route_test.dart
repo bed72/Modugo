@@ -1,131 +1,96 @@
-import 'package:modugo/modugo.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:modugo/src/interfaces/module_interface.dart';
 
-import '../mocks/modugo_mock.dart';
-import '../mocks/modules_mock.dart';
-import '../mocks/services_mock.dart';
+import 'package:modugo/src/module.dart';
+import 'package:modugo/src/routes/child_route.dart';
+import 'package:modugo/src/routes/module_route.dart';
+import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 void main() {
-  final route = StatefulShellModuleRoute(
-    routes: [],
-    builder: (_, __, ___) => Container(),
-  );
+  group('StatefulShellModuleRoute - equality and hashCode', () {
+    test('should be equal when routes, builder and initialPaths match', () {
+      builder(BuildContext c, GoRouterState s, StatefulNavigationShell n) =>
+          const Placeholder();
 
-  test('base "/" + sub "/" → "/"', () {
-    expect(route.composePath('/', '/'), '/');
+      final sharedModule = _DummyModule();
+
+      final a = StatefulShellModuleRoute(
+        builder: builder,
+        initialPathsPerBranch: ['/start'],
+        routes: [ModuleRoute('/home', module: sharedModule)],
+      );
+
+      final b = StatefulShellModuleRoute(
+        builder: builder,
+        initialPathsPerBranch: ['/start'],
+        routes: [ModuleRoute('/home', module: sharedModule)],
+      );
+
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+    });
+
+    test('should not be equal if builder changes', () {
+      final a = StatefulShellModuleRoute(
+        routes: [ModuleRoute('/home', module: _DummyModule())],
+        builder: (_, __, ___) => const Placeholder(),
+      );
+
+      final b = StatefulShellModuleRoute(
+        routes: [ModuleRoute('/home', module: _DummyModule())],
+        builder: (_, __, ___) => const Text('Different'),
+      );
+
+      expect(a, isNot(equals(b)));
+    });
   });
 
-  test('base "/" + sub "home" → "/home"', () {
-    expect(route.composePath('/', 'home'), '/home');
+  group('StatefulShellModuleRoute - path composition', () {
+    test('composePath should normalize and combine parts correctly', () {
+      final route = StatefulShellModuleRoute(
+        routes: [],
+        builder: (_, __, ___) => const Placeholder(),
+      );
+
+      expect(route.composePath('///module//', '///child//'), '/module/child');
+      expect(route.composePath('', ''), '/');
+      expect(route.composePath('home', ''), '/home');
+      expect(route.composePath('', 'details'), '/details');
+    });
+
+    test('normalizePath should clean up redundant slashes', () {
+      final route = StatefulShellModuleRoute(
+        routes: [],
+        builder: (_, __, ___) => const Placeholder(),
+      );
+
+      expect(route.normalizePath('///settings//home'), '/settings/home');
+      expect(route.normalizePath(''), '/');
+    });
   });
 
-  test('base "" + sub "home" → "/home"', () {
-    expect(route.composePath('', 'home'), '/home');
+  group('StatefulShellModuleRoute - route generation', () {
+    test('should throw if route type is unsupported', () {
+      final route = StatefulShellModuleRoute(
+        routes: [_UnsupportedRoute()],
+        builder: (_, __, ___) => const Placeholder(),
+      );
+
+      expect(
+        () => route.toRoute(path: '/', topLevel: true),
+        throwsA(isA<UnsupportedError>()),
+      );
+    });
   });
+}
 
-  test('base "/app/" + sub "/settings/" → "/app/settings"', () {
-    expect(route.composePath('/app/', '/settings/'), '/app/settings');
-  });
+final class _UnsupportedRoute implements ModuleInterface {}
 
-  test('base "/" + sub "" → "/"', () {
-    expect(route.composePath('/', ''), '/');
-  });
-
-  test('base "/app" + sub "/" → "/app"', () {
-    expect(route.composePath('/app', '/'), '/app');
-  });
-
-  test('normalizePath retorna "/" quando vazio', () {
-    expect(route.normalizePath(''), '/');
-  });
-
-  test('normalizePath retorna o path original quando não está vazio', () {
-    expect(route.normalizePath('/settings'), '/settings');
-  });
-
-  test('base "/" + sub "/" → "/" (normaliza múltiplas barras)', () {
-    expect(route.composePath('/', '/'), '/');
-  });
-
-  test('base "//" + sub "//" → "/"', () {
-    expect(route.composePath('//', '//'), '/');
-  });
-
-  test('base "///user" + sub "///details///" → "/user/details"', () {
-    expect(route.composePath('///user', '///details///'), '/user/details');
-  });
-
-  test('base "" + sub "" → "/"', () {
-    expect(route.composePath('', ''), '/');
-  });
-
-  test('base "home" + sub "" → "/home"', () {
-    expect(route.composePath('home', ''), '/home');
-  });
-
-  test('base "" + sub "dashboard/" → "/dashboard"', () {
-    expect(route.composePath('', 'dashboard/'), '/dashboard');
-  });
-
-  test('base "///" + sub "profile///settings" → "/profile/settings"', () {
-    expect(route.composePath('///', 'profile///settings'), '/profile/settings');
-  });
-
-  test('should create StatefulShellRoute with ChildRoute', () {
-    final route = StatefulShellModuleRoute(
-      routes: [
-        ChildRoute(
-          '/',
-          name: 'home',
-          child: (context, state) => const Placeholder(),
-        ),
-      ],
-      builder: (context, state, shell) => Scaffold(body: shell),
-    );
-
-    final result = route.toRoute(topLevel: true, path: '');
-
-    expect(result, isA<StatefulShellRoute>());
-  });
-
-  test('should create StatefulShellRoute with ModuleRoute', () async {
-    final module = OtherInnerModuleMock();
-    await startModugoMock(module: module);
-
-    final route = StatefulShellModuleRoute(
-      routes: [ModuleRoute('/', module: module)],
-      builder: (context, state, shell) => Scaffold(body: shell),
-    );
-
-    final result = route.toRoute(topLevel: true, path: '');
-
-    expect(result, isA<StatefulShellRoute>());
-  });
-
-  test('should throw UnsupportedError for unknown route type', () {
-    final route = StatefulShellModuleRoute(
-      routes: [ModuleInterfaceMock()],
-      builder: (context, state, shell) => Scaffold(body: shell),
-    );
-
-    expect(
-      () => route.toRoute(topLevel: true, path: ''),
-      throwsA(isA<UnsupportedError>()),
-    );
-  });
-
-  test('should compose path correctly with nested ModuleRoute', () async {
-    final module = OtherInnerModuleMock();
-    await startModugoMock(module: module);
-
-    final route = StatefulShellModuleRoute(
-      routes: [ModuleRoute('/settings', module: module)],
-      builder: (context, state, shell) => shell,
-    );
-
-    final result = route.toRoute(topLevel: true, path: '/app');
-    expect(result, isA<StatefulShellRoute>());
-  });
+final class _DummyModule extends Module {
+  @override
+  List<ModuleInterface> get routes => [
+    ChildRoute('/home', child: (_, __) => const Placeholder()),
+  ];
 }

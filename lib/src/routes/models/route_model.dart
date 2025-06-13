@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
-import 'package:equatable/equatable.dart';
-
 import 'package:modugo/src/transition.dart';
+import 'package:modugo/src/routes/utils/router_utils.dart';
 
 @immutable
-final class RouteModuleModel extends Equatable {
+final class RouteModuleModel {
   final String name;
   final String route;
   final String child;
@@ -27,7 +26,25 @@ final class RouteModuleModel extends Equatable {
       'RouteModuleModel(module: $module, child: $child, route: $route, params: $params)';
 
   @override
-  List<Object?> get props => [name, route, child, module, params, transition];
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is RouteModuleModel &&
+          name == other.name &&
+          route == other.route &&
+          child == other.child &&
+          module == other.module &&
+          transition == other.transition &&
+          runtimeType == other.runtimeType &&
+          listEquals(params, other.params);
+
+  @override
+  int get hashCode =>
+      name.hashCode ^
+      route.hashCode ^
+      child.hashCode ^
+      module.hashCode ^
+      (params == null ? 0 : Object.hashAll(params!)) ^
+      transition.hashCode;
 
   String buildPath({
     List<String> params = const [],
@@ -35,10 +52,10 @@ final class RouteModuleModel extends Equatable {
   }) {
     String paramPath = params.map((e) => '/$e').join('');
     String subParamPath = subParams.map((e) => '/$e').join('');
-    int indexChildR = child.contains('/:') ? child.indexOf('/:') : child.length;
+    int index = child.contains('/:') ? child.indexOf('/:') : child.length;
 
-    return _buildPath(
-      module + subParamPath + child.substring(0, indexChildR) + paramPath,
+    return resolvePath(
+      module + subParamPath + child.substring(0, index) + paramPath,
     );
   }
 
@@ -47,37 +64,49 @@ final class RouteModuleModel extends Equatable {
     required String routeName,
     List<String> params = const [],
   }) {
-    final module_ = '/$module';
-    final args_ = params.map((e) => ':$e').join('/');
     final sanitizedRouteName = routeName.replaceAll(RegExp(r'/+$'), '');
-    final childRoute =
-        '/${sanitizedRouteName == module ? '' : '$sanitizedRouteName/'}';
+
+    final cleanRouteName = removeDuplicatedPrefix(module, sanitizedRouteName);
+
+    final shouldAppendParams = !hasEmbeddedParams(cleanRouteName);
+    final args = shouldAppendParams ? params.map((e) => ':$e').join('/') : '';
+    final rawChild = '$cleanRouteName/${args.isNotEmpty ? args : ''}';
+    final child = normalizePath(ensureLeadingSlash(rawChild));
+
+    final rawRoute = '/$module/${cleanRouteName.isEmpty ? '' : cleanRouteName}';
+    final route = normalizePath(rawRoute);
+
+    final name = cleanRouteName.isEmpty ? module : extractName(cleanRouteName);
 
     return RouteModuleModel(
-      params: params,
-      child: _buildPath(childRoute + args_),
-      name: _extractName(sanitizedRouteName),
-      module: _buildPath('$module_${module == '/' ? '' : '/'}'),
-      route: _buildPath(
-        '$module_${sanitizedRouteName == module ? '/' : childRoute}',
-      ),
+      params: shouldAppendParams ? params : null,
+      name: name,
+      child: child,
+      route: route,
+      module: normalizePath('/$module/'),
     );
   }
 
-  static String _extractName(String path) {
+  static bool listEquals(List<String>? a, List<String>? b) {
+    if (identical(a, b)) return true;
+    if (a == null || b == null || a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+
+  static String extractName(String path) {
+    path = path.startsWith('/') ? path : '/$path';
     final regex = RegExp(r'^/([^/]+)/?');
     final match = regex.firstMatch(path);
-
     return match != null && match.groupCount >= 1 ? match.group(1)! : path;
   }
 
-  static String _buildPath(String path) {
+  static String resolvePath(String path) {
     if (!path.endsWith('/')) path = '$path/';
-
     path = path.replaceAll(RegExp(r'/+'), '/');
-
     if (path == '/') return path;
-
     return path.substring(0, path.length - 1);
   }
 }

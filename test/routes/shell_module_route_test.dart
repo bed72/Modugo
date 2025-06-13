@@ -1,120 +1,161 @@
 import 'package:flutter/material.dart';
-
 import 'package:flutter_test/flutter_test.dart';
-import 'package:modugo/src/injector.dart';
 
+import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
 
-import '../fakes/fakes.dart';
-import '../mocks/route_mock.dart';
-
 void main() {
-  late ShellModuleRoute shellRoute;
-  late List<ModuleInterface> routes;
+  group('ShellModuleRoute - equality and hashCode', () {
+    test('should be equal when all relevant fields are equal', () {
+      final routes = [_DummyModuleRoute()];
+      final observers = <NavigatorObserver>[];
+      final key = GlobalKey<NavigatorState>();
 
-  setUp(() {
-    routes = [DummyModuleRouteMock()];
-    shellRoute = ShellModuleRoute(
-      routes: routes,
-      restorationScopeId: 'scope-1',
-      redirect: (context, state) async => null,
-      navigatorKey: GlobalKey<NavigatorState>(),
-      parentNavigatorKey: GlobalKey<NavigatorState>(),
-      builder: (context, state, child) => Container(child: child),
-      observers: [NavigatorObserver()],
-      pageBuilder:
-          (context, state, child) =>
-              MaterialPage(child: child, key: ValueKey('page')),
-    );
+      final a = ShellModuleRoute(
+        routes: routes,
+        navigatorKey: key,
+        observers: observers,
+        parentNavigatorKey: key,
+        restorationScopeId: 'scope',
+        builder: (_, __, ___) => const Placeholder(),
+      );
+
+      final b = ShellModuleRoute(
+        routes: routes,
+        navigatorKey: key,
+        observers: observers,
+        parentNavigatorKey: key,
+        restorationScopeId: 'scope',
+        builder: (_, __, ___) => const Placeholder(),
+      );
+
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+    });
+
+    test('should not be equal when routes differ', () {
+      final a = ShellModuleRoute(
+        routes: [_DummyModuleRoute()],
+        builder: (_, __, ___) => const Placeholder(),
+      );
+
+      final b = ShellModuleRoute(
+        routes: [_DummyModuleRoute(), _DummyModuleRoute()],
+        builder: (_, __, ___) => const Placeholder(),
+      );
+
+      expect(a, isNot(equals(b)));
+    });
+
+    test('should not be equal when observer lists differ', () {
+      final a = ShellModuleRoute(
+        routes: [_DummyModuleRoute()],
+        observers: [NavigatorObserver()],
+        builder: (_, __, ___) => const Placeholder(),
+      );
+
+      final b = ShellModuleRoute(
+        routes: [_DummyModuleRoute()],
+        observers: [NavigatorObserver()],
+        builder: (_, __, ___) => const Placeholder(),
+      );
+
+      expect(a, isNot(equals(b)));
+    });
+
+    test('should not be equal when navigatorKey differs', () {
+      final a = ShellModuleRoute(
+        navigatorKey: GlobalKey(),
+        routes: [_DummyModuleRoute()],
+        builder: (_, __, ___) => const Placeholder(),
+      );
+
+      final b = ShellModuleRoute(
+        navigatorKey: GlobalKey(),
+        routes: [_DummyModuleRoute()],
+        builder: (_, __, ___) => const Placeholder(),
+      );
+
+      expect(a, isNot(equals(b)));
+    });
+
+    test('should not be equal when restorationScopeId differs', () {
+      final a = ShellModuleRoute(
+        restorationScopeId: 'scope1',
+        routes: [_DummyModuleRoute()],
+        builder: (_, __, ___) => const Placeholder(),
+      );
+
+      final b = ShellModuleRoute(
+        restorationScopeId: 'scope2',
+        routes: [_DummyModuleRoute()],
+        builder: (_, __, ___) => const Placeholder(),
+      );
+
+      expect(a, isNot(equals(b)));
+    });
+
+    test('should not be equal when parentNavigatorKey differs', () {
+      final a = ShellModuleRoute(
+        routes: [_DummyModuleRoute()],
+        parentNavigatorKey: GlobalKey(),
+        builder: (_, __, ___) => const Placeholder(),
+      );
+
+      final b = ShellModuleRoute(
+        routes: [_DummyModuleRoute()],
+        parentNavigatorKey: GlobalKey(),
+        builder: (_, __, ___) => const Placeholder(),
+      );
+
+      expect(a, isNot(equals(b)));
+    });
   });
 
-  test('should instantiate with all properties', () {
-    expect(shellRoute.routes, routes);
-    expect(shellRoute.builder, isNotNull);
-    expect(shellRoute.redirect, isNotNull);
-    expect(shellRoute.observers, isNotEmpty);
-    expect(shellRoute.pageBuilder, isNotNull);
-    expect(shellRoute.navigatorKey, isNotNull);
-    expect(shellRoute.parentNavigatorKey, isNotNull);
-    expect(shellRoute.restorationScopeId, 'scope-1');
-  });
+  group('ShellModuleRoute - field assignment', () {
+    test('should assign required and optional fields correctly', () {
+      final observer = NavigatorObserver();
+      final parentKey = GlobalKey<NavigatorState>();
+      final navigatorKey = GlobalKey<NavigatorState>();
 
-  test('equality works correctly', () {
-    final sameShellRoute = ShellModuleRoute(
-      routes: routes,
-      builder: shellRoute.builder,
-      redirect: shellRoute.redirect,
-      observers: shellRoute.observers,
-      pageBuilder: shellRoute.pageBuilder,
-      navigatorKey: shellRoute.navigatorKey,
-      parentNavigatorKey: shellRoute.parentNavigatorKey,
-      restorationScopeId: shellRoute.restorationScopeId,
-    );
+      final route = ShellModuleRoute(
+        observers: [observer],
+        navigatorKey: navigatorKey,
+        parentNavigatorKey: parentKey,
+        routes: [_DummyModuleRoute()],
+        restorationScopeId: 'restore-1',
+        binds: [Bind.factory((i) => 123)],
+        redirect: (_, __) async => '/redirect',
+        builder: (_, __, ___) => const Placeholder(),
+        pageBuilder: (_, __, child) => MaterialPage(child: child),
+      );
 
-    expect(shellRoute, equals(sameShellRoute));
+      expect(route.binds.length, 1);
+      expect(route.routes.length, 1);
+      expect(route.redirect, isNotNull);
+      expect(route.observers?.length, 1);
+      expect(route.pageBuilder, isNotNull);
+      expect(route.navigatorKey, navigatorKey);
+      expect(route.parentNavigatorKey, parentKey);
+      expect(route.restorationScopeId, 'restore-1');
+    });
 
-    final differentShellRoute = ShellModuleRoute(
-      routes: [],
-      builder: shellRoute.builder,
-    );
+    test('should handle minimal constructor input', () {
+      final route = ShellModuleRoute(
+        routes: [_DummyModuleRoute()],
+        builder: (_, __, ___) => const Placeholder(),
+      );
 
-    expect(shellRoute == differentShellRoute, isFalse);
-  });
-
-  test('should execute redirect and return expected path', () async {
-    final route = ShellModuleRoute(
-      routes: routes,
-      redirect: (_, __) async => '/next',
-      builder: (_, __, ___) => const SizedBox(),
-    );
-
-    final result = await route.redirect!(BuildContextFake(), StateFake());
-
-    expect(result, equals('/next'));
-  });
-
-  test('should store binds when provided', () {
-    final route = ShellModuleRoute(
-      routes: routes,
-      binds: [Bind.singleton((_) => 'hello')],
-      builder: (_, __, ___) => const SizedBox(),
-    );
-
-    expect(route.binds, isNotEmpty);
-    expect(route.binds.first.factoryFunction(Injector()), equals('hello'));
-  });
-
-  test('binds do not affect equality', () {
-    final route1 = ShellModuleRoute(
-      routes: routes,
-      binds: [Bind.singleton((_) => 1)],
-      builder: (_, __, ___) => const SizedBox(),
-    );
-
-    final route2 = ShellModuleRoute(
-      routes: routes,
-      binds: [Bind.singleton((_) => 2)],
-      builder: (_, __, ___) => const SizedBox(),
-    );
-
-    expect(route1, equals(route2));
-  });
-
-  test('builder builds widget with child', () {
-    final route = ShellModuleRoute(
-      routes: [],
-      builder:
-          (_, __, child) =>
-              Container(key: const ValueKey('test'), child: child),
-    );
-
-    final widget = route.builder!(
-      BuildContextFake(),
-      StateFake(),
-      const Text('Child'),
-    );
-    expect(widget is Container, isTrue);
-    expect(widget.key, const ValueKey('test'));
+      expect(route.binds, isEmpty);
+      expect(route.observers, isNull);
+      expect(route.redirect, isNull);
+      expect(route.pageBuilder, isNull);
+      expect(route.navigatorKey, isNull);
+      expect(route.parentNavigatorKey, isNull);
+      expect(route.restorationScopeId, isNull);
+    });
   });
 }
+
+final class _DummyModuleRoute implements ModuleInterface {}

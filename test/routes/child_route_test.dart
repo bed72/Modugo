@@ -1,81 +1,121 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/transition.dart';
-
-import '../fakes/fakes.dart';
+import 'package:modugo/src/routes/child_route.dart';
 
 void main() {
-  test('should create a valid instance with required parameters', () {
-    final route = ChildRoute('/home', child: (_, __) => const Text('Home'));
+  group('ChildRoute - equality and hashCode', () {
+    test('should be equal when all compared fields are equal', () {
+      final key = GlobalKey<NavigatorState>();
+      final a = ChildRoute(
+        '/home',
+        name: 'home',
+        parentNavigatorKey: key,
+        transition: TypeTransition.fade,
+        child: (_, __) => const Placeholder(),
+      );
 
-    expect(route.path, '/home');
-    expect(route.name, isNull);
-    expect(route.transition, isNull);
-    expect(route.parentNavigatorKey, isNull);
+      final b = ChildRoute(
+        '/home',
+        name: 'home',
+        parentNavigatorKey: key,
+        transition: TypeTransition.fade,
+        child: (_, __) => const Placeholder(),
+      );
+
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+    });
+
+    test('should not be equal if path differs', () {
+      final route1 = ChildRoute('/a', child: (_, __) => const Placeholder());
+      final route2 = ChildRoute('/b', child: (_, __) => const Placeholder());
+
+      expect(route1, isNot(equals(route2)));
+    });
+
+    test('should not be equal if name differs', () {
+      final route1 = ChildRoute(
+        '/x',
+        name: 'one',
+        child: (_, __) => const Placeholder(),
+      );
+      final route2 = ChildRoute(
+        '/x',
+        name: 'two',
+        child: (_, __) => const Placeholder(),
+      );
+
+      expect(route1, isNot(equals(route2)));
+    });
+
+    test('should not be equal if transition differs', () {
+      final route1 = ChildRoute(
+        '/x',
+        transition: TypeTransition.fade,
+        child: (_, __) => const Placeholder(),
+      );
+      final route2 = ChildRoute(
+        '/x',
+        transition: TypeTransition.slideLeft,
+        child: (_, __) => const Placeholder(),
+      );
+
+      expect(route1, isNot(equals(route2)));
+    });
+
+    test('should not be equal if navigatorKey differs', () {
+      final route1 = ChildRoute(
+        '/x',
+        parentNavigatorKey: GlobalKey(),
+        child: (_, __) => const Placeholder(),
+      );
+      final route2 = ChildRoute(
+        '/x',
+        parentNavigatorKey: GlobalKey(),
+        child: (_, __) => const Placeholder(),
+      );
+
+      expect(route1, isNot(equals(route2)));
+    });
   });
 
-  test('should support equality via Equatable', () {
-    final route1 = ChildRoute(
-      '/home',
-      name: 'home',
-      transition: TypeTransition.fade,
-      parentNavigatorKey: GlobalKey<NavigatorState>(),
-      child: (_, __) => const Text('A'),
-    );
+  group('ChildRoute - field assignment', () {
+    test('should assign all optional fields correctly', () {
+      final key = GlobalKey<NavigatorState>();
+      final route = ChildRoute(
+        '/details/:id',
+        name: 'details',
+        transition: TypeTransition.fade,
+        parentNavigatorKey: key,
+        onExit: (context, state) async => true,
+        redirect: (context, state) async => '/login',
+        pageBuilder:
+            (context, state) => const MaterialPage(child: Text('Page')),
+        child: (_, __) => const Placeholder(),
+      );
 
-    final route2 = ChildRoute(
-      '/home',
-      name: 'home',
-      transition: TypeTransition.fade,
-      parentNavigatorKey: route1.parentNavigatorKey,
-      child: (_, __) => const Text('B'),
-    );
+      expect(route.name, 'details');
+      expect(route.child, isNotNull);
+      expect(route.onExit, isNotNull);
+      expect(route.redirect, isNotNull);
+      expect(route.path, '/details/:id');
+      expect(route.pageBuilder, isNotNull);
+      expect(route.parentNavigatorKey, key);
+      expect(route.transition, TypeTransition.fade);
+    });
 
-    expect(route1, equals(route2));
-    expect(route1.hashCode, equals(route2.hashCode));
-  });
+    test('should handle minimal constructor with only path and child', () {
+      final route = ChildRoute('/home', child: (_, __) => const Placeholder());
 
-  test('should not be equal if path or name differs', () {
-    final key = GlobalKey<NavigatorState>();
-
-    final route1 = ChildRoute(
-      '/a',
-      name: 'routeA',
-      parentNavigatorKey: key,
-      child: (_, __) => const SizedBox(),
-    );
-
-    final route2 = ChildRoute(
-      '/b',
-      name: 'routeB',
-      parentNavigatorKey: key,
-      child: (_, __) => const SizedBox(),
-    );
-
-    expect(route1 == route2, isFalse);
-  });
-
-  test('should execute redirect callback when provided', () async {
-    final route = ChildRoute(
-      '/redirect',
-      child: (_, __) => const SizedBox(),
-      redirect: (context, state) => Future.value('/login'),
-    );
-
-    final result = await route.redirect!(BuildContextFake(), StateFake());
-    expect(result, equals('/login'));
-  });
-
-  test('should store and expose onExit callback', () async {
-    final route = ChildRoute(
-      '/exit',
-      child: (_, __) => const SizedBox(),
-      onExit: (_, __) => Future.value(false),
-    );
-
-    final result = await route.onExit!(BuildContextFake(), StateFake());
-    expect(result, isFalse);
+      expect(route.path, '/home');
+      expect(route.name, isNull);
+      expect(route.onExit, isNull);
+      expect(route.redirect, isNull);
+      expect(route.transition, isNull);
+      expect(route.pageBuilder, isNull);
+      expect(route.parentNavigatorKey, isNull);
+    });
   });
 }

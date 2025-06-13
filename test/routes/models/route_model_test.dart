@@ -4,134 +4,157 @@ import 'package:modugo/src/transition.dart';
 import 'package:modugo/src/routes/models/route_model.dart';
 
 void main() {
-  test('instance with default values', () {
-    final model = RouteModuleModel(
-      route: '/home',
-      module: '/home',
-      child: '/home/:id',
-    );
+  group('RouteModuleModel - equality and hashCode', () {
+    test('should be equal when all fields are equal', () {
+      const a = RouteModuleModel(
+        name: 'home',
+        route: '/home',
+        params: ['id'],
+        module: '/home/',
+        child: '/home/:id',
+        transition: TypeTransition.fade,
+      );
 
-    expect(model.name, '');
-    expect(model.params, isNull);
-    expect(model.transition, TypeTransition.fade);
+      const b = RouteModuleModel(
+        name: 'home',
+        route: '/home',
+        params: ['id'],
+        module: '/home/',
+        child: '/home/:id',
+        transition: TypeTransition.fade,
+      );
+
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+    });
+
+    test('should not be equal when params differ', () {
+      const a = RouteModuleModel(
+        name: 'home',
+        route: '/home',
+        params: ['id'],
+        module: '/home/',
+        child: '/home/:id',
+      );
+
+      const b = RouteModuleModel(
+        name: 'home',
+        route: '/home',
+        module: '/home/',
+        child: '/home/:id',
+        params: ['userId'],
+      );
+
+      expect(a, isNot(equals(b)));
+    });
   });
 
-  test('instance with custom values', () {
-    final model = RouteModuleModel(
-      name: 'home',
-      params: ['id'],
-      route: '/home',
-      module: '/home',
-      child: '/home/:id',
-      transition: TypeTransition.slideDown,
-    );
+  group('RouteModuleModel - static build()', () {
+    test('should build model with expected properties', () {
+      final model = RouteModuleModel.build(
+        module: 'home',
+        params: ['id'],
+        routeName: 'home/details',
+      );
 
-    expect(model.name, 'home');
-    expect(model.params, ['id']);
-    expect(model.transition, TypeTransition.slideDown);
-  });
+      expect(model.params, equals(['id']));
+      expect(model.name, equals('details'));
+      expect(model.module, equals('/home'));
+      expect(model.child, equals('/details/:id'));
+    });
 
-  test('use Equatable correctly (==)', () {
-    final model1 = RouteModuleModel(
-      name: 'home',
-      params: ['id'],
-      route: '/home',
-      module: '/home',
-      child: '/home/:id',
-      transition: TypeTransition.fade,
-    );
+    test('should handle trailing slashes in routeName', () {
+      final model = RouteModuleModel.build(module: 'profile', routeName: '/');
 
-    final model2 = RouteModuleModel(
-      name: 'home',
-      params: ['id'],
-      route: '/home',
-      module: '/home',
-      child: '/home/:id',
-      transition: TypeTransition.fade,
-    );
+      expect(model.child, equals('/'));
+      expect(model.name, equals('profile'));
+      expect(model.route, equals('/profile'));
+    });
 
-    expect(model1, equals(model2));
-  });
+    test(
+      'should build child and route with empty routeName (equal to module)',
+      () {
+        final model = RouteModuleModel.build(
+          module: 'settings',
+          routeName: 'settings',
+        );
 
-  test('toString returns expected value', () {
-    final model = RouteModuleModel(
-      route: '/home',
-      params: ['id'],
-      module: '/home',
-      child: '/home/:id',
-    );
-
-    expect(
-      model.toString(),
-      'RouteModuleModel(module: /home, child: /home/:id, route: /home, params: [id])',
+        expect(model.child, equals('/'));
+        expect(model.name, equals('settings'));
+        expect(model.route, equals('/settings'));
+      },
     );
   });
 
-  test('buildPath builds the path correctly', () {
-    final model = RouteModuleModel(
-      route: '/products',
-      module: '/products',
-      child: '/products/:category',
-    );
+  group('RouteModuleModel - buildPath()', () {
+    test('should build path replacing parameters and subparams', () {
+      final model = RouteModuleModel(
+        params: ['id'],
+        name: 'example',
+        route: '/route',
+        module: '/module',
+        child: '/details/:id',
+      );
 
-    final path = model.buildPath(params: ['electronics'], subParams: ['br']);
-    expect(path, '/products/br/products/electronics');
+      final result = model.buildPath(params: ['123'], subParams: ['deep']);
+
+      expect(result, equals('/module/deep/details/123'));
+    });
+
+    test('should ignore :id if not in child', () {
+      final model = RouteModuleModel(
+        name: 'test',
+        child: '/home',
+        module: '/base',
+        route: '/route',
+      );
+
+      final result = model.buildPath(params: ['1', '2'], subParams: ['x']);
+
+      expect(result, equals('/base/x/home/1/2'));
+    });
   });
 
-  test('static method build generates model correctly', () {
-    final model = RouteModuleModel.build(
-      module: 'profile',
-      routeName: 'edit',
-      params: ['userId'],
-    );
+  group('RouteModuleModel - toString()', () {
+    test('should return expected string', () {
+      const model = RouteModuleModel(
+        name: 'test',
+        params: ['id'],
+        route: '/route',
+        child: '/child',
+        module: '/module',
+      );
 
-    expect(model.name, 'edit');
-    expect(model.module, '/profile');
-    expect(model.params, ['userId']);
-    expect(model.child, '/edit/:userId');
-    expect(model.route, '/profile/edit');
+      expect(
+        model.toString(),
+        equals(
+          'RouteModuleModel(module: /module, child: /child, route: /route, params: [id])',
+        ),
+      );
+    });
   });
 
-  test('buildPath works with child path without parameters', () {
-    final model = RouteModuleModel(
-      route: '/home',
-      module: '/home',
-      child: '/dashboard',
-    );
+  group('RouteModuleModel - resolvePath()', () {
+    test('should normalize redundant slashes and remove trailing slash', () {
+      final result = RouteModuleModel.resolvePath('///home///profile//');
+      expect(result, equals('/home/profile'));
+    });
 
-    final result = model.buildPath(params: ['extra'], subParams: ['user']);
-    expect(result, '/home/user/dashboard/extra');
+    test('should return root slash as-is', () {
+      final result = RouteModuleModel.resolvePath('/');
+      expect(result, equals('/'));
+    });
   });
 
-  test('build normalizes redundant slashes', () {
-    final model = RouteModuleModel(
-      route: '//a//b/',
-      module: '//a//',
-      child: '//b/:id/',
-    );
+  group('RouteModuleModel - extractName()', () {
+    test('should extract first segment from path', () {
+      final name = RouteModuleModel.extractName('/home/details');
+      expect(name, equals('home'));
+    });
 
-    final result = model.buildPath(params: ['1'], subParams: []);
-    expect(result, '/a/b/1');
-  });
-
-  test('build extracts correct name when routeName has trailing slash', () {
-    final model = RouteModuleModel.build(
-      module: 'settings',
-      routeName: 'preferences/',
-      params: [],
-    );
-
-    expect(model.name, 'preferences');
-  });
-
-  test('buildPath handles empty params and subParams', () {
-    final model = RouteModuleModel(
-      route: '/base',
-      child: '/list',
-      module: '/base',
-    );
-
-    final result = model.buildPath(params: [], subParams: []);
-    expect(result, '/base/list');
+    test('should return full path when no segment is matched', () {
+      final name = RouteModuleModel.extractName('');
+      expect(name, equals('/'));
+    });
   });
 }

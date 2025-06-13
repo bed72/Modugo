@@ -19,9 +19,13 @@ abstract class Module {
   List<Module> get imports => const [];
   List<ModuleInterface> get routes => const [];
 
+  late String _modulePath;
+
   final _routerManager = Manager();
 
   List<RouteBase> configureRoutes({bool topLevel = false, String path = ''}) {
+    _modulePath = path;
+
     if (!_routerManager.isModuleActive(this)) {
       _routerManager.registerBindsAppModule(this);
     }
@@ -50,18 +54,22 @@ abstract class Module {
 
   GoRoute _createChild({
     required bool topLevel,
+    required String effectivePath,
     required ChildRoute childRoute,
   }) => GoRoute(
+    path: effectivePath,
     name: childRoute.name,
     redirect: childRoute.redirect,
     parentNavigatorKey: childRoute.parentNavigatorKey,
-    path: _normalizePath(path: childRoute.path, topLevel: topLevel),
     builder: (context, state) {
       try {
         _register(path: state.uri.toString());
 
         if (Modugo.debugLogDiagnostics) {
           ModugoLogger.info('📦 ModuleRoute → ${state.uri}');
+          ModugoLogger.info(
+            '🛠 GoRoute path for ${childRoute.name}: $effectivePath',
+          );
         }
 
         return childRoute.child(context, state);
@@ -92,20 +100,15 @@ abstract class Module {
 
   List<GoRoute> _createChildRoutes(bool topLevel) =>
       routes.whereType<ChildRoute>().map((route) {
-        final normalizedPath = route.path.trim().isEmpty ? '/' : route.path;
+        final composedPath = _normalizePath(
+          topLevel: topLevel,
+          path: _composePath(_modulePath, route.path),
+        );
 
         return _createChild(
-          childRoute: ChildRoute(
-            normalizedPath,
-            name: route.name,
-            child: route.child,
-            onExit: route.onExit,
-            redirect: route.redirect,
-            transition: route.transition,
-            pageBuilder: route.pageBuilder,
-            parentNavigatorKey: route.parentNavigatorKey,
-          ),
+          childRoute: route,
           topLevel: topLevel,
+          effectivePath: composedPath,
         );
       }).toList();
 
@@ -137,7 +140,10 @@ abstract class Module {
       routes: module.module.configureRoutes(topLevel: false, path: module.path),
       path: _normalizePath(
         topLevel: topLevel,
-        path: module.path + (childRoute?.path ?? ''),
+        path: _normalizePath(
+          topLevel: topLevel,
+          path: _composePath(path, module.path + (childRoute?.path ?? '')),
+        ),
       ),
       onExit:
           (context, state) =>
@@ -194,9 +200,15 @@ abstract class Module {
             route.routes
                 .map((routeOrModule) {
                   if (routeOrModule is ChildRoute) {
+                    final composedPath = _normalizePath(
+                      topLevel: topLevel,
+                      path: _composePath(path, routeOrModule.path),
+                    );
+
                     return _createChild(
                       topLevel: topLevel,
                       childRoute: routeOrModule,
+                      effectivePath: composedPath,
                     );
                   }
 
@@ -267,6 +279,16 @@ abstract class Module {
     path = path.replaceAll(RegExp(r'/+'), '/');
 
     return path == '/' ? path : path.substring(0, path.length - 1);
+  }
+
+  String _composePath(String base, String sub) {
+    final b = base.trim().replaceAll(RegExp(r'^/+|/+\$'), '');
+    final s = sub.trim().replaceAll(RegExp(r'^/+|/+\$'), '');
+
+    if (b.isEmpty && s.isEmpty) return '/';
+
+    final composed = [b, s].where((p) => p.isNotEmpty).join('/');
+    return '/${composed.replaceAll(RegExp(r'/+'), '/')}';
   }
 
   Page<void> _buildCustomTransitionPage(
