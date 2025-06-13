@@ -147,6 +147,7 @@ abstract class Module {
                     context,
                     state: state,
                     route: childRoute,
+                    branch: module.path,
                     module: module.module,
                   ),
     );
@@ -236,10 +237,15 @@ abstract class Module {
       }
 
       if (route is StatefulShellModuleRoute) {
-        shellRoutes.add(route.toRoute(topLevel: topLevel, path: path));
+        final normalizedPath = _normalizePath(path: path, topLevel: topLevel);
+        shellRoutes.add(
+          route.toRoute(topLevel: topLevel, path: normalizedPath),
+        );
 
         if (Modugo.debugLogDiagnostics) {
-          ModugoLogger.info('🧭 StatefulShellModuleRoute registered.');
+          ModugoLogger.info(
+            '🧭 StatefulShellModuleRoute registered with ${route.routes.length} branches.',
+          );
         }
       }
     }
@@ -286,7 +292,11 @@ abstract class Module {
     required GoRouterState state,
     ChildRoute? route,
   }) {
-    _register(path: state.uri.toString(), module: module.module);
+    _register(
+      branch: module.path,
+      module: module.module,
+      path: state.uri.toString(),
+    );
     return route?.child(context, state) ?? Container();
   }
 
@@ -295,6 +305,7 @@ abstract class Module {
     required Module module,
     required ChildRoute route,
     required GoRouterState state,
+    String? branch,
   }) {
     final onExit = route.onExit?.call(context, state);
 
@@ -304,7 +315,9 @@ abstract class Module {
     return futureExit
         .then((exit) {
           try {
-            if (exit) _unregister(state.uri.toString(), module: module);
+            if (exit) {
+              _unregister(state.uri.toString(), module: module, branch: branch);
+            }
             return exit;
           } catch (_) {
             return false;
@@ -313,13 +326,13 @@ abstract class Module {
         .catchError((_) => false);
   }
 
-  void _register({required String path, Module? module}) {
+  void _register({required String path, Module? module, String? branch}) {
     _routerManager.registerBindsIfNeeded(module ?? this);
     if (path == '/') return;
-    _routerManager.registerRoute(path, module ?? this);
+    _routerManager.registerRoute(path, module ?? this, branch: branch);
   }
 
-  void _unregister(String path, {Module? module}) {
-    _routerManager.unregisterRoute(path, module ?? this);
+  void _unregister(String path, {Module? module, String? branch}) {
+    _routerManager.unregisterRoute(path, module ?? this, branch: branch);
   }
 }

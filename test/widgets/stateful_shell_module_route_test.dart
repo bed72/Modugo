@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:modugo/src/routes/child_route.dart';
+import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 void main() {
   testWidgets('starts on home tab (index 0)', (tester) async {
@@ -55,6 +57,35 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('cart')), findsOneWidget);
+  });
+
+  testWidgets('StatefulShellModuleRoute applies initialPathsPerBranch', (
+    tester,
+  ) async {
+    final route = StatefulShellModuleRoute(
+      builder: (_, __, shell) => Scaffold(key: const Key('shell'), body: shell),
+      routes: [
+        ChildRoute('/', name: 'home', child: (_, __) => const Text('Home')),
+        ChildRoute('/cart', name: 'cart', child: (_, __) => const Text('Cart')),
+      ],
+      initialPathsPerBranch: ['/', '/cart'],
+    );
+
+    final router = GoRouter(
+      initialLocation: '/',
+      routes: [route.toRoute(path: '', topLevel: true)],
+    );
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    expect(find.text('Home'), findsOneWidget);
+
+    final shellWidget = tester.widget<Scaffold>(find.byKey(const Key('shell')));
+    final shell = shellWidget.body as StatefulNavigationShell;
+
+    shell.goBranch(1, initialLocation: true);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Cart'), findsOneWidget);
   });
 }
 

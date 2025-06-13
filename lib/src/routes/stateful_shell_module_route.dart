@@ -9,6 +9,7 @@ import 'package:modugo/src/logger.dart';
 final class StatefulShellModuleRoute extends Equatable
     implements ModuleInterface {
   final List<ModuleInterface> routes;
+  final List<String?>? initialPathsPerBranch;
   final Widget Function(
     BuildContext context,
     GoRouterState state,
@@ -16,7 +17,15 @@ final class StatefulShellModuleRoute extends Equatable
   )
   builder;
 
-  const StatefulShellModuleRoute({required this.routes, required this.builder});
+  const StatefulShellModuleRoute({
+    required this.routes,
+    required this.builder,
+    this.initialPathsPerBranch,
+  }) : assert(
+         initialPathsPerBranch == null ||
+             initialPathsPerBranch.length == routes.length,
+         'initialPathsPerBranch must match the length of routes',
+       );
 
   RouteBase toRoute({
     required String path,
@@ -24,7 +33,11 @@ final class StatefulShellModuleRoute extends Equatable
   }) => StatefulShellRoute.indexedStack(
     builder: builder,
     branches:
-        routes.map((route) {
+        routes.asMap().entries.map((entry) {
+          final route = entry.value;
+          final index = entry.key;
+          final initialPath = initialPathsPerBranch?[index];
+
           if (route is ModuleRoute) {
             final composedPath = composePath(path, route.path);
             final configuredRoutes = route.module.configureRoutes(
@@ -43,17 +56,19 @@ final class StatefulShellModuleRoute extends Equatable
               );
             }
 
-            return StatefulShellBranch(routes: configuredRoutes);
-          }
-
-          if (route is ChildRoute) {
             return StatefulShellBranch(
+              routes: configuredRoutes,
+              initialLocation: initialPath,
+            );
+          } else if (route is ChildRoute) {
+            return StatefulShellBranch(
+              initialLocation: initialPath,
               routes: [
                 GoRoute(
-                  name: route.name,
                   builder: route.child,
                   redirect: route.redirect,
                   path: normalizePath(route.path),
+                  name: route.name ?? 'branch_$index',
                   parentNavigatorKey: route.parentNavigatorKey,
                   pageBuilder:
                       route.pageBuilder != null
@@ -63,16 +78,16 @@ final class StatefulShellModuleRoute extends Equatable
                 ),
               ],
             );
+          } else {
+            throw UnsupportedError(
+              'Invalid route type in Stateful Shell Module Route',
+            );
           }
-
-          throw UnsupportedError(
-            'Invalid route type in Stateful Shell Module Route',
-          );
         }).toList(),
   );
 
   @override
-  List<Object?> get props => [routes, builder];
+  List<Object?> get props => [routes, builder, initialPathsPerBranch];
 
   String normalizePath(String path) =>
       path.trim().isEmpty ? '/' : path.replaceAll(RegExp(r'/+'), '/');
@@ -84,7 +99,6 @@ final class StatefulShellModuleRoute extends Equatable
     if (b.isEmpty && s.isEmpty) return '/';
 
     final composed = [b, s].where((p) => p.isNotEmpty).join('/');
-
     return '/${composed.replaceAll(RegExp(r'/+'), '/')}';
   }
 }

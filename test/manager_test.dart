@@ -6,8 +6,8 @@ import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/interfaces/manager_interface.dart';
 
 import 'mocks/modugo_mock.dart';
-import 'mocks/services_mock.dart';
 import 'mocks/modules_mock.dart';
+import 'mocks/services_mock.dart';
 
 void main() {
   late final ManagerInterface manager;
@@ -148,4 +148,59 @@ void main() {
 
     expect(manager.isModuleActive(inactiveModule), isFalse);
   });
+
+  test(
+    'unregisterRoute removes RouteAccessModel and disposes when empty',
+    () async {
+      final module = AnotherModuleMock();
+      final manager = Manager();
+
+      manager.registerBindsIfNeeded(module);
+      manager.registerRoute('/to-remove', module, branch: 'main');
+
+      expect(manager.isModuleActive(module), isTrue);
+
+      manager.unregisterRoute('/to-remove', module, branch: 'main');
+      await Future.delayed(Duration(milliseconds: disposeMilisenconds + 72));
+
+      expect(manager.isModuleActive(module), isFalse);
+    },
+  );
+
+  test('unregisterRoute does not dispose if other branches remain', () async {
+    final module = AnotherModuleMock();
+    final manager = Manager();
+
+    manager.registerBindsIfNeeded(module);
+    manager.registerRoute('/cart', module, branch: 'a');
+    manager.registerRoute('/cart', module, branch: 'b');
+
+    manager.unregisterRoute('/cart', module, branch: 'a');
+    await Future.delayed(Duration(milliseconds: disposeMilisenconds + 72));
+
+    expect(manager.isModuleActive(module), isTrue);
+
+    manager.unregisterRoute('/cart', module, branch: 'b');
+    await Future.delayed(Duration(milliseconds: disposeMilisenconds + 72));
+
+    expect(manager.isModuleActive(module), isFalse);
+  });
+
+  test(
+    'calling unregisterRoute with no matching RouteAccessModel does nothing',
+    () {
+      final module = AnotherModuleMock();
+      final manager = Manager();
+
+      manager.registerBindsIfNeeded(module);
+      manager.registerRoute('/match', module, branch: 'x');
+
+      manager.unregisterRoute('/wrong', module, branch: 'x');
+      manager.unregisterRoute('/match', module, branch: 'y');
+
+      expect(manager.isModuleActive(module), isTrue);
+
+      manager.unregisterRoute('/match', module, branch: 'x');
+    },
+  );
 }

@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:modugo/src/dispose.dart';
 import 'package:modugo/src/manager.dart';
 import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/routes/child_route.dart';
+import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 import 'fakes/fakes.dart';
@@ -163,7 +165,7 @@ void main() {
     final settingsRoute = settingsBranch.routes.whereType<GoRoute>().first;
 
     expect(homeRoute.path, equals('/'));
-    expect(settingsRoute.path, equals('settings'));
+    expect(settingsRoute.path, equals('/'));
   });
 
   test(
@@ -247,4 +249,118 @@ void main() {
       expect(order, ['parent', 'child']);
     },
   );
+
+  test('should assign fallback name to unnamed ChildRoute in branch', () {
+    final route = StatefulShellModuleRoute(
+      routes: [ChildRoute('/', child: (_, __) => Container())],
+      builder: (context, state, shell) => Container(),
+    );
+
+    final routeBase = route.toRoute(path: '/', topLevel: true);
+    expect(routeBase, isA<StatefulShellRoute>());
+
+    final shell = routeBase as StatefulShellRoute;
+
+    final branch = shell.branches.first;
+    final goRoute = branch.routes.first as GoRoute;
+
+    expect(goRoute.name, 'branch_0');
+  });
+
+  test(
+    'should throw assertion error when initialPathsPerBranch length does not match routes',
+    () {
+      expect(
+        () => StatefulShellModuleRoute(
+          initialPathsPerBranch: ['/wrong'],
+          routes: [
+            ModuleRoute('/wrong', module: OtherModuleMock()),
+            ModuleRoute('/wrong', module: OtherModuleMock()),
+          ],
+          builder: (context, state, shell) => Container(),
+        ),
+        throwsA(isA<AssertionError>()),
+      );
+    },
+  );
+
+  test(
+    'ModuleWithStatefulShellMock should configure stateful shell properly',
+    () async {
+      final module = ModuleWithStatefulShellMock();
+      await startModugoMock(module: module);
+      final routes = module.configureRoutes(topLevel: true, path: '/');
+
+      final statefulShell = routes.whereType<StatefulShellRoute>().firstOrNull;
+      expect(statefulShell, isNotNull);
+
+      expect(statefulShell!.branches.length, 2);
+
+      final allPaths =
+          statefulShell.branches
+              .expand((b) => b.routes)
+              .whereType<GoRoute>()
+              .map((r) => r.path)
+              .toList();
+
+      expect(allPaths, everyElement(equals('/')));
+      expect(allPaths.length, 2);
+    },
+  );
+
+  test('should unregister non-root module after timeout', () async {
+    final module = ModuleWithBranchMock();
+    await startModugoMock(module: module);
+
+    final manager = Manager();
+    manager.registerBindsIfNeeded(module);
+    manager.registerRoute('/with-branch', module, branch: 'branch-a');
+
+    expect(manager.isModuleActive(module), isTrue);
+
+    manager.unregisterRoute('/with-branch', module, branch: 'branch-a');
+    await Future.delayed(Duration(milliseconds: disposeMilisenconds + 32));
+
+    expect(manager.isModuleActive(module), isFalse);
+  });
+
+  test(
+    'should unregister correctly on route exit with branch (Module root must not unregister)',
+    () async {
+      final module = ModuleWithExitMock();
+      await startModugoMock(module: module);
+
+      final routes = module.configureRoutes(topLevel: true);
+      final goRoute = routes.whereType<GoRoute>().first;
+
+      final context = BuildContextFake();
+      final state = StateFake();
+
+      final future = goRoute.onExit?.call(context, state);
+      final result = await future;
+
+      expect(result, isTrue);
+
+      final manager = Manager();
+      expect(manager.isModuleActive(module), isTrue);
+    },
+  );
+
+  test('should register route with branch in Manager', () async {
+    final module = ModuleWithStatefulShellMock();
+    await startModugoMock(module: module);
+
+    final routes = module.configureRoutes(topLevel: true);
+    final goRoute = routes.first.routes.whereType<GoRoute>().first;
+
+    final context = BuildContextFake();
+    final state = StateFake();
+
+    goRoute.builder!(context, state);
+
+    final manager = Manager();
+    final isActive = manager.isModuleActive(module);
+
+    expect(isActive, isTrue);
+  });
 }

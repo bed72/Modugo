@@ -171,11 +171,7 @@ final class ModuleWithDashMock extends Module {
 final class ModuleWithSettingsMock extends Module {
   @override
   List<ModuleInterface> get routes => [
-    ChildRoute(
-      'settings',
-      name: 'settings',
-      child: (_, __) => const Placeholder(),
-    ),
+    ChildRoute('/', name: 'settings', child: (_, __) => const Placeholder()),
   ];
 }
 
@@ -190,4 +186,33 @@ final class ModuleWithStatefulShellMock extends Module {
       ],
     ),
   ];
+}
+
+final class ModuleWithBranchMock extends Module {
+  @override
+  List<ModuleInterface> get routes => [
+    ChildRoute(
+      'with-branch',
+      name: 'with-branch-route',
+      child: (_, __) => const Placeholder(),
+    ),
+  ];
+
+  @override
+  List<Bind> get binds => [Bind.singleton<ServiceMock>((_) => ServiceMock())];
+}
+
+final class ModuleWithExitMock extends Module {
+  @override
+  List<ModuleInterface> get routes => [
+    ChildRoute(
+      'exit',
+      name: 'exit-route',
+      onExit: (_, __) => true,
+      child: (_, __) => const Placeholder(),
+    ),
+  ];
+
+  @override
+  List<Bind> get binds => [Bind.singleton<ServiceMock>((_) => ServiceMock())];
 }

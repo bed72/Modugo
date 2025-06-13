@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:modugo/modugo.dart';
 import 'package:modugo/src/logger.dart';
+import 'package:modugo/src/routes/models/route_access_model.dart';
 
 final class Manager implements ManagerInterface {
   Timer? _timer;
@@ -9,7 +10,7 @@ final class Manager implements ManagerInterface {
   List<Type> bindsToDispose = [];
 
   final Map<Type, int> _bindReferences = {};
-  final Map<Module, Set<String>> _activeRoutes = {};
+  final Map<Module, List<RouteAccessModel>> _activeRoutes = {};
 
   static final Manager _instance = Manager._();
 
@@ -32,6 +33,10 @@ final class Manager implements ManagerInterface {
   bool isModuleActive(Module module) => _activeRoutes.containsKey(module);
 
   @override
+  List<RouteAccessModel> getActiveRoutesFor(Module module) =>
+      _activeRoutes[module]?.toList() ?? [];
+
+  @override
   void registerBindsAppModule(Module module) {
     if (_module != null) return;
 
@@ -43,9 +48,8 @@ final class Manager implements ManagerInterface {
   void registerBindsIfNeeded(Module module) {
     if (_activeRoutes.containsKey(module)) return;
 
-    _registerSyncBinds(module);
-
-    _activeRoutes[module] = {};
+    _registerBinds(module);
+    _activeRoutes[module] = [];
 
     if (Modugo.debugLogDiagnostics) {
       _logImportedBinds(module);
@@ -53,30 +57,25 @@ final class Manager implements ManagerInterface {
     }
   }
 
-  void _registerSyncBinds(Module module) {
-    final allSyncBinds = <Bind>[
-      ...module.binds,
-      for (final imported in module.imports) ...imported.binds,
-    ];
-    _recursiveRegisterBinds(allSyncBinds);
+  @override
+  void registerRoute(String path, Module module, {String? branch}) {
+    _activeRoutes.putIfAbsent(module, () => []);
+    _activeRoutes[module]?.add(RouteAccessModel(path, branch));
   }
 
   @override
-  void registerRoute(String route, Module module) {
-    _activeRoutes.putIfAbsent(module, () => {});
-    _activeRoutes[module]?.add(route);
-  }
-
-  @override
-  void unregisterRoute(String route, Module module) {
+  void unregisterRoute(String path, Module module, {String? branch}) {
     if (module == _module) return;
 
-    _activeRoutes[module]?.remove(route);
+    _activeRoutes[module]?.removeWhere(
+      (r) => r.path == path && r.branch == branch,
+    );
+
     _timer?.cancel();
-
     _timer = Timer(Duration(milliseconds: disposeMilisenconds), () {
-      if (_activeRoutes[module]?.isEmpty ?? true) unregisterBinds(module);
-
+      if (_activeRoutes[module]?.isEmpty ?? true) {
+        unregisterBinds(module);
+      }
       _timer?.cancel();
     });
   }
@@ -105,6 +104,14 @@ final class Manager implements ManagerInterface {
     _activeRoutes.remove(module);
   }
 
+  void _registerBinds(Module module) {
+    final allSyncBinds = <Bind>[
+      ...module.binds,
+      for (final imported in module.imports) ...imported.binds,
+    ];
+    _recursiveRegisterBinds(allSyncBinds);
+  }
+
   Type _resolveBindType(Bind bind) =>
       bind.maybeInstance?.runtimeType ?? bind.runtimeType;
 
@@ -124,7 +131,12 @@ final class Manager implements ManagerInterface {
         }
 
         Bind.register(bind);
-      } catch (_) {
+      } catch (e, s) {
+        if (ModugoLogger.enabled) {
+          ModugoLogger.error(
+            '❌ Failed to register bind: ${_resolveBindType(bind)} → $e\n$s',
+          );
+        }
         queueBinds.add(bind);
       }
     }
