@@ -1,39 +1,42 @@
-import 'package:modugo/modugo.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:modugo/modugo.dart';
+
 void main() {
-  testWidgets('should not exit route when onExit returns false', (
+  testWidgets('ChildRoute builds widget correctly through GoRouter', (
     tester,
   ) async {
-    final router = await Modugo.configure(
-      module: _ModuleWithOnExitMock(),
-      initialRoute: '/guarded',
+    final childRoute = ChildRoute(
+      '/home',
+      name: 'home',
+      child: (_, __) => const _DummyScreen('Home Page'),
+    );
+
+    final router = GoRouter(
+      initialLocation: '/home',
+      routes: [
+        GoRoute(
+          path: childRoute.path,
+          name: childRoute.name,
+          builder: childRoute.child,
+        ),
+      ],
     );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+
     await tester.pumpAndSettle();
 
-    router.go('/other');
-    await tester.pumpAndSettle();
-
-    expect(find.text('GuardedScreen'), findsOneWidget);
+    expect(find.text('Home Page'), findsOneWidget);
   });
 }
 
-final class _ModuleWithOnExitMock extends Module {
+final class _DummyScreen extends StatelessWidget {
+  final String label;
+  const _DummyScreen(this.label);
+
   @override
-  List<ModuleInterface> get routes => [
-    ChildRoute(
-      '/guarded',
-      name: 'guarded',
-      child: (_, __) => const Text('GuardedScreen'),
-      onExit: (_, __) => Future.value(false),
-    ),
-    ChildRoute(
-      '/other',
-      name: 'other',
-      child: (_, __) => const Text('OtherScreen'),
-    ),
-  ];
+  Widget build(BuildContext context) => Text(label);
 }

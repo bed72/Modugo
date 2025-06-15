@@ -10,10 +10,7 @@ import 'mocks/modules_mock.dart';
 
 void main() {
   test('GoRouterModular.configure sets up router and diagnostics', () async {
-    final modugo = await startModugoMock(
-      module: RootModuleMock(),
-      debugLogDiagnostics: true,
-    );
+    final modugo = await startModugoMock(module: RootModuleMock());
 
     expect(modugo, isA<GoRouter>());
     expect(Modugo.routerConfig, same(modugo));

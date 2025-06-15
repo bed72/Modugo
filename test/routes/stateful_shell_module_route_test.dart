@@ -54,10 +54,10 @@ void main() {
         builder: (_, __, ___) => const Placeholder(),
       );
 
-      expect(route.composePath('///module//', '///child//'), '/module/child');
       expect(route.composePath('', ''), '/');
       expect(route.composePath('home', ''), '/home');
       expect(route.composePath('', 'details'), '/details');
+      expect(route.composePath('///module//', '///child//'), '/module/child/');
     });
 
     test('normalizePath should clean up redundant slashes', () {

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:go_router/go_router.dart';
+import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/extension.dart';
 
 void main() {
@@ -37,11 +38,11 @@ void main() {
   testWidgets('getExtra returns typed extra', (tester) async {
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
 
-    router.go('/next', extra: _DummyExtra('test'));
+    router.go('/next', extra: _DummyService('test'));
     await tester.pumpAndSettle();
 
     final context = tester.element(find.byType(_DummyScreen));
-    final extra = context.getExtra<_DummyExtra>();
+    final extra = context.getExtra<_DummyService>();
 
     expect(extra, isNotNull);
     expect(extra!.value, equals('test'));
@@ -54,7 +55,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final context = tester.element(find.byType(_DummyScreen));
-    expect(() => context.argumentsOrThrow<_DummyExtra>(), throwsException);
+    expect(() => context.argumentsOrThrow<_DummyService>(), throwsException);
   });
 
   testWidgets('locationSegments returns path parts', (tester) async {
@@ -210,11 +211,126 @@ void main() {
     expect(context.isKnownPath('/modern'), isTrue);
     expect(context.isKnownRouteName('modern'), isTrue);
   });
+
+  testWidgets('isKnownPath and isKnownRouteName work', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp.router(
+        routerConfig: GoRouter(
+          initialLocation: '/home',
+          routes: [
+            ShellRoute(
+              builder: (_, __, child) => child,
+              routes: [
+                GoRoute(
+                  path: '/home',
+                  name: 'home',
+                  builder: (_, __) => const Text('ok'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+
+    expect(find.text('ok'), findsOneWidget);
+  });
+
+  testWidgets('argumentsOrThrow throws if type mismatches', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp.router(
+        routerConfig: GoRouter(
+          initialLocation: '/',
+          initialExtra: 'not int',
+          routes: [
+            GoRoute(
+              path: '/',
+              builder:
+                  (_, __) => _DummyWidget(
+                    onBuild: (context) {
+                      expect(
+                        () => context.argumentsOrThrow<int>(),
+                        throwsException,
+                      );
+                      return const Text('arg test');
+                    },
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+  });
+
+  testWidgets('path, params, query and locationSegments extensions', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp.router(
+        routerConfig: GoRouter(
+          initialLocation: '/user/42?tab=info&flag=true',
+          routes: [
+            GoRoute(
+              path: '/user/:id',
+              builder:
+                  (_, state) => _DummyWidget(
+                    onBuild: (context) {
+                      expect(context.path, '/user/:id');
+                      expect(context.getPathParam('id'), '42');
+                      expect(context.locationSegments, ['user', '42']);
+                      expect(context.getBoolQueryParam('flag'), isTrue);
+                      expect(context.getStringQueryParam('tab'), 'info');
+
+                      return const Text('params ok');
+                    },
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    expect(find.text('params ok'), findsOneWidget);
+  });
+
+  testWidgets('read<T>() should retrieve injected dependency', (tester) async {
+    Bind.register<String>(Bind.singleton<String>((_) => 'context-aware'));
+
+    await tester.pumpWidget(
+      MaterialApp.router(
+        routerConfig: GoRouter(
+          routes: [
+            GoRoute(
+              path: '/',
+              builder:
+                  (_, __) => _DummyWidget(
+                    onBuild: (context) {
+                      final value = context.read<String>();
+                      expect(value, 'context-aware');
+                      return const Text('read ok');
+                    },
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    expect(find.text('read ok'), findsOneWidget);
+  });
 }
 
-final class _DummyExtra {
+final class _DummyService {
   final String value;
-  _DummyExtra(this.value);
+  _DummyService(this.value);
+}
+
+final class _DummyWidget extends StatelessWidget {
+  final Widget Function(BuildContext) onBuild;
+  const _DummyWidget({required this.onBuild});
+
+  @override
+  Widget build(BuildContext context) => onBuild(context);
 }
 
 final class _DummyScreen extends StatelessWidget {

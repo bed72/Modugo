@@ -30,63 +30,77 @@ final class StatefulShellModuleRoute implements ModuleInterface {
        );
 
   RouteBase toRoute({required String path, required bool topLevel}) {
+    final branches =
+        routes.asMap().entries.map((entry) {
+          final index = entry.key;
+          final route = entry.value;
+          final initialPath = initialPathsPerBranch?[index];
+
+          if (route is ModuleRoute) {
+            final composedPath = composePath(path, route.path);
+            final configuredRoutes = route.module.configureRoutes(
+              topLevel: false,
+              path: composedPath,
+            );
+
+            final registeredPaths =
+                configuredRoutes
+                    .whereType<GoRoute>()
+                    .map((r) => r.path)
+                    .toList();
+
+            if (Modugo.debugLogDiagnostics) {
+              ModugoLogger.info(
+                '🧭 Branch "${route.path}" → composedPath="$composedPath" → registered GoRoutes: $registeredPaths',
+              );
+            }
+
+            if (initialPath != null &&
+                !registeredPaths.contains(
+                  initialPath
+                      .replaceFirst(composedPath, '')
+                      .replaceAll(RegExp(r'^/+'), ''),
+                )) {
+              throw ArgumentError(
+                'initialPath "$initialPath" not found in registered paths for branch at index $index. Registered: $registeredPaths',
+              );
+            }
+
+            return StatefulShellBranch(
+              routes: configuredRoutes,
+              initialLocation: initialPath,
+            );
+          }
+
+          if (route is ChildRoute) {
+            final composedPath = composePath(path, route.path);
+            return StatefulShellBranch(
+              initialLocation: initialPath,
+              routes: [
+                GoRoute(
+                  path: normalizePath(composedPath),
+                  name: route.name ?? 'branch_$index',
+                  builder: route.child,
+                  redirect: route.redirect,
+                  parentNavigatorKey: route.parentNavigatorKey,
+                  pageBuilder:
+                      route.pageBuilder != null
+                          ? (context, state) =>
+                              route.pageBuilder!(context, state)
+                          : null,
+                ),
+              ],
+            );
+          }
+
+          throw UnsupportedError(
+            'Invalid route type in StatefulShellModuleRoute: ${route.runtimeType}',
+          );
+        }).toList();
+
     return StatefulShellRoute.indexedStack(
       builder: builder,
-      branches:
-          routes.asMap().entries.map((entry) {
-            final index = entry.key;
-            final route = entry.value;
-            final initialPath = initialPathsPerBranch?[index];
-
-            if (route is ModuleRoute) {
-              final composedPath = composePath(path, route.path);
-              final configuredRoutes = route.module.configureRoutes(
-                topLevel: false,
-                path: composedPath,
-              );
-
-              if (Modugo.debugLogDiagnostics) {
-                final goPaths =
-                    configuredRoutes
-                        .whereType<GoRoute>()
-                        .map((r) => r.path)
-                        .toList();
-                ModugoLogger.info(
-                  '🧭 Branch "${route.path}" → composedPath="$composedPath" → registered GoRoutes: $goPaths',
-                );
-              }
-
-              return StatefulShellBranch(
-                routes: configuredRoutes,
-                initialLocation: initialPath,
-              );
-            }
-
-            if (route is ChildRoute) {
-              final composedPath = composePath(path, route.path);
-              return StatefulShellBranch(
-                initialLocation: initialPath,
-                routes: [
-                  GoRoute(
-                    path: normalizePath(composedPath),
-                    name: route.name ?? 'branch_$index',
-                    builder: route.child,
-                    redirect: route.redirect,
-                    parentNavigatorKey: route.parentNavigatorKey,
-                    pageBuilder:
-                        route.pageBuilder != null
-                            ? (context, state) =>
-                                route.pageBuilder!(context, state)
-                            : null,
-                  ),
-                ],
-              );
-            }
-
-            throw UnsupportedError(
-              'Invalid route type in StatefulShellModuleRoute: ${route.runtimeType}',
-            );
-          }).toList(),
+      branches: branches,
     );
   }
 
@@ -94,8 +108,8 @@ final class StatefulShellModuleRoute implements ModuleInterface {
       path.trim().isEmpty ? '/' : path.replaceAll(RegExp(r'/+'), '/');
 
   String composePath(String base, String sub) {
-    final cleanSub = sub.trim().replaceAll(RegExp(r'^/+|/+$'), '');
-    final cleanBase = base.trim().replaceAll(RegExp(r'^/+|/+$'), '');
+    final cleanSub = sub.trim().replaceAll(RegExp(r'^/+|/+\$'), '');
+    final cleanBase = base.trim().replaceAll(RegExp(r'^/+|/+\$'), '');
 
     if (cleanBase.isEmpty && cleanSub.isEmpty) return '/';
 
