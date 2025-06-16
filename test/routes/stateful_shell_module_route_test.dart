@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:modugo/src/interfaces/module_interface.dart';
 
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
+import 'package:modugo/src/interfaces/module_interface.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 void main() {
   group('StatefulShellModuleRoute - equality and hashCode', () {
-    test('should be equal when routes, builder and initialPaths match', () {
+    test('should be equal when routes and builder match', () {
       builder(BuildContext c, GoRouterState s, StatefulNavigationShell n) =>
           const Placeholder();
 
@@ -18,13 +18,11 @@ void main() {
 
       final a = StatefulShellModuleRoute(
         builder: builder,
-        initialPathsPerBranch: ['/start'],
         routes: [ModuleRoute('/home', module: sharedModule)],
       );
 
       final b = StatefulShellModuleRoute(
         builder: builder,
-        initialPathsPerBranch: ['/start'],
         routes: [ModuleRoute('/home', module: sharedModule)],
       );
 
@@ -48,18 +46,6 @@ void main() {
   });
 
   group('StatefulShellModuleRoute - path composition', () {
-    test('composePath should normalize and combine parts correctly', () {
-      final route = StatefulShellModuleRoute(
-        routes: [],
-        builder: (_, __, ___) => const Placeholder(),
-      );
-
-      expect(route.composePath('', ''), '/');
-      expect(route.composePath('home', ''), '/home');
-      expect(route.composePath('', 'details'), '/details');
-      expect(route.composePath('///module//', '///child//'), '/module/child/');
-    });
-
     test('normalizePath should clean up redundant slashes', () {
       final route = StatefulShellModuleRoute(
         routes: [],

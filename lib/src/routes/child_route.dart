@@ -32,6 +32,12 @@ final class ChildRoute implements ModuleInterface {
     this.parentNavigatorKey,
   });
 
+  factory ChildRoute.safeRootRoute() => ChildRoute(
+    '/',
+    name: 'safe-root-route',
+    child: (_, __) => const SizedBox.shrink(),
+  );
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

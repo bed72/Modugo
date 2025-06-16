@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/routes/child_route.dart';
-import 'package:modugo/src/interfaces/module_interface.dart';
 import 'package:modugo/src/routes/module_route.dart';
+import 'package:modugo/src/interfaces/module_interface.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 void main() {
   setUpAll(() async {
     await Modugo.configure(
       module: _DummyModule(),
-      debugLogDiagnostics: false,
+      debugLogDiagnostics: true,
       errorBuilder: (_, __) => const Material(child: Text('error')),
     );
   });
@@ -86,14 +86,13 @@ void main() {
     expect(find.byKey(const Key('cart')), findsOneWidget);
   });
 
-  testWidgets('applies initialPathsPerBranch correctly', (tester) async {
+  testWidgets('navigates between branches correctly', (tester) async {
     final route = StatefulShellModuleRoute(
       builder: (_, __, shell) => Scaffold(key: const Key('shell'), body: shell),
       routes: [
         ChildRoute('/', name: 'home', child: (_, __) => const Text('Home')),
         ChildRoute('/cart', name: 'cart', child: (_, __) => const Text('Cart')),
       ],
-      initialPathsPerBranch: ['/', '/cart'],
     );
 
     final router = GoRouter(
@@ -102,42 +101,132 @@ void main() {
     );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+
     expect(find.text('Home'), findsOneWidget);
 
     final shellWidget = tester.widget<Scaffold>(find.byKey(const Key('shell')));
     final shell = shellWidget.body as StatefulNavigationShell;
 
-    shell.goBranch(1, initialLocation: true);
+    shell.goBranch(1);
     await tester.pumpAndSettle();
 
     expect(find.text('Cart'), findsOneWidget);
   });
 
-  testWidgets('integrates both ChildRoute and ModuleRoute', (tester) async {
-    final shellRoute = StatefulShellModuleRoute(
-      initialPathsPerBranch: ['/', '/page'],
-      builder:
-          (_, __, shell) => Scaffold(
-            body: Column(
-              children: [const Text('Shell UI'), Expanded(child: shell)],
+  testWidgets('navigate with GoRouter and keep StatefulShellRoute visible', (
+    tester,
+  ) async {
+    final router = GoRouter(
+      initialLocation: '/',
+      routes: [
+        StatefulShellRoute.indexedStack(
+          branches: [
+            StatefulShellBranch(
+              routes: [
+                GoRoute(path: '/', builder: (_, __) => const Text('Home')),
+              ],
             ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/page',
+                  builder: (_, __) => const Text('Inner Page'),
+                ),
+              ],
+            ),
+          ],
+          builder:
+              (_, __, shell) => Scaffold(
+                body: Column(
+                  children: [const Text('Shell UI'), Expanded(child: shell)],
+                ),
+              ),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Shell UI'), findsOneWidget);
+    expect(find.text('Home'), findsOneWidget);
+
+    router.go('/page');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Shell UI'), findsOneWidget);
+    expect(find.text('Inner Page'), findsOneWidget);
+  });
+
+  testWidgets('navigate to ModuleRoute dynamic route inside shell', (
+    tester,
+  ) async {
+    final shellRoute = StatefulShellModuleRoute(
+      builder: (_, __, shell) {
+        return Scaffold(
+          body: Column(
+            children: [const Text('Shell UI'), Expanded(child: shell)],
           ),
+        );
+      },
+      routes: [
+        ChildRoute('/', name: 'home', child: (_, __) => const Text('Home')),
+        ModuleRoute('/', module: _ProductModule()),
+      ],
+    );
+
+    final router = GoRouter(
+      initialLocation: '/',
+      errorBuilder: (_, __) => const Text('ERRO NA ROTA'),
+      routes: [shellRoute.toRoute(path: '', topLevel: true)],
+    );
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Shell UI'), findsOneWidget);
+    expect(find.text('Home'), findsOneWidget);
+
+    router.go('/cafe/dp/12345');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Shell UI'), findsOneWidget);
+    expect(find.text('Name: cafe Code: 12345'), findsOneWidget);
+  });
+
+  testWidgets('navigate to ModuleRoute route inside shell', (tester) async {
+    final shellRoute = StatefulShellModuleRoute(
+      builder: (_, __, shell) {
+        return Scaffold(
+          body: Column(
+            children: [const Text('Shell UI'), Expanded(child: shell)],
+          ),
+        );
+      },
       routes: [
         ChildRoute(
           '/',
           name: 'child',
           child: (_, __) => const Text('Child Branch'),
         ),
-        ModuleRoute('/page', module: _DummyModule()),
+        ModuleRoute('/', module: _DummyModule()),
       ],
     );
 
     final router = GoRouter(
       initialLocation: '/',
+      errorBuilder: (_, __) => const Text('ERRO NA ROTA'),
       routes: [shellRoute.toRoute(path: '', topLevel: true)],
     );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Shell UI'), findsOneWidget);
+    expect(find.text('Child Branch'), findsOneWidget);
+
+    router.go('/shell/page');
     await tester.pumpAndSettle();
 
     expect(find.text('Shell UI'), findsOneWidget);
@@ -150,7 +239,27 @@ final class _UnsupportedRoute implements ModuleInterface {}
 final class _DummyModule extends Module {
   @override
   List<ModuleInterface> get routes => [
-    ChildRoute('/', name: 'page', child: (_, __) => const Text('Inner Page')),
+    ChildRoute(
+      '/shell/page',
+      name: 'page',
+      child: (_, __) => const Text('Inner Page'),
+    ),
+  ];
+}
+
+final class _ProductModule extends Module {
+  @override
+  List<ModuleInterface> get routes => [
+    ChildRoute.safeRootRoute(),
+    ChildRoute(
+      '/:name/dp/:webcode',
+      name: 'produto_details',
+      child: (_, state) {
+        final name = state.pathParameters['name'];
+        final webcode = state.pathParameters['webcode'];
+        return Text('Name: $name Code: $webcode');
+      },
+    ),
   ];
 }
 

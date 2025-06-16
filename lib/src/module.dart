@@ -100,10 +100,13 @@ abstract class Module {
 
   List<GoRoute> _createChildRoutes(bool topLevel) =>
       routes.whereType<ChildRoute>().map((route) {
-        final composedPath = _normalizePath(
-          topLevel: topLevel,
-          path: _composePath(_modulePath, route.path),
-        );
+        final composedPath =
+            topLevel
+                ? _normalizePath(
+                  topLevel: topLevel,
+                  path: _composePath(_modulePath, route.path),
+                )
+                : route.path;
 
         return _createChild(
           childRoute: route,

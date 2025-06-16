@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/transition.dart';
 import 'package:modugo/src/routes/child_route.dart';
 
 void main() {
+  group('ChildRoute.safeRootRoute', () {
+    test('should return a ChildRoute with path / and expected defaults', () {
+      final route = ChildRoute.safeRootRoute();
+
+      expect(route, isA<ChildRoute>());
+      expect(route.path, '/');
+      expect(route.name, 'safe-root-route');
+    });
+  });
   group('ChildRoute - equality and hashCode', () {
     test('should be equal when all compared fields are equal', () {
       final key = GlobalKey<NavigatorState>();
