@@ -9,6 +9,19 @@ void main() {
   setUp(() => Bind.clearAll());
 
   group('Injector.get', () {
+    test('getBindByType returns null if type not registered', () {
+      expect(Bind.getBindByType(_Service), isNull);
+    });
+
+    test('isRegistered returns false if not registered', () {
+      expect(Bind.isRegistered<_Service>(), isFalse);
+    });
+
+    test('isRegistered returns true if registered', () {
+      Bind.register<_Service>(Bind.singleton((_) => _Service()));
+      expect(Bind.isRegistered<_Service>(), isTrue);
+    });
+
     test('should retrieve registered instance correctly', () {
       Bind.register<String>(Bind.singleton((i) => 'hello'));
 
@@ -72,7 +85,36 @@ void main() {
       expect(sink.closed, isFalse);
       expect(notifier.disposed, isTrue);
     });
+
+    test('disposeInstance nulls cached for generic singleton', () {
+      final service = _Service();
+      final bind = Bind.singleton<_Service>((_) => service);
+      Bind.register<_Service>(bind);
+
+      expect(bind.maybeInstance, isNotNull);
+
+      bind.disposeInstance();
+
+      expect(bind.maybeInstance, isNull);
+    });
+
+    test('logs error when disposeInstance throws and diagnostics enabled', () {
+      final instance = _DisposableWithError();
+      final bind = Bind.singleton<_DisposableWithError>((_) => instance);
+
+      Bind.register<_DisposableWithError>(bind);
+
+      bind.disposeInstance();
+
+      expect(bind.maybeInstance, isNull);
+    });
   });
+}
+
+final class _Service {}
+
+final class _DisposableWithError {
+  void dispose() => throw Exception('Failed disposal');
 }
 
 final class _DisposableNotifier extends ChangeNotifier {

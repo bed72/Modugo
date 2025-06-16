@@ -208,6 +208,14 @@ void main() {
       },
     );
   });
+
+  test('module getter and setter work as expected', () {
+    final manager = Manager();
+    final module = _RootModule();
+
+    manager.module = module;
+    expect(manager.module, same(module));
+  });
 }
 
 final class _Service {
