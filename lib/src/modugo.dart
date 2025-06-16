@@ -78,7 +78,7 @@ final class ModugoConfiguration {
 
     assert(
       delayDisposeMilliseconds >= 500,
-      '❌ delayDisposeMilliseconds must be at least 500ms - Check `go_router_modular main.dart`.',
+      '❌ delayDisposeMilliseconds must be at least 500ms - Check `main.dart`.',
     );
     setDisposeMiliseconds(delayDisposeMilliseconds);
 

@@ -56,20 +56,25 @@ extension BindContextExtension on BuildContext {
   void go(String location, {Object? extra}) =>
       goRouter.go(location, extra: extra);
 
-  void pop<T extends Object?>([T? result]) => goRouter.pop(result);
+  void pop<T extends Object?>([T? result]) => goRouter.pop<T>(result);
 
-  void replace(String location, {Object? extra}) =>
-      goRouter.replace<Object?>(location, extra: extra);
+  Future<T?> replace<T>(String location, {Object? extra}) =>
+      goRouter.replace<T?>(location, extra: extra);
 
-  void pushReplacement(String location, {Object? extra}) =>
-      goRouter.pushReplacement(location, extra: extra);
+  Future<T?> pushReplacement<T extends Object?>(
+    String location, {
+    Object? extra,
+  }) => goRouter.pushReplacement<T>(location, extra: extra);
 
-  void replaceNamed(
+  Future<T?> push<T extends Object?>(String location, {Object? extra}) async =>
+      goRouter.push<T>(location, extra: extra);
+
+  Future<T?> replaceNamed<T>(
     String name, {
     Map<String, String> pathParameters = const <String, String>{},
     Map<String, dynamic> queryParameters = const <String, dynamic>{},
     Object? extra,
-  }) => goRouter.replaceNamed<Object?>(
+  }) => goRouter.replaceNamed<T?>(
     name,
     extra: extra,
     pathParameters: pathParameters,
@@ -88,12 +93,12 @@ extension BindContextExtension on BuildContext {
     queryParameters: queryParameters,
   );
 
-  void pushReplacementNamed(
+  Future<T?> pushReplacementNamed<T extends Object?>(
     String name, {
     Map<String, String> pathParameters = const <String, String>{},
     Map<String, dynamic> queryParameters = const <String, dynamic>{},
     Object? extra,
-  }) => goRouter.pushReplacementNamed(
+  }) => goRouter.pushReplacementNamed<T>(
     name,
     extra: extra,
     pathParameters: pathParameters,
