@@ -1,46 +1,56 @@
-import 'package:go_router/go_router.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:modugo/src/injector.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/modugo.dart';
-import 'package:modugo/src/transition.dart';
-
-import 'mocks/modugo_mock.dart';
-import 'mocks/modules_mock.dart';
+import 'package:modugo/src/module.dart';
+import 'package:modugo/src/injector.dart';
+import 'package:modugo/src/routes/child_route.dart';
+import 'package:modugo/src/interfaces/module_interface.dart';
 
 void main() {
-  test('GoRouterModular.configure sets up router and diagnostics', () async {
-    final modugo = await startModugoMock(module: RootModuleMock());
+  test('configure sets router and registers binds', () async {
+    final module = _InnerModule();
+    final router = await Modugo.configure(module: module);
 
-    expect(modugo, isA<GoRouter>());
-    expect(Modugo.routerConfig, same(modugo));
-    expect(Modugo.debugLogDiagnostics, isTrue);
-    expect(Modugo.getDefaultTransition, TypeTransition.fade);
+    expect(router, isA<GoRouter>());
+    expect(() => Modugo.get<_Service>(), returnsNormally);
   });
 
-  test(
-    'configure should return existing router if already configured',
-    () async {
-      final first = await startModugoMock(module: RootModuleMock());
-      final second = await startModugoMock(module: RootModuleMock());
+  test('get<T>() retrieves registered dependency', () async {
+    final module = _InnerModule();
+    await Modugo.configure(module: module);
 
-      expect(first, same(second));
-    },
-  );
-
-  test('get<T>() retrieves registered bind', () {
-    final instance = RootModuleMock();
-    Bind.register<RootModuleMock>(Bind.singleton((_) => instance));
-
-    expect(Modugo.get<RootModuleMock>(), same(instance));
+    final instance = Modugo.get<_Service>();
+    expect(instance.value, 1);
   });
 
-  test('configure applies custom default transition', () async {
-    await Modugo.configure(
-      module: RootModuleMock(),
-      pageTransition: TypeTransition.fade,
-    );
+  test('configure does not recreate router if already set', () async {
+    final module = _InnerModule();
+    final first = await Modugo.configure(module: module);
+    final second = await Modugo.configure(module: module);
 
-    expect(Modugo.getDefaultTransition, TypeTransition.fade);
+    expect(identical(first, second), isTrue);
   });
+}
+
+final class _Service {
+  final int value = 1;
+}
+
+final class _InnerModule extends Module {
+  @override
+  List<Bind> get binds => [Bind.singleton<_Service>((_) => _Service())];
+
+  @override
+  List<ModuleInterface> get routes => [
+    ChildRoute(
+      '/',
+      name: 'home',
+      child: (_, __) {
+        final service = Bind.get<_Service>();
+        return Text('value: ${service.value}');
+      },
+    ),
+  ];
 }

@@ -1,420 +1,250 @@
-// import 'package:flutter/material.dart';
-// import 'package:go_router/go_router.dart';
-// import 'package:flutter_test/flutter_test.dart';
-
-// import 'package:modugo/src/dispose.dart';
-// import 'package:modugo/src/interfaces/module_interface.dart';
-// import 'package:modugo/src/manager.dart';
-// import 'package:modugo/src/injector.dart';
-// import 'package:modugo/src/module.dart';
-// import 'package:modugo/src/routes/child_route.dart';
-// import 'package:modugo/src/routes/module_route.dart';
-// import 'package:modugo/src/routes/stateful_shell_module_route.dart';
-
-// import 'fakes/fakes.dart';
-// import 'mocks/modugo_mock.dart';
-// import 'mocks/modules_mock.dart';
-// import 'mocks/services_mock.dart';
-
-// void main() {
-//   setUp(() async {
-//     Bind.clearAll();
-
-//     final manager = Manager();
-//     manager.module = null;
-//     manager.bindsToDispose.clear();
-//     manager.bindReferences.clear();
-//   });
-
-//   test('Imported modules register their binds', () async {
-//     final module = MultiModulesInnerModuleMock();
-//     await startModugoMock(module: module);
-
-//     final imported = Bind.get<ModulesRepositoryMock>();
-
-//     expect(imported, isA<ModulesRepositoryMock>());
-//   });
-
-//   test('ChildRoute with "/" is excluded from _createChildRoutes', () async {
-//     final module = RootModuleMock();
-//     await startModugoMock(module: module);
-
-//     final routes = module.configureRoutes(topLevel: true);
-//     final paths = routes.whereType<GoRoute>().map((r) => r.path);
-
-//     expect(paths.contains('/'), isFalse);
-//   });
-
-//   test('ModuleRoute redirect is passed to GoRoute', () async {
-//     final module = ModuleWithRedirectMock();
-//     await startModugoMock(module: module);
-//     final routes = module.configureRoutes(topLevel: true);
-
-//     final redirected = routes.whereType<GoRoute>().firstWhere(
-//       (r) => r.path == '/',
-//     );
-
-//     final redirectResult = redirected.redirect?.call(
-//       BuildContextFake(),
-//       StateFake(),
-//     );
-
-//     expect(redirectResult, equals('/home'));
-//   });
-
-//   test('should register binds before building transition child', () async {
-//     final module = InnerModuleMock();
-//     await startModugoMock(module: module);
-//     module.configureRoutes(topLevel: true);
-
-//     ChildRoute(
-//       'home',
-//       child: (_, __) {
-//         final service = Bind.get<ServiceMock>();
-
-//         expect(service, isA<CustomTransitionPage>());
-//         return const Placeholder();
-//       },
-//     );
-//   });
-
-//   test('should create ShellRoute and register shell binds', () async {
-//     final module = ModuleWithShellMock();
-//     await startModugoMock(module: module);
-//     final routes = module.configureRoutes(topLevel: true);
-
-//     final shell = routes.whereType<ShellRoute>().first;
-
-//     expect(shell, isA<ShellRoute>());
-
-//     final controller = Bind.get<ServiceMock>();
-//     expect(controller, isA<ServiceMock>());
-//   });
-
-//   test('includes "/" when topLevel is true', () async {
-//     final module = ModuleWithDashMock();
-//     await startModugoMock(module: module);
-//     final routes = module.configureRoutes(topLevel: true);
-
-//     expect(routes.whereType<GoRoute>().any((r) => r.path == '/'), isTrue);
-//   });
-
-//   test('should include StatefulShellRoute when declared in routes', () async {
-//     final module = ModuleWithStatefulShellMock();
-//     await startModugoMock(module: module);
-//     final routes = module.configureRoutes(topLevel: true);
-
-//     expect(routes.whereType<StatefulShellRoute>().length, 1);
-//   });
-
-//   test(
-//     'should throw UnsupportedError if unknown route type in StatefulShellModuleRoute',
-//     () {
-//       expect(() {
-//         StatefulShellModuleRoute(
-//           builder: (ctx, state, shell) => const Placeholder(),
-//           routes: [ModuleInterfaceMock()],
-//         ).toRoute(topLevel: true, path: '');
-//       }, throwsA(isA<UnsupportedError>()));
-//     },
-//   );
-
-//   test('includes "" as "/" when topLevel is true', () async {
-//     final module = ModuleWithEmptyMock();
-//     await startModugoMock(module: module);
-//     final routes = module.configureRoutes(topLevel: true);
-
-//     expect(routes.whereType<GoRoute>().any((r) => r.path == '/'), isTrue);
-//   });
-
-//   test('ModuleRoute uses "/" ChildRoute as default', () async {
-//     final module = RootModuleMock();
-//     await startModugoMock(module: module);
-
-//     final routes = module.configureRoutes(topLevel: true);
-//     final profileRoute = routes.whereType<GoRoute>().firstWhere(
-//       (r) => r.path == '/profile',
-//     );
-
-//     expect(profileRoute.name, equals('profile-root'));
-//   });
-
-//   test('should register binds before calling child in GoRoute', () async {
-//     final module = RootModuleMock();
-//     await startModugoMock(module: module);
-//     final routes = module.configureRoutes(topLevel: true);
-
-//     final goRoute = routes.whereType<GoRoute>().firstWhere(
-//       (r) => r.path == '/profile',
-//     );
-
-//     final widget = goRoute.builder!(BuildContextFake(), StateFake());
-
-//     expect(widget, isA<Placeholder>());
-//   });
-
-//   test('StatefulShellModuleRoute recognaze "/" the secundary branch', () async {
-//     final module = ModuleWithStatefulShellMock();
-//     await startModugoMock(module: module);
-
-//     final routes = module.configureRoutes(topLevel: true);
-//     final shellRoute = routes.whereType<StatefulShellRoute>().first;
-
-//     final homeBranch = shellRoute.branches.first;
-//     final settingsBranch = shellRoute.branches[1];
-
-//     final homeRoute = homeBranch.routes.whereType<GoRoute>().first;
-//     final settingsRoute = settingsBranch.routes.whereType<GoRoute>().first;
-
-//     expect(homeRoute.path, equals('/'));
-//     expect(settingsRoute.path, equals('settings'));
-//   });
-
-//   test(
-//     'should build branches from ModuleRoute inside StatefulShellModuleRoute',
-//     () async {
-//       final module = ModuleWithStatefulShellMock();
-//       await startModugoMock(module: module);
-
-//       final routes = module.configureRoutes(topLevel: true);
-//       final shellRoute = routes.whereType<StatefulShellRoute>().first;
-
-//       final branches = shellRoute.branches;
-//       expect(branches.length, equals(2));
-
-//       for (final branch in branches) {
-//         final goRoutes = branch.routes.whereType<GoRoute>();
-//         expect(goRoutes.isNotEmpty, isTrue);
-//       }
-//     },
-//   );
-
-//   test('Module.configureRoutes creates valid RouteBase list', () async {
-//     final module = OtherModuleMock();
-//     await startModugoMock(module: module, debugLogDiagnostics: true);
-//     final routes = module.configureRoutes(topLevel: true);
-
-//     expect(routes, isA<List<RouteBase>>());
-//     expect(routes.length, 3);
-
-//     final child = routes.whereType<GoRoute>().firstWhere(
-//       (r) => r.path == '/home',
-//     );
-//     expect(child, isNotNull);
-
-//     final moduleRoute = routes.whereType<GoRoute>().firstWhere(
-//       (r) => r.path == '/profile',
-//     );
-//     final moduleRouteChildren =
-//         moduleRoute.routes.whereType<GoRoute>().toList();
-
-//     expect(moduleRouteChildren.length, 2);
-//     expect(
-//       moduleRouteChildren.map((r) => r.path),
-//       containsAll(['profile', 'profile/settings']),
-//     );
-
-//     final shell = routes.whereType<ShellRoute>().first;
-//     expect(shell, isNotNull);
-
-//     final syncService = Bind.get<ServiceMock>();
-//     expect(syncService, isNotNull);
-//     expect(syncService, isA<ServiceMock>());
-//   });
-
-//   test(
-//     'should register parent before child when building ModuleRoute',
-//     () async {
-//       final module = OtherModuleMock();
-
-//       await startModugoMock(module: module);
-
-//       final order = <String>[];
-
-//       Bind.register<String>(
-//         Bind.singleton((_) {
-//           order.add('parent');
-//           return 'parent';
-//         }),
-//       );
-
-//       Bind.register<int>(
-//         Bind.singleton((_) {
-//           order.add('child');
-//           return 1;
-//         }),
-//       );
-
-//       Bind.get<String>();
-//       Bind.get<int>();
-
-//       expect(order, ['parent', 'child']);
-//     },
-//   );
-
-//   test('should assign fallback name to unnamed ChildRoute in branch', () {
-//     final route = StatefulShellModuleRoute(
-//       routes: [ChildRoute('/', child: (_, __) => Container())],
-//       builder: (context, state, shell) => Container(),
-//     );
-
-//     final routeBase = route.toRoute(path: '/', topLevel: true);
-//     expect(routeBase, isA<StatefulShellRoute>());
-
-//     final shell = routeBase as StatefulShellRoute;
-
-//     final branch = shell.branches.first;
-//     final goRoute = branch.routes.first as GoRoute;
-
-//     expect(goRoute.name, 'branch_0');
-//   });
-
-//   test(
-//     'should throw assertion error when initialPathsPerBranch length does not match routes',
-//     () {
-//       expect(
-//         () => StatefulShellModuleRoute(
-//           initialPathsPerBranch: ['/wrong'],
-//           routes: [
-//             ModuleRoute('/wrong', module: OtherModuleMock()),
-//             ModuleRoute('/wrong', module: OtherModuleMock()),
-//           ],
-//           builder: (context, state, shell) => Container(),
-//         ),
-//         throwsA(isA<AssertionError>()),
-//       );
-//     },
-//   );
-
-//   test(
-//     'ModuleWithStatefulShellMock should configure stateful shell properly',
-//     () async {
-//       final module = ModuleWithStatefulShellMock();
-//       await startModugoMock(module: module);
-//       final routes = module.configureRoutes(topLevel: true, path: '/');
-
-//       final statefulShell = routes.whereType<StatefulShellRoute>().firstOrNull;
-//       expect(statefulShell, isNotNull);
-
-//       expect(statefulShell!.branches.length, 2);
-
-//       final allPaths =
-//           statefulShell.branches
-//               .expand((b) => b.routes)
-//               .whereType<GoRoute>()
-//               .map((r) => r.path)
-//               .toList();
-
-//       expect(allPaths[0], equals('/'));
-//       expect(allPaths[1], equals('settings'));
-//       expect(allPaths.length, 2);
-//     },
-//   );
-
-//   test('should unregister non-root module after timeout', () async {
-//     final module = ModuleWithBranchMock();
-//     await startModugoMock(module: module);
-
-//     final manager = Manager();
-//     manager.registerBindsIfNeeded(module);
-//     manager.registerRoute('/with-branch', module, branch: 'branch-a');
-
-//     expect(manager.isModuleActive(module), isTrue);
-
-//     manager.unregisterRoute('/with-branch', module, branch: 'branch-a');
-//     await Future.delayed(Duration(milliseconds: disposeMilisenconds + 32));
-
-//     expect(manager.isModuleActive(module), isFalse);
-//   });
-
-//   test(
-//     'should unregister correctly on route exit with branch (Module root must not unregister)',
-//     () async {
-//       final module = ModuleWithExitMock();
-//       await startModugoMock(module: module);
-
-//       final routes = module.configureRoutes(topLevel: true);
-//       final goRoute = routes.whereType<GoRoute>().first;
-
-//       final context = BuildContextFake();
-//       final state = StateFake();
-
-//       final future = goRoute.onExit?.call(context, state);
-//       final result = await future;
-
-//       expect(result, isTrue);
-
-//       final manager = Manager();
-//       expect(manager.isModuleActive(module), isTrue);
-//     },
-//   );
-
-//   test('should register route with branch in Manager', () async {
-//     final module = ModuleWithStatefulShellMock();
-//     await startModugoMock(module: module);
-
-//     final routes = module.configureRoutes(topLevel: true);
-//     final goRoute = routes.first.routes.whereType<GoRoute>().first;
-
-//     final context = BuildContextFake();
-//     final state = StateFake();
-
-//     goRoute.builder!(context, state);
-
-//     final manager = Manager();
-//     final isActive = manager.isModuleActive(module);
-
-//     expect(isActive, isTrue);
-//   });
-
-//   test(
-//     'should compose correct paths and support initialPathsPerBranch',
-//     () async {
-//       final module = AppModule();
-//       await startModugoMock(module: module);
-//       final routes = module.configureRoutes(topLevel: true, path: '');
-
-//       final shell = routes.whereType<StatefulShellRoute>().first;
-
-//       expect(shell.branches.length, 2);
-
-//       final branchPaths =
-//           shell.branches
-//               .expand((b) => b.routes)
-//               .whereType<GoRoute>()
-//               .map((r) => r.path)
-//               .toList();
-
-//       expect(branchPaths, contains('/'));
-//       expect(branchPaths, contains('/cart.do'));
-//     },
-//   );
-// }
-
-// final class HomeModule extends Module {
-//   @override
-//   List<ModuleInterface> get routes => [
-//     ChildRoute('/', name: 'home', child: (_, __) => const Text('Home')),
-//   ];
-// }
-
-// final class CartModule extends Module {
-//   @override
-//   List<ModuleInterface> get routes => [
-//     ChildRoute('/', name: 'cart', child: (_, __) => const Text('Cart')),
-//   ];
-// }
-
-// final class AppModule extends Module {
-//   @override
-//   List<ModuleInterface> get routes => [
-//     StatefulShellModuleRoute(
-//       builder: (_, __, shell) => shell,
-//       initialPathsPerBranch: ['/', '/cart.do'],
-//       routes: [
-//         ModuleRoute('/', module: HomeModule(), name: 'home-module'),
-//         ModuleRoute('/cart.do', module: CartModule(), name: 'cart-module'),
-//       ],
-//     ),
-//   ];
-// }
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+import 'package:modugo/src/module.dart';
+import 'package:modugo/src/dispose.dart';
+import 'package:modugo/src/manager.dart';
+import 'package:modugo/src/injector.dart';
+import 'package:modugo/src/routes/child_route.dart';
+import 'package:modugo/src/routes/module_route.dart';
+import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/routes/shell_module_route.dart';
+import 'package:modugo/src/routes/stateful_shell_module_route.dart';
+
+import 'fakes/fakes.dart';
+
+void main() {
+  setUp(() async {
+    Bind.clearAll();
+    final manager = Manager();
+    manager.module = null;
+    manager.bindReferences.clear();
+    manager.bindsToDispose.clear();
+  });
+
+  group('Module route configuration', () {
+    test(
+      'throws error for unsupported route type in StatefulShellModuleRoute',
+      () {
+        expect(() {
+          StatefulShellModuleRoute(
+            builder: (ctx, state, shell) => const Placeholder(),
+            routes: [_ModuleInterface()],
+          ).toRoute(topLevel: true, path: '');
+        }, throwsA(isA<UnsupportedError>()));
+      },
+    );
+  });
+
+  group('Module edge cases', () {
+    test('ModuleRoute with no "/" route does not throw', () async {
+      final module = _ModuleWithNoRootChild();
+      await startModugoFake(module: module);
+      final parent = _ParentModuleWithModuleRoute(child: module);
+
+      expect(() => parent.configureRoutes(topLevel: true), returnsNormally);
+    });
+  });
+
+  group('Module route configuration', () {
+    test('creates ChildRoutes and registers binds', () async {
+      final module = _InnerModule();
+      await startModugoFake(module: module);
+
+      module.configureRoutes(topLevel: true, path: '/home');
+      expect(() => Bind.get<_Service>(), returnsNormally);
+    });
+
+    test('creates ModuleRoute using / as default child', () async {
+      final module = _RootModule();
+      await startModugoFake(module: module);
+      final routes = module.configureRoutes(topLevel: true);
+
+      final profile = routes.whereType<GoRoute>().firstWhere(
+        (r) => r.path == '/profile',
+      );
+      expect(profile.name, 'profile-root');
+    });
+
+    test('creates ShellRoute and registers shell binds', () async {
+      final module = _ModuleWithShell();
+      await startModugoFake(module: module);
+      final routes = module.configureRoutes(topLevel: true);
+
+      expect(routes.whereType<ShellRoute>().isNotEmpty, isTrue);
+      expect(() => Bind.get<_Service>(), returnsNormally);
+    });
+
+    test('creates StatefulShellRoute with branches', () async {
+      final module = _ModuleWithStatefulShell();
+      await startModugoFake(module: module);
+      final routes = module.configureRoutes(topLevel: true);
+
+      final shell = routes.whereType<StatefulShellRoute>().first;
+      expect(shell.branches.length, 2);
+    });
+  });
+
+  group('Module bind lifecycle', () {
+    test('registers binds before builder is called', () async {
+      final module = _RootModule();
+      await startModugoFake(module: module);
+      final routes = module.configureRoutes(topLevel: true);
+
+      final goRoute = routes.whereType<GoRoute>().first;
+      final widget = goRoute.builder!(BuildContextFake(), StateFake());
+
+      expect(widget, isA<Widget>());
+    });
+
+    test('does not unregister if onExit returns false', () async {
+      final module = _ModuleWithOnExitFalse();
+      await startModugoFake(module: module);
+      module.configureRoutes(topLevel: true);
+
+      final goRoute =
+          module
+                  .configureRoutes(topLevel: true)
+                  .firstWhere((r) => r is GoRoute && r.name == 'on-exit-false')
+              as GoRoute;
+
+      final result = await goRoute.onExit?.call(
+        BuildContextFake(),
+        StateFake(),
+      );
+      expect(result, isFalse);
+
+      final manager = Manager();
+      expect(manager.isModuleActive(module), isTrue);
+    });
+
+    test('unregisters module after route exit', () async {
+      final module = _ModuleWithBranch();
+      await startModugoFake(module: module);
+
+      final manager = Manager();
+      manager.registerBindsIfNeeded(module);
+      manager.registerRoute('/with-branch', module, branch: 'branch-a');
+
+      expect(manager.isModuleActive(module), isTrue);
+
+      manager.unregisterRoute('/with-branch', module, branch: 'branch-a');
+      await Future.delayed(Duration(milliseconds: disposeMilisenconds + 72));
+
+      expect(manager.isModuleActive(module), isFalse);
+    });
+  });
+}
+
+final class _ModuleInterface implements ModuleInterface {}
+
+final class _Service {
+  int value = 0;
+}
+
+final class _InnerModule extends Module {
+  @override
+  List<ModuleInterface> get routes => [
+    ChildRoute('/home', name: 'home', child: (_, __) => const Text('Home')),
+  ];
+
+  @override
+  List<Bind> get binds => [Bind.factory<_Service>((_) => _Service())];
+}
+
+final class _ModuleWithBranch extends Module {
+  @override
+  List<ModuleInterface> get routes => [
+    ChildRoute(
+      'with-branch',
+      name: 'with-branch-route',
+      child: (_, __) => const Placeholder(),
+    ),
+  ];
+
+  @override
+  List<Bind> get binds => [Bind.singleton<_Service>((_) => _Service())];
+}
+
+final class _RootModule extends Module {
+  @override
+  List<Bind> get binds => [];
+
+  @override
+  List<Module> get imports => [_InnerModule()];
+
+  @override
+  List<ModuleInterface> get routes => [
+    ChildRoute(
+      '/profile',
+      name: 'profile-root',
+      child: (context, state) => const Placeholder(),
+    ),
+  ];
+}
+
+final class _ModuleWithDash extends Module {
+  @override
+  List<ChildRoute> get routes => [
+    ChildRoute('/', name: 'root', child: (_, __) => const Placeholder()),
+  ];
+}
+
+final class _ModuleWithSettings extends Module {
+  @override
+  List<ModuleInterface> get routes => [
+    ChildRoute('/', name: 'settings', child: (_, __) => const Placeholder()),
+  ];
+}
+
+final class _ModuleWithStatefulShell extends Module {
+  @override
+  List<ModuleInterface> get routes => [
+    StatefulShellModuleRoute(
+      builder: (ctx, state, shell) => const Placeholder(),
+      routes: [
+        ModuleRoute('/', module: _ModuleWithDash()),
+        ModuleRoute('/settings', module: _ModuleWithSettings()),
+      ],
+    ),
+  ];
+}
+
+final class _ModuleWithOnExitFalse extends Module {
+  @override
+  List<ModuleInterface> get routes => [
+    ChildRoute(
+      '/some',
+      name: 'on-exit-false',
+      child: (_, __) => const Text('Some'),
+      onExit: (_, __) async => false,
+    ),
+  ];
+}
+
+final class _ModuleWithShell extends Module {
+  @override
+  List<ModuleInterface> get routes => [
+    ShellModuleRoute(
+      binds: [Bind.singleton<_Service>((_) => _Service())],
+      builder: (_, __, child) => Container(child: child),
+      routes: [ChildRoute('tab1', child: (_, __) => const Placeholder())],
+    ),
+  ];
+}
+
+final class _ModuleWithNoRootChild extends Module {
+  @override
+  List<ModuleInterface> get routes => [
+    ChildRoute('non-root', child: (_, __) => const Placeholder()),
+  ];
+}
+
+final class _ParentModuleWithModuleRoute extends Module {
+  final Module child;
+  _ParentModuleWithModuleRoute({required this.child});
+
+  @override
+  List<ModuleInterface> get routes => [ModuleRoute('/child', module: child)];
+}
