@@ -8,7 +8,7 @@ void main() {
   late IBind<_Dependency> bind;
 
   setUp(() {
-    bind = FactoryBind(
+    bind = FactoryBind<_Dependency>(
       (_) => _Dependency(DateTime.now().millisecondsSinceEpoch),
     );
   });
@@ -27,6 +27,12 @@ void main() {
 
     final instance = bind.get(Injector());
     expect(instance, isA<_Dependency>());
+  });
+
+  test('dispose() logs message when diagnostics are enabled', () {
+    final bind = FactoryBind<_Dependency>((_) => _Dependency(1));
+
+    expect(() => bind.dispose(), returnsNormally);
   });
 }
 

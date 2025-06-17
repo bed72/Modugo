@@ -65,10 +65,6 @@ final class ModugoConfiguration {
 
     final routes = module.configureRoutes(topLevel: true);
 
-    assert(
-      delayDisposeMilliseconds >= 500,
-      '❌ delayDisposeMilliseconds must be at least 500ms - Check `main.dart`.',
-    );
     setDisposeMiliseconds(delayDisposeMilliseconds);
 
     _router = GoRouter(

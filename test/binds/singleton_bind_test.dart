@@ -7,7 +7,7 @@ import 'package:modugo/src/binds/singleton_bind.dart';
 
 void main() {
   test('should create instance eagerly and always return the same', () {
-    final bind = SingletonBind((_) => _Service(42));
+    final bind = SingletonBind<_Service>((_) => _Service(42));
     final first = bind.get(Injector());
     final second = bind.get(Injector());
 
@@ -16,7 +16,7 @@ void main() {
   });
 
   test('dispose() clears the instance', () {
-    final bind = SingletonBind((_) => _Service(1));
+    final bind = SingletonBind<_Service>((_) => _Service(1));
     final instanceBefore = bind.get(Injector());
 
     bind.dispose();
@@ -26,7 +26,7 @@ void main() {
   });
 
   test('dispose() calls dispose() on ChangeNotifier', () {
-    final bind = SingletonBind((_) => _Disposable());
+    final bind = SingletonBind<_Disposable>((_) => _Disposable());
     final instance = bind.get(Injector());
 
     expect(instance.disposed, isFalse);
@@ -35,7 +35,7 @@ void main() {
   });
 
   test('dispose() closes Sink', () {
-    final bind = SingletonBind((_) => _Sink());
+    final bind = SingletonBind<_Sink>((_) => _Sink());
     final sink = bind.get(Injector());
 
     expect(sink.closed, isFalse);
@@ -44,7 +44,9 @@ void main() {
   });
 
   test('dispose() closes StreamController', () {
-    final bind = SingletonBind((_) => StreamController<String>());
+    final bind = SingletonBind<StreamController<String>>(
+      (_) => StreamController<String>(),
+    );
     final controller = bind.get(Injector());
 
     expect(controller.isClosed, isFalse);
@@ -53,18 +55,37 @@ void main() {
   });
 
   test('dispose() can be called multiple times without error', () {
-    final bind = SingletonBind((_) => _Service(1));
+    final bind = SingletonBind<_Service>((_) => _Service(1));
     bind.dispose();
+    expect(() => bind.dispose(), returnsNormally);
+  });
+
+  test('dispose logs error when dispose fails and diagnostics enabled', () {
+    final bind = SingletonBind<_ThrowingDisposable>(
+      (_) => _ThrowingDisposable(),
+    );
+    bind.get(Injector());
+
+    expect(() => bind.dispose(), returnsNormally);
+  });
+
+  test('dispose is safe when instance is null (never initialized)', () {
+    final bind = SingletonBind<_Service>((_) => _Service(1));
+
     expect(() => bind.dispose(), returnsNormally);
   });
 }
 
-class _Service {
+final class _Service {
   final int value;
   _Service(this.value);
 }
 
-class _Disposable extends ChangeNotifier {
+final class _ThrowingDisposable {
+  void dispose() => throw Exception('dispose error');
+}
+
+final class _Disposable extends ChangeNotifier {
   bool disposed = false;
 
   @override
@@ -74,7 +95,7 @@ class _Disposable extends ChangeNotifier {
   }
 }
 
-class _Sink implements Sink {
+final class _Sink implements Sink {
   bool closed = false;
 
   @override

@@ -10,7 +10,7 @@ void main() {
   late LazySingletonBind<_Disposable> bind;
 
   setUp(() {
-    bind = LazySingletonBind((_) => _Disposable());
+    bind = LazySingletonBind<_Disposable>((_) => _Disposable());
   });
 
   test('get() returns same instance across calls', () {
@@ -40,7 +40,9 @@ void main() {
   });
 
   test('dispose() closes a StreamController', () {
-    final bind = LazySingletonBind((_) => StreamController<String>());
+    final bind = LazySingletonBind<StreamController<String>>(
+      (_) => StreamController<String>(),
+    );
     final controller = bind.get(Injector());
 
     expect(controller.isClosed, isFalse);
@@ -61,6 +63,25 @@ void main() {
 
     expect(instance.closed, isTrue);
   });
+
+  test('dispose() is safe when instance is null (never created)', () {
+    final bind = LazySingletonBind<_Disposable>((_) => _Disposable());
+
+    expect(() => bind.dispose(), returnsNormally);
+  });
+
+  test('dispose() logs error when dispose throws and diagnostics enabled', () {
+    final bind = LazySingletonBind<_ThrowingDisposable>(
+      (_) => _ThrowingDisposable(),
+    );
+    bind.get(Injector());
+
+    expect(() => bind.dispose(), returnsNormally);
+  });
+}
+
+final class _ThrowingDisposable {
+  void dispose() => throw Exception('dispose error');
 }
 
 final class _Disposable extends ChangeNotifier {

@@ -142,6 +142,13 @@ void main() {
       final child = routes.whereType<GoRoute>().first;
       expect(child.path, '/top/home');
     });
+
+    test('configureRoutes returns all route types', () {
+      final module = _ModuleWithStatefulShell();
+      final routes = module.configureRoutes(topLevel: true, path: '/');
+
+      expect(routes.any((r) => r is StatefulShellRoute), isTrue);
+    });
   });
 }
 

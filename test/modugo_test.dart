@@ -33,6 +33,12 @@ void main() {
 
     expect(identical(first, second), isTrue);
   });
+
+  test('manager getter returns singleton instance', () {
+    final m1 = Modugo.manager;
+    final m2 = Modugo.manager;
+    expect(identical(m1, m2), isTrue);
+  });
 }
 
 final class _Service {
