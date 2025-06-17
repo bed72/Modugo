@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:modugo/modugo.dart';
 import 'package:modugo/src/logger.dart';
-import 'package:modugo/src/interfaces/injector_interface.dart';
 import 'package:modugo/src/routes/models/route_access_model.dart';
 
 final class Manager implements IManager {
@@ -114,7 +113,7 @@ final class Manager implements IManager {
         _incrementBindReference(type);
         typesForModule.add(type);
 
-        if (ModugoLogger.enabled) ModugoLogger.injection('BIND: $type');
+        if (ModugoLogger.enabled) ModugoLogger.injection('🔗 Binds: $type');
       }
     }
 
