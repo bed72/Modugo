@@ -20,21 +20,10 @@ final class ModugoConfiguration {
     return _router!;
   }
 
-  static bool get debugLogDiagnostics {
-    assert(
-      _debugLogDiagnostics != null,
-      'Add ModugoConfiguration.configure in main.dart',
-    );
-    return _debugLogDiagnostics!;
-  }
+  static bool get debugLogDiagnostics => _debugLogDiagnostics ?? false;
 
-  static TypeTransition get getDefaultTransition {
-    assert(
-      _transition != null,
-      'Add ModugoConfiguration.configure in main.dart',
-    );
-    return _transition!;
-  }
+  static TypeTransition get getDefaultTransition =>
+      _transition ?? TypeTransition.fade;
 
   static GoRouter? _router;
 
@@ -44,7 +33,7 @@ final class ModugoConfiguration {
 
   static TypeTransition? _transition;
 
-  static T get<T>() => Bind.get<T>();
+  static T get<T>() => Injector().get<T>();
 
   static FutureOr<GoRouter> configure({
     required Module module,
@@ -76,10 +65,6 @@ final class ModugoConfiguration {
 
     final routes = module.configureRoutes(topLevel: true);
 
-    assert(
-      delayDisposeMilliseconds >= 500,
-      '❌ delayDisposeMilliseconds must be at least 500ms - Check `main.dart`.',
-    );
     setDisposeMiliseconds(delayDisposeMilliseconds);
 
     _router = GoRouter(

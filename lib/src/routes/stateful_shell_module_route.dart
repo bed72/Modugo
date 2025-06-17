@@ -9,8 +9,8 @@ import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
 
 @immutable
-final class StatefulShellModuleRoute implements ModuleInterface {
-  final List<ModuleInterface> routes;
+final class StatefulShellModuleRoute implements IModule {
+  final List<IModule> routes;
   final Widget Function(
     BuildContext context,
     GoRouterState state,

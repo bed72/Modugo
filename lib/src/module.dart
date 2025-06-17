@@ -12,12 +12,13 @@ import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/interfaces/injector_interface.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 abstract class Module {
-  List<Bind> get binds => const [];
   List<Module> get imports => const [];
-  List<ModuleInterface> get routes => const [];
+  List<IModule> get routes => const [];
+  List<void Function(IInjector)> get binds => const [];
 
   late String _modulePath;
 
@@ -180,12 +181,17 @@ abstract class Module {
       if (route is ShellModuleRoute) {
         if (route.binds.isNotEmpty) {
           for (final bind in route.binds) {
-            final existing = Bind.getBindByType(bind.type);
-            if (existing == null) {
-              Bind.register(bind);
+            final before = Injector().registeredTypes;
+            bind(Injector());
+            final after = Injector().registeredTypes;
+
+            final newTypes = after.difference(before);
+            for (final type in newTypes) {
+              _routerManager.bindReferences[type] =
+                  (_routerManager.bindReferences[type] ?? 0) + 1;
 
               if (Modugo.debugLogDiagnostics) {
-                ModugoLogger.injection('🔐 ShellBind → ${bind.type}');
+                ModugoLogger.injection('🔐 ShellBind → $type');
               }
             }
           }

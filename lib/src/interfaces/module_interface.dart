@@ -1,5 +1,5 @@
 // coverage:ignore-file
 
-abstract interface class ModuleInterface {
-  ModuleInterface();
+abstract interface class IModule {
+  IModule();
 }

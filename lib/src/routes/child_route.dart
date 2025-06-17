@@ -8,7 +8,7 @@ import 'package:modugo/src/transition.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
 
 @immutable
-final class ChildRoute implements ModuleInterface {
+final class ChildRoute implements IModule {
   final String path;
   final String? name;
   final TypeTransition? transition;

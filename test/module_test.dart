@@ -8,19 +8,19 @@ import 'package:modugo/src/manager.dart';
 import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
-import 'package:modugo/src/interfaces/module_interface.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
+import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/interfaces/injector_interface.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 import 'fakes/fakes.dart';
 
 void main() {
   setUp(() async {
-    Bind.clearAll();
+    Injector().clearAll();
     final manager = Manager();
     manager.module = null;
     manager.bindReferences.clear();
-    manager.bindsToDispose.clear();
   });
 
   group('Module route configuration', () {
@@ -51,9 +51,9 @@ void main() {
     test('creates ChildRoutes and registers binds', () async {
       final module = _InnerModule();
       await startModugoFake(module: module);
-
       module.configureRoutes(topLevel: true, path: '/home');
-      expect(() => Bind.get<_Service>(), returnsNormally);
+
+      expect(() => Injector().get<_Service>(), returnsNormally);
     });
 
     test('creates ModuleRoute using / as default child', () async {
@@ -73,7 +73,7 @@ void main() {
       final routes = module.configureRoutes(topLevel: true);
 
       expect(routes.whereType<ShellRoute>().isNotEmpty, isTrue);
-      expect(() => Bind.get<_Service>(), returnsNormally);
+      expect(() => Injector().get<_Service>(), returnsNormally);
     });
 
     test('creates StatefulShellRoute with branches', () async {
@@ -134,10 +134,25 @@ void main() {
 
       expect(manager.isModuleActive(module), isFalse);
     });
+
+    test('ChildRoute path is composed correctly with topLevel', () async {
+      final module = _InnerModule();
+      final routes = module.configureRoutes(topLevel: true, path: '/top');
+
+      final child = routes.whereType<GoRoute>().first;
+      expect(child.path, '/top/home');
+    });
+
+    test('configureRoutes returns all route types', () {
+      final module = _ModuleWithStatefulShell();
+      final routes = module.configureRoutes(topLevel: true, path: '/');
+
+      expect(routes.any((r) => r is StatefulShellRoute), isTrue);
+    });
   });
 }
 
-final class _ModuleInterface implements ModuleInterface {}
+final class _ModuleInterface implements IModule {}
 
 final class _Service {
   int value = 0;
@@ -145,17 +160,19 @@ final class _Service {
 
 final class _InnerModule extends Module {
   @override
-  List<ModuleInterface> get routes => [
+  List<IModule> get routes => [
     ChildRoute('/home', name: 'home', child: (_, __) => const Text('Home')),
   ];
 
   @override
-  List<Bind> get binds => [Bind.factory<_Service>((_) => _Service())];
+  List<void Function(IInjector)> get binds => [
+    (i) => i.addFactory<_Service>((_) => _Service()),
+  ];
 }
 
 final class _ModuleWithBranch extends Module {
   @override
-  List<ModuleInterface> get routes => [
+  List<IModule> get routes => [
     ChildRoute(
       'with-branch',
       name: 'with-branch-route',
@@ -164,18 +181,17 @@ final class _ModuleWithBranch extends Module {
   ];
 
   @override
-  List<Bind> get binds => [Bind.singleton<_Service>((_) => _Service())];
+  List<void Function(IInjector)> get binds => [
+    (i) => i.addSingleton<_Service>((_) => _Service()),
+  ];
 }
 
 final class _RootModule extends Module {
   @override
-  List<Bind> get binds => [];
-
-  @override
   List<Module> get imports => [_InnerModule()];
 
   @override
-  List<ModuleInterface> get routes => [
+  List<IModule> get routes => [
     ChildRoute(
       '/profile',
       name: 'profile-root',
@@ -193,14 +209,14 @@ final class _ModuleWithDash extends Module {
 
 final class _ModuleWithSettings extends Module {
   @override
-  List<ModuleInterface> get routes => [
+  List<IModule> get routes => [
     ChildRoute('/', name: 'settings', child: (_, __) => const Placeholder()),
   ];
 }
 
 final class _ModuleWithStatefulShell extends Module {
   @override
-  List<ModuleInterface> get routes => [
+  List<IModule> get routes => [
     StatefulShellModuleRoute(
       builder: (ctx, state, shell) => const Placeholder(),
       routes: [
@@ -213,7 +229,7 @@ final class _ModuleWithStatefulShell extends Module {
 
 final class _ModuleWithOnExitFalse extends Module {
   @override
-  List<ModuleInterface> get routes => [
+  List<IModule> get routes => [
     ChildRoute(
       '/some',
       name: 'on-exit-false',
@@ -225,9 +241,9 @@ final class _ModuleWithOnExitFalse extends Module {
 
 final class _ModuleWithShell extends Module {
   @override
-  List<ModuleInterface> get routes => [
+  List<IModule> get routes => [
     ShellModuleRoute(
-      binds: [Bind.singleton<_Service>((_) => _Service())],
+      binds: [(i) => i.addSingleton<_Service>((_) => _Service())],
       builder: (_, __, child) => Container(child: child),
       routes: [ChildRoute('tab1', child: (_, __) => const Placeholder())],
     ),
@@ -236,7 +252,7 @@ final class _ModuleWithShell extends Module {
 
 final class _ModuleWithNoRootChild extends Module {
   @override
-  List<ModuleInterface> get routes => [
+  List<IModule> get routes => [
     ChildRoute('non-root', child: (_, __) => const Placeholder()),
   ];
 }
@@ -246,5 +262,5 @@ final class _ParentModuleWithModuleRoute extends Module {
   _ParentModuleWithModuleRoute({required this.child});
 
   @override
-  List<ModuleInterface> get routes => [ModuleRoute('/child', module: child)];
+  List<IModule> get routes => [ModuleRoute('/child', module: child)];
 }

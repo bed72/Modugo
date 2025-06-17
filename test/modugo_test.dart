@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:modugo/src/extension.dart';
 
 import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/module.dart';
-import 'package:modugo/src/injector.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/interfaces/injector_interface.dart';
 
 void main() {
   test('configure sets router and registers binds', () async {
@@ -32,6 +33,12 @@ void main() {
 
     expect(identical(first, second), isTrue);
   });
+
+  test('manager getter returns singleton instance', () {
+    final m1 = Modugo.manager;
+    final m2 = Modugo.manager;
+    expect(identical(m1, m2), isTrue);
+  });
 }
 
 final class _Service {
@@ -40,15 +47,18 @@ final class _Service {
 
 final class _InnerModule extends Module {
   @override
-  List<Bind> get binds => [Bind.singleton<_Service>((_) => _Service())];
+  List<void Function(IInjector)> get binds => [
+    (i) => i.addSingleton<_Service>((_) => _Service()),
+  ];
 
   @override
-  List<ModuleInterface> get routes => [
+  List<IModule> get routes => [
     ChildRoute(
       '/',
       name: 'home',
-      child: (_, __) {
-        final service = Bind.get<_Service>();
+      child: (context, __) {
+        final service = context.read<_Service>();
+
         return Text('value: ${service.value}');
       },
     ),

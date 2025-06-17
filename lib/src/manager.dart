@@ -4,12 +4,12 @@ import 'package:modugo/modugo.dart';
 import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/routes/models/route_access_model.dart';
 
-final class Manager implements ManagerInterface {
+final class Manager implements IManager {
   Timer? _timer;
   Module? _module;
-  List<Type> bindsToDispose = [];
 
   final Map<Type, int> _bindReferences = {};
+  final Map<Module, Set<Type>> _moduleTypes = {};
   final Map<Module, List<RouteAccessModel>> _activeRoutes = {};
 
   static final Manager _instance = Manager._();
@@ -52,8 +52,7 @@ final class Manager implements ManagerInterface {
     _activeRoutes[module] = [];
 
     if (Modugo.debugLogDiagnostics) {
-      _logImportedBinds(module);
-      _logInjectionBinds(module);
+      ModugoLogger.info('📦 Module: ${module.runtimeType}');
     }
   }
 
@@ -73,9 +72,7 @@ final class Manager implements ManagerInterface {
 
     _timer?.cancel();
     _timer = Timer(Duration(milliseconds: disposeMilisenconds), () {
-      if (_activeRoutes[module]?.isEmpty ?? true) {
-        unregisterBinds(module);
-      }
+      if (_activeRoutes[module]?.isEmpty ?? true) unregisterBinds(module);
       _timer?.cancel();
     });
   }
@@ -85,71 +82,42 @@ final class Manager implements ManagerInterface {
     if (_module == module) return;
     if (_activeRoutes[module]?.isNotEmpty ?? false) return;
 
-    if (Modugo.debugLogDiagnostics) _logUnregisteredBinds(module);
-
-    for (final bind in module.binds) {
-      _decrementBindReference(_resolveBindType(bind));
+    if (Modugo.debugLogDiagnostics) {
+      ModugoLogger.dispose('❌ Unregistering Binds from ${module.runtimeType}');
     }
 
-    for (final importedModule in module.imports) {
-      for (final bind in importedModule.binds) {
-        if (_module?.binds.contains(bind) ?? false) continue;
-        _decrementBindReference(_resolveBindType(bind));
-      }
-    }
+    final types = _moduleTypes.remove(module) ?? {};
 
-    bindsToDispose.map((type) => Bind.disposeByType(type)).toList();
-    bindsToDispose.clear();
+    for (final type in types) {
+      _decrementBindReference(type);
+    }
 
     _activeRoutes.remove(module);
   }
 
   void _registerBinds(Module module) {
-    final allSyncBinds = <Bind>[
+    final allRegistrars = <void Function(IInjector)>[
       ...module.binds,
       for (final imported in module.imports) ...imported.binds,
     ];
-    _recursiveRegisterBinds(allSyncBinds);
-  }
 
-  Type _resolveBindType(Bind bind) =>
-      bind.maybeInstance?.runtimeType ?? bind.runtimeType;
+    final typesForModule = <Type>{};
 
-  void _recursiveRegisterBinds(List<Bind> binds, [int depth = 0]) {
-    if (binds.isEmpty) return;
+    for (final register in allRegistrars) {
+      final before = Injector().registeredTypes;
+      register(Injector());
+      final after = Injector().registeredTypes;
 
-    final queueBinds = <Bind>[];
+      final newTypes = after.difference(before);
+      for (final type in newTypes) {
+        _incrementBindReference(type);
+        typesForModule.add(type);
 
-    for (final bind in binds) {
-      try {
-        _incrementBindReference(_resolveBindType(bind));
-
-        if (ModugoLogger.enabled) {
-          ModugoLogger.injection(
-            'BIND: ${bind.type} | singleton: ${bind.isSingleton} | lazy: ${bind.isLazy}',
-          );
-        }
-
-        Bind.register(bind);
-      } catch (e, s) {
-        if (ModugoLogger.enabled) {
-          ModugoLogger.error(
-            '❌ Failed to register bind: ${_resolveBindType(bind)} → $e\n$s',
-          );
-        }
-        queueBinds.add(bind);
+        if (ModugoLogger.enabled) ModugoLogger.injection('🔗 Binds: $type');
       }
     }
 
-    if (queueBinds.isEmpty) return;
-
-    if (queueBinds.length == binds.length) {
-      throw Exception(
-        'Cyclic or unresolved dependencies: ${queueBinds.map((b) => _resolveBindType(b)).toList()}',
-      );
-    }
-
-    _recursiveRegisterBinds(queueBinds, depth + 1);
+    _moduleTypes[module] = typesForModule;
   }
 
   void _incrementBindReference(Type type) {
@@ -161,42 +129,8 @@ final class Manager implements ManagerInterface {
       _bindReferences[type] = (_bindReferences[type] ?? 1) - 1;
       if (_bindReferences[type] == 0) {
         _bindReferences.remove(type);
-        bindsToDispose.add(type);
+        Injector().disposeByType(type);
       }
-    }
-  }
-
-  void _logInjectionBinds(Module module) {
-    final types = module.binds.map((b) => _resolveBindType(b)).toList();
-    if (types.isEmpty) return;
-
-    ModugoLogger.injection('🔗 Binds:');
-    for (final type in types) {
-      ModugoLogger.injection('    → $type');
-    }
-  }
-
-  void _logImportedBinds(Module module) {
-    final types =
-        module.imports.expand((m) => m.binds).map(_resolveBindType).toList();
-    if (types.isEmpty) return;
-
-    ModugoLogger.info('📦 Imported Binds:');
-    for (final type in types) {
-      ModugoLogger.info('    → $type');
-    }
-  }
-
-  void _logUnregisteredBinds(Module module) {
-    final allTypes = [
-      ...module.binds.map(_resolveBindType),
-      ...module.imports.expand((m) => m.binds).map(_resolveBindType),
-    ];
-    if (allTypes.isEmpty) return;
-
-    ModugoLogger.dispose('❌ Unregistering Binds from ${module.runtimeType}');
-    for (final type in allTypes) {
-      ModugoLogger.dispose('    → $type');
     }
   }
 }

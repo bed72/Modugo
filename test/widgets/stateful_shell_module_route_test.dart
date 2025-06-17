@@ -234,11 +234,11 @@ void main() {
   });
 }
 
-final class _UnsupportedRoute implements ModuleInterface {}
+final class _UnsupportedRoute implements IModule {}
 
 final class _DummyModule extends Module {
   @override
-  List<ModuleInterface> get routes => [
+  List<IModule> get routes => [
     ChildRoute(
       '/shell/page',
       name: 'page',
@@ -249,7 +249,7 @@ final class _DummyModule extends Module {
 
 final class _ProductModule extends Module {
   @override
-  List<ModuleInterface> get routes => [
+  List<IModule> get routes => [
     ChildRoute.safeRootRoute(),
     ChildRoute(
       '/:name/dp/:webcode',

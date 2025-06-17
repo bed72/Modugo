@@ -72,11 +72,11 @@ void main() {
   });
 }
 
-final class _UnsupportedRoute implements ModuleInterface {}
+final class _UnsupportedRoute implements IModule {}
 
 final class _DummyModule extends Module {
   @override
-  List<ModuleInterface> get routes => [
+  List<IModule> get routes => [
     ChildRoute('/home', child: (_, __) => const Placeholder()),
   ];
 }

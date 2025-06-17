@@ -36,7 +36,7 @@ void main() {
 
 final class _DummyModule extends Module {
   @override
-  List<ModuleInterface> get routes => [
+  List<IModule> get routes => [
     ChildRoute(
       '/page',
       name: 'page',

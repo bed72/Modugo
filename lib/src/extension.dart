@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:modugo/src/injector.dart';
 
 extension BindContextExtension on BuildContext {
-  T read<T>() => Bind.get<T>();
+  T read<T>() => Injector().get<T>();
 
   GoRouter get goRouter => GoRouter.of(this);
 

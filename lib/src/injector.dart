@@ -1,103 +1,67 @@
-import 'dart:async';
+import 'package:modugo/src/binds/factory_bind.dart';
+import 'package:modugo/src/binds/singleton_bind.dart';
+import 'package:modugo/src/binds/lazy_singleton_bind.dart';
+import 'package:modugo/src/interfaces/bind_interface.dart';
+import 'package:modugo/src/interfaces/injector_interface.dart';
 
-import 'package:flutter/material.dart';
-import 'package:modugo/src/logger.dart';
-import 'package:modugo/src/modugo.dart';
-
-final class Injector {
+final class Injector implements IInjector {
   static final Injector _instance = Injector._();
 
   Injector._();
 
   factory Injector() => _instance;
 
-  T get<T>() => Bind.get<T>();
-}
+  final Map<Type, IBind<Object?>> _bindings = {};
 
-final class Bind<T> {
-  static final Map<Type, Bind> _binds = {};
+  @override
+  Set<Type> get registeredTypes => _bindings.keys.toSet();
 
-  T? _cachedInstance;
-
-  final bool isLazy;
-  final Type type = T;
-  final bool isSingleton;
-  final T Function(Injector i) factoryFunction;
-
-  Bind(this.factoryFunction, {this.isSingleton = true, this.isLazy = true});
-
-  T? get maybeInstance => _cachedInstance;
-
-  T get instance {
-    if (!isSingleton) return factoryFunction(Injector());
-    return _cachedInstance ??= factoryFunction(Injector());
+  @override
+  Injector addFactory<T>(T Function(Injector i) builder) {
+    _bindings[T] = FactoryBind<T>(builder);
+    return this;
   }
 
-  static bool isRegistered<T>() => _binds.containsKey(T);
+  @override
+  Injector addSingleton<T>(T Function(Injector i) builder) {
+    _bindings[T] = SingletonBind<T>(builder);
+    return this;
+  }
 
-  static Bind? getBindByType(Type type) => _binds[type];
+  @override
+  Injector addLazySingleton<T>(T Function(Injector i) builder) {
+    _bindings[T] = LazySingletonBind<T>(builder);
+    return this;
+  }
 
-  static Bind<T> factory<T>(T Function(Injector i) builder) =>
-      Bind<T>(builder, isSingleton: false, isLazy: false);
+  @override
+  bool isRegistered<T>() => _bindings.containsKey(T);
 
-  static Bind<T> singleton<T>(T Function(Injector i) builder) =>
-      Bind<T>(builder, isSingleton: true, isLazy: false);
+  @override
+  void dispose<T>() {
+    final bind = _bindings.remove(T);
+    bind?.dispose();
+  }
 
-  static Bind<T> lazySingleton<T>(T Function(Injector i) builder) =>
-      Bind<T>(builder, isSingleton: true, isLazy: true);
+  @override
+  void disposeByType(Type type) {
+    final bind = _bindings.remove(type);
+    bind?.dispose();
+  }
 
-  static void register<T>(Bind<T> bind) {
-    _binds[bind.type] = bind;
-
-    if (!bind.isLazy && bind.isSingleton) {
-      bind._cachedInstance = bind.factoryFunction(Injector());
+  @override
+  void clearAll() {
+    for (final b in _bindings.values) {
+      b.dispose();
     }
+    _bindings.clear();
   }
 
-  static void clearAll() {
-    for (final bind in _binds.values) {
-      bind.disposeInstance();
-    }
+  @override
+  T get<T>() {
+    final bind = _bindings[T];
+    if (bind == null) throw Exception('Bind not found for type $T');
 
-    _binds.clear();
-  }
-
-  static void disposeByType(Type type) {
-    final bind = _binds[type];
-
-    if (bind != null && bind.isSingleton) bind.disposeInstance();
-
-    _binds.remove(type);
-  }
-
-  static T get<T>() {
-    final bind = _binds[T];
-
-    if (bind == null) {
-      throw Exception('Bind not found for type ${T.toString()}');
-    }
-
-    return (bind as Bind<T>).instance;
-  }
-
-  void disposeInstance() {
-    if (!isSingleton || _cachedInstance == null) return;
-
-    final instance = _cachedInstance;
-
-    try {
-      if (instance is Sink) instance.close();
-      if (instance is ChangeNotifier) instance.dispose();
-      if (instance is StreamController) instance.close();
-    } catch (e, stack) {
-      if (Modugo.debugLogDiagnostics) {
-        ModugoLogger.error(
-          'Error disposing instance of type ${instance.runtimeType}: $e',
-        );
-        ModugoLogger.error('$stack');
-      }
-    }
-
-    _cachedInstance = null;
+    return _bindings[T]!.get(this) as T;
   }
 }
