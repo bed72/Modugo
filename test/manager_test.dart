@@ -8,19 +8,20 @@ import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
 import 'package:modugo/src/interfaces/manager_interface.dart';
+import 'package:modugo/src/interfaces/injector_interface.dart';
 
 import 'fakes/fakes.dart';
 
 void main() {
+  late final IManager manager;
   late final _RootModule rootModule;
   late final _InnerModule innerModule;
-  late final ManagerInterface manager;
 
   setUp(() {
     final manager = Manager();
     manager.bindReferences.clear();
     manager.module = null;
-    Bind.clearAll();
+    Injector().clearAll();
   });
 
   setUpAll(() async {
@@ -69,17 +70,25 @@ void main() {
 
   group('Bind reference tracking', () {
     test('bind reference count should decrease correctly', () async {
+      final manager = Manager();
+
+      final rootModule = _EmptyModule();
+      final innerModule = _InnerModule();
+
+      manager.registerBindsAppModule(rootModule);
       manager.registerBindsIfNeeded(innerModule);
 
-      final type = innerModule.binds.first.instance.runtimeType;
+      Injector().get<_Service>();
+
       expect(manager.isModuleActive(innerModule), isTrue);
 
       manager.registerRoute('/inner', innerModule);
       manager.unregisterRoute('/inner', innerModule);
+
       await Future.delayed(Duration(milliseconds: disposeMilisenconds + 72));
 
       expect(manager.isModuleActive(innerModule), isFalse);
-      expect(manager.bindReferences.containsKey(type), isFalse);
+      expect(manager.bindReferences.containsKey(_Service), isFalse);
     });
 
     test('should not register binds again for active module', () {
@@ -92,25 +101,33 @@ void main() {
     });
 
     test('manual unregisterBinds removes exclusive bind', () async {
+      final manager = Manager();
+      final rootModule = _EmptyModule();
+      final innerModule = _InnerModule();
+
+      manager.registerBindsAppModule(rootModule);
       manager.registerBindsIfNeeded(innerModule);
+
+      Injector().get<_Service>();
       manager.unregisterBinds(innerModule);
 
       expect(manager.isModuleActive(innerModule), isFalse);
-      expect(() => Bind.get<_Service>(), throwsException);
+      expect(() => Injector().get<_Service>(), throwsException);
     });
 
     test('Injector clearAll removes all binds', () async {
       manager.registerBindsIfNeeded(innerModule);
       manager.registerBindsIfNeeded(rootModule);
 
-      Bind.clearAll();
-      expect(() => Bind.get<_Service>(), throwsException);
+      Injector().clearAll();
+      expect(() => Injector().get<_Service>(), throwsException);
     });
 
     test('should throw on cyclic dependencies at resolution', () {
       final module = _CyclicModule();
       manager.registerBindsIfNeeded(module);
-      expect(() => Bind.get<_CyclicA>(), throwsA(isA<Error>()));
+
+      expect(() => Injector().get<_CyclicA>(), throwsA(isA<Error>()));
     });
   });
 
@@ -216,6 +233,35 @@ void main() {
     manager.module = module;
     expect(manager.module, same(module));
   });
+
+  test(
+    'shared bind across modules is not disposed until all are inactive',
+    () async {
+      final manager = Manager();
+      final sharedModule = _InnerModule();
+
+      final moduleA = _ImportAnotherModule();
+      final moduleB = _ImportAnotherModule();
+
+      manager.registerBindsIfNeeded(sharedModule);
+      manager.registerBindsIfNeeded(moduleA);
+      manager.registerBindsIfNeeded(moduleB);
+
+      manager.registerRoute('/a', moduleA);
+      manager.registerRoute('/b', moduleB);
+
+      manager.unregisterRoute('/a', moduleA);
+      manager.unregisterRoute('/b', moduleB);
+      await Future.delayed(Duration(milliseconds: disposeMilisenconds + 100));
+
+      expect(manager.bindReferences.containsKey(_Service), isTrue);
+
+      manager.unregisterRoute('/shared', sharedModule);
+      await Future.delayed(Duration(milliseconds: disposeMilisenconds + 100));
+
+      expect(manager.bindReferences.containsKey(_Service), isFalse);
+    },
+  );
 }
 
 final class _Service {
@@ -232,21 +278,27 @@ final class _CyclicB {
   _CyclicB(this.a);
 }
 
-final class _InnerModule extends Module {
-  @override
-  List<Bind> get binds => [Bind.factory<_Service>((_) => _Service())];
-}
+final class _EmptyModule extends Module {}
 
 final class _ImportAnotherModule extends Module {
   @override
   List<Module> get imports => [_InnerModule()];
 }
 
+final class _InnerModule extends Module {
+  @override
+  List<void Function(IInjector)> get binds => [
+    (i) => i.addFactory<_Service>((_) => _Service()),
+  ];
+}
+
 final class _CyclicModule extends Module {
   @override
-  List<Bind> get binds => [
-    Bind.factory<_CyclicA>((i) => _CyclicA(i.get<_CyclicB>())),
-    Bind.factory<_CyclicB>((i) => _CyclicB(i.get<_CyclicA>())),
+  List<void Function(IInjector)> get binds => [
+    (i) =>
+        i
+          ..addFactory<_CyclicA>((i) => _CyclicA(i.get<_CyclicB>()))
+          ..addFactory<_CyclicB>((i) => _CyclicB(i.get<_CyclicA>())),
   ];
 }
 
@@ -255,7 +307,7 @@ final class _RootModule extends Module {
   List<Module> get imports => [_InnerModule()];
 
   @override
-  List<ModuleInterface> get routes => [
+  List<IModule> get routes => [
     ChildRoute(
       '/profile',
       name: 'profile-root',

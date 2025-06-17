@@ -6,7 +6,7 @@ import 'package:modugo/src/module.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
 
 @immutable
-final class ModuleRoute implements ModuleInterface {
+final class ModuleRoute implements IModule {
   final String path;
   final String? name;
   final Module module;

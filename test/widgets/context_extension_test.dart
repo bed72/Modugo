@@ -294,7 +294,7 @@ void main() {
   });
 
   testWidgets('read<T>() should retrieve injected dependency', (tester) async {
-    Bind.register<String>(Bind.singleton<String>((_) => 'context-aware'));
+    Injector().addSingleton<String>((_) => 'context-aware');
 
     await tester.pumpWidget(
       MaterialApp.router(

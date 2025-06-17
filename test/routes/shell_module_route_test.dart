@@ -125,9 +125,9 @@ void main() {
         parentNavigatorKey: parentKey,
         routes: [_DummyModuleRoute()],
         restorationScopeId: 'restore-1',
-        binds: [Bind.factory((i) => 123)],
         redirect: (_, __) async => '/redirect',
         builder: (_, __, ___) => const Placeholder(),
+        binds: [(i) => i.addFactory<int>((_) => 123)],
         pageBuilder: (_, __, child) => MaterialPage(child: child),
       );
 
@@ -156,6 +156,54 @@ void main() {
       expect(route.restorationScopeId, isNull);
     });
   });
+
+  test('should execute bind and register in Injector', () {
+    final route = ShellModuleRoute(
+      routes: [_DummyModuleRoute()],
+      builder: (_, __, ___) => const Placeholder(),
+      binds: [(i) => i.addSingleton<String>((_) => 'test-string')],
+    );
+
+    route.binds.first(Injector());
+
+    final result = Injector().get<String>();
+    expect(result, equals('test-string'));
+  });
+
+  test('should register multiple binds with distinct types', () {
+    final route = ShellModuleRoute(
+      routes: [_DummyModuleRoute()],
+      builder: (_, __, ___) => const Placeholder(),
+      binds: [
+        (i) => i.addSingleton<String>((_) => 'value'),
+        (i) => i.addFactory<int>((_) => 42),
+      ],
+    );
+
+    for (final bind in route.binds) {
+      bind(Injector());
+    }
+
+    expect(Injector().get<String>(), equals('value'));
+    expect(Injector().get<int>(), equals(42));
+  });
+
+  test('should consider routes equal even if binds differ', () {
+    final dummyRoute = _DummyModuleRoute();
+
+    final base = ShellModuleRoute(
+      routes: [dummyRoute],
+      builder: (_, __, ___) => const Placeholder(),
+    );
+
+    final altered = ShellModuleRoute(
+      routes: [dummyRoute],
+      builder: (_, __, ___) => const Placeholder(),
+      binds: [(i) => i.addFactory((_) => 'irrelevant')],
+    );
+
+    expect(base, equals(altered));
+  });
 }
 
-final class _DummyModuleRoute implements ModuleInterface {}
+final class _DummyModuleRoute implements IModule {}

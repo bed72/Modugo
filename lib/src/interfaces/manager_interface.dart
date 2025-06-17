@@ -3,7 +3,7 @@
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/routes/models/route_access_model.dart';
 
-abstract interface class ManagerInterface {
+abstract interface class IManager {
   Module? get module;
   set module(Module? module);
   Map<Type, int> get bindReferences;

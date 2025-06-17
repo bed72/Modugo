@@ -4,15 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/interfaces/injector_interface.dart';
 
 @immutable
-final class ShellModuleRoute implements ModuleInterface {
-  final List<Bind> binds;
+final class ShellModuleRoute implements IModule {
+  final List<IModule> routes;
   final String? restorationScopeId;
-  final List<ModuleInterface> routes;
   final List<NavigatorObserver>? observers;
+  final List<void Function(IInjector)> binds;
   final GlobalKey<NavigatorState>? navigatorKey;
   final GlobalKey<NavigatorState>? parentNavigatorKey;
   final FutureOr<String?> Function(BuildContext context, GoRouterState state)?
