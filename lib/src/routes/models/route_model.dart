@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:modugo/src/transition.dart';
-import 'package:modugo/src/routes/utils/router_utils.dart';
+import 'package:modugo/src/routes/paths/path.dart';
 
 @immutable
 final class RouteModuleModel {

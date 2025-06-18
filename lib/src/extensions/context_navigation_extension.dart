@@ -3,55 +3,27 @@
 import 'package:flutter/material.dart';
 
 import 'package:go_router/go_router.dart';
-import 'package:modugo/src/injector.dart';
 
-extension BindContextExtension on BuildContext {
-  T read<T>() => Injector().get<T>();
+import 'package:modugo/src/routes/paths/regexp.dart';
 
+extension ContextNavigationExtension on BuildContext {
   GoRouter get goRouter => GoRouter.of(this);
 
   GoRouterState get state => GoRouterState.of(this);
-
-  String? get path => state.path;
-
-  T? getExtra<T>() => state.extra as T?;
-
-  bool isCurrentRoute(String name) => state.name == name;
-
-  bool get isInitialRoute => state.matchedLocation == '/';
-
-  List<String> get locationSegments => state.uri.pathSegments;
-
-  String? getPathParam(String param) => state.pathParameters[param];
-
-  String? getStringQueryParam(String key) => state.uri.queryParameters[key];
-
-  int? getIntQueryParam(String key) =>
-      int.tryParse(state.uri.queryParameters[key] ?? '');
-
-  bool? getBoolQueryParam(String key) {
-    final value = state.uri.queryParameters[key];
-    if (value == null) return null;
-    return value.toLowerCase() == 'true';
-  }
-
-  T argumentsOrThrow<T>() {
-    final extra = state.extra;
-    if (extra is T) return extra;
-    throw Exception('Expected extra of type $T, got: $extra');
-  }
-
-  bool isKnownPath(String path) =>
-      _matchPath(path, GoRouter.of(this).configuration.routes);
-
-  bool isKnownRouteName(String name) =>
-      _matchName(name, GoRouter.of(this).configuration.routes);
 
   void reload() {
     goRouter.go(state.uri.toString());
   }
 
   bool canPop() => goRouter.canPop();
+
+  bool canPush(String location) {
+    final uri = Uri.parse(location);
+    final path = uri.path;
+    final routes = goRouter.configuration.routes;
+
+    return _matchesPath(path, routes);
+  }
 
   void go(String location, {Object? extra}) =>
       goRouter.go(location, extra: extra);
@@ -119,21 +91,18 @@ extension BindContextExtension on BuildContext {
     queryParameters: queryParameters,
   );
 
-  bool _matchPath(String path, List<RouteBase> routes) {
-    for (final route in routes) {
-      if (route is GoRoute && route.path == path) return true;
-      if (route is ShellRoute) {
-        if (_matchPath(path, route.routes)) return true;
-      }
-    }
-    return false;
+  RegExp _buildRegExp(String pattern) {
+    final keys = <String>[];
+    return pathToRegExp(pattern, parameters: keys);
   }
 
-  bool _matchName(String name, List<RouteBase> routes) {
+  bool _matchesPath(String path, List<RouteBase> routes) {
     for (final route in routes) {
-      if (route is GoRoute && route.name == name) return true;
-      if (route is ShellRoute) {
-        if (_matchName(name, route.routes)) return true;
+      if (route is GoRoute) {
+        final regExp = _buildRegExp(route.path);
+        if (regExp.hasMatch(path)) return true;
+      } else if (route is ShellRouteBase) {
+        if (_matchesPath(path, route.routes)) return true;
       }
     }
     return false;
