@@ -52,7 +52,7 @@ final class Manager implements IManager {
     _activeRoutes[module] = [];
 
     if (Modugo.debugLogDiagnostics) {
-      ModugoLogger.info('📦 Module: ${module.runtimeType}');
+      Logger.info('[MODULO]: ${module.runtimeType}');
     }
   }
 
@@ -83,7 +83,7 @@ final class Manager implements IManager {
     if (_activeRoutes[module]?.isNotEmpty ?? false) return;
 
     if (Modugo.debugLogDiagnostics) {
-      ModugoLogger.dispose('❌ Unregistering Binds from ${module.runtimeType}');
+      Logger.dispose('[UNREGISTERING] Binds from ${module.runtimeType}');
     }
 
     final types = _moduleTypes.remove(module) ?? {};
@@ -113,7 +113,7 @@ final class Manager implements IManager {
         _incrementBindReference(type);
         typesForModule.add(type);
 
-        if (ModugoLogger.enabled) ModugoLogger.injection('🔗 Binds: $type');
+        if (Logger.enabled) Logger.injection('[BINDS]: $type');
       }
     }
 

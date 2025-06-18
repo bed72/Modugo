@@ -39,8 +39,8 @@ final class StatefulShellModuleRoute implements IModule {
                       .map((r) => r.path)
                       .toList();
 
-              ModugoLogger.info(
-                '🧭 Branch "${route.path}" → registered GoRoutes: $registeredPaths',
+              Logger.info(
+                '[BRANCH] "${route.path}" → registered GoRoutes: $registeredPaths',
               );
             }
 
