@@ -203,7 +203,7 @@ Modugo.configure(
 );
 ```
 
-- Todos os logs passam pela classe `ModugoLogger`, que pode ser estendida ou customizada.
+- Todos os logs passam pela classe `Logger`, que pode ser estendida ou customizada.
 - Logs incluem: injeção, descarte, navegação e falhas.
 
 ---
