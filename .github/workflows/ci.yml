@@ -11,11 +11,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: dart-lang/setup-dart@v1
-      - run: dart pub get
-      - run: dart format --output=none --set-exit-if-changed .
-      - run: dart analyze
-      - run: dart test --coverage
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - run: flutter pub get
+
+      - run: flutter format --output=none --set-exit-if-changed .
+
+      - run: flutter analyze
+
+      - run: flutter test --coverage
+
       - name: Package Analysis
         uses: axel-op/dart-package-analyzer@v3
         with:
