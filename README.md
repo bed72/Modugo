@@ -88,7 +88,7 @@ class AppModule extends Module {
   ];
 
   @override
-  List<ModuleInterface> get routes => [
+  List<IModule> get routes => [
     ModuleRoute('/', module: HomeModule()),
     ModuleRoute('/profile', module: ProfileModule()),
   ];
@@ -111,13 +111,14 @@ class AppModule extends Module {
 class HomeModule extends Module {
   @override
   List<void Function(IInjector)> get binds => [
-    (i) => i.addSingleton<HomeController>((i) => HomeController(i.get())),
-    (i) => i.addLazySingleton<Repository>((i) => RepositoryImpl()),
-    (i) => i.addFactory<DateTime>((_) => DateTime.now()),
+    (i) => i
+      ..addSingleton<HomeController>((i) => HomeController(i.get()))
+      ..addLazySingleton<Repository>((i) => RepositoryImpl())
+      ..addFactory<DateTime>((_) => DateTime.now()),
   ];
 
   @override
-  List<ModuleInterface> get routes => [
+  List<IModule> get routes => [
     ChildRoute('/home', child: (context, state) => const HomePage()),
   ];
 }
@@ -209,7 +210,7 @@ Modugo.configure(
 
 ## 🧼 Boas práticas
 
-- Sempre tipar o tipo do `addSingleton/addFactory` explicitamente.
+- Sempre tipar o tipo do `addSingleton, addlazySingleton` e `addFactory` explicitamente.
 - Dividir a aplicação em **módulos pequenos e coesos**.
 - Usar `AppModule` apenas para **dependências globais**.
 

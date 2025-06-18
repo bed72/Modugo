@@ -1,3 +1,4 @@
-## 0.0.1
+## [1.0.0] - 2025-06-17
 
-* TODO: Describe initial release.
+- Primeira versão estável do Modugo.
+- Suporte a módulos, rotas aninhadas, `StatefulShellRoute`, e injeção de dependência via API fluente.
