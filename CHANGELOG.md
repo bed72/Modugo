@@ -1,3 +1,7 @@
+## [1.2.1] - 2025-06-18
+
+- chore: atualiza release script com suporte à data no changelog
+
 ## [1.2.0]
 
 - fix: ajusta workflow de publicação
