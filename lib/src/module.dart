@@ -17,11 +17,11 @@ import 'package:modugo/src/interfaces/injector_interface.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 abstract class Module {
+  late String _modulePath;
+
   List<Module> get imports => const [];
   List<IModule> get routes => const [];
   List<void Function(IInjector)> get binds => const [];
-
-  late String _modulePath;
 
   final _routerManager = Manager();
 
@@ -46,8 +46,8 @@ abstract class Module {
         ...moduleRoutes,
       ].whereType<GoRoute>().map((r) => r.path);
 
-      ModugoLogger.info(
-        '🧭  Final recorded routes: ${paths.isEmpty ? "(/) or ('')" : "$paths"}',
+      Logger.info(
+        'Final recorded routes: ${paths.isEmpty ? "(/) or ('')" : "$paths"}',
       );
     }
 
@@ -71,9 +71,9 @@ abstract class Module {
           _register(path: state.uri.toString());
 
           if (Modugo.debugLogDiagnostics) {
-            ModugoLogger.info('📦 ModuleRoute → ${state.uri}');
-            ModugoLogger.info(
-              '🛠 GoRoute path for ${childRoute.name}: $effectivePath',
+            Logger.info('[MODULE ROUTE] ${state.uri}');
+            Logger.info(
+              '[GO ROUTER] path for ${childRoute.name}: $effectivePath',
             );
           }
 
@@ -82,7 +82,7 @@ abstract class Module {
           _unregister(state.uri.toString());
 
           if (Modugo.debugLogDiagnostics) {
-            ModugoLogger.error('Error building route ${state.uri}: $e\n$s');
+            Logger.error('Error building route ${state.uri}: $e\n$s');
           }
 
           rethrow;
@@ -134,9 +134,7 @@ abstract class Module {
             .where((route) => _adjustRoute(route.path) == '/')
             .firstOrNull;
 
-    if (childRoute != null) {
-      _validPath(childRoute.path, 'ModuleRoute');
-    }
+    if (childRoute != null) _validPath(childRoute.path, 'ModuleRoute');
 
     return GoRoute(
       parentNavigatorKey: childRoute?.parentNavigatorKey,
@@ -202,7 +200,7 @@ abstract class Module {
                   (_routerManager.bindReferences[type] ?? 0) + 1;
 
               if (Modugo.debugLogDiagnostics) {
-                ModugoLogger.injection('🔐 ShellBind → $type');
+                Logger.injection('[SHELL BIND]: $type');
               }
             }
           }
@@ -210,8 +208,8 @@ abstract class Module {
 
         if (route.routes.whereType<ChildRoute>().any((r) => r.path == '/')) {
           if (Modugo.debugLogDiagnostics) {
-            ModugoLogger.warn(
-              '🧭 Shell ModuleRoute contains Child Route with path "/". Make sure this is the only root route.',
+            Logger.warn(
+              '[SHELL] ModuleRoute contains Child Route with path "/". Make sure this is the only root route.',
             );
           }
         }
@@ -256,7 +254,7 @@ abstract class Module {
             restorationScopeId: route.restorationScopeId,
             builder: (context, state, child) {
               if (Modugo.debugLogDiagnostics) {
-                ModugoLogger.info('🧭 ShellRoute → ${state.uri}');
+                Logger.info('[SHELL ROUTE]: ${state.uri}');
               }
               return route.builder!(context, state, child);
             },
@@ -277,8 +275,8 @@ abstract class Module {
         );
 
         if (Modugo.debugLogDiagnostics) {
-          ModugoLogger.info(
-            '🧭 StatefulShellModuleRoute registered with ${route.routes.length} branches.',
+          Logger.info(
+            '[STATEFUL SHELL MODULE ROUTE] registered with ${route.routes.length} branches.',
           );
         }
       }
@@ -318,7 +316,7 @@ abstract class Module {
       CompilerRoute(path);
     } catch (e) {
       if (Modugo.debugLogDiagnostics) {
-        ModugoLogger.error('❌ Invalid path in $type: $path → $e');
+        Logger.error('Invalid path in $type: $path → $e');
       }
 
       throw ArgumentError.value(

@@ -27,10 +27,10 @@ final class SingletonBind<T> implements IBind<T> {
       _instance = null;
     } catch (e, stack) {
       if (Modugo.debugLogDiagnostics) {
-        ModugoLogger.info(
+        Logger.info(
           '[SINGLETON] Error disposing instance of type ${instance.runtimeType}: $e',
         );
-        ModugoLogger.error('$stack');
+        Logger.error('$stack');
       }
     }
   }
