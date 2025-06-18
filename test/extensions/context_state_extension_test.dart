@@ -67,6 +67,38 @@ void main() {
 
     expect(() => context.argumentsOrThrow<String>(), throwsException);
   });
+
+  testWidgets('buildPath builds correct url from pattern', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) {
+            final path = context.buildPath('/produto/:id', {'id': 'X9'});
+            return Text(path, textDirection: TextDirection.ltr);
+          },
+        ),
+      ),
+    );
+
+    expect(find.text('/produto/X9'), findsOneWidget);
+  });
+
+  testWidgets('buildPath throws if required param is missing', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) {
+            context.buildPath('/produto/:id', {});
+            return const Placeholder();
+          },
+        ),
+      ),
+    );
+
+    final exception = tester.takeException();
+    expect(exception, isA<ArgumentError>());
+    expect((exception as ArgumentError).message, contains('Expected key "id"'));
+  });
 }
 
 final class _Dummy extends StatelessWidget {

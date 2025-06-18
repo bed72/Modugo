@@ -2,12 +2,18 @@ import 'package:flutter/widgets.dart';
 
 import 'package:go_router/go_router.dart';
 
+import 'package:modugo/src/routes/paths/function.dart';
+
 extension ContextStateExtension on BuildContext {
   GoRouter get goRouter => GoRouter.of(this);
 
   GoRouterState get state => GoRouterState.of(this);
 
   String? get path => state.path;
+
+  bool isCurrentRoute(String name) => state.name == name;
+
+  bool get isInitialRoute => state.matchedLocation == '/';
 
   List<String> get locationSegments => state.uri.pathSegments;
 
@@ -32,7 +38,9 @@ extension ContextStateExtension on BuildContext {
     throw Exception('Expected extra of type $T, got: $extra');
   }
 
-  bool get isInitialRoute => state.matchedLocation == '/';
+  String buildPath(String pattern, Map<String, String> args) {
+    final fn = pathToFunction(pattern);
 
-  bool isCurrentRoute(String name) => state.name == name;
+    return fn(args);
+  }
 }
