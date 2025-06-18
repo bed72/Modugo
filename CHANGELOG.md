@@ -1,3 +1,7 @@
+## [1.2.2] - 2025-06-18
+
+- Merge pull request #4 from bed72/docs
+
 ## [1.2.1] - 2025-06-18
 
 - chore: atualiza release script com suporte à data no changelog
