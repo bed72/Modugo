@@ -14,7 +14,7 @@ A diferença principal é que o Modugo oferece controle completo e desacoplado d
 - **Descarte automático** de dependências não utilizadas
 - Integração com **GoRouter**
 - Suporte a `ShellRoute` e `StatefulShellRoute`
-- Logs detalhados e configuráveis com suporte à lib `logger`
+- Logs detalhados e configuráveis
 
 ---
 
@@ -22,8 +22,7 @@ A diferença principal é que o Modugo oferece controle completo e desacoplado d
 
 ```yaml
 dependencies:
-  modugo:
-    path: ../modugo
+  modugo: x.x.x
 ```
 
 ---
