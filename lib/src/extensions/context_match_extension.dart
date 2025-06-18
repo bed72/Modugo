@@ -5,24 +5,90 @@ import 'package:go_router/go_router.dart';
 import 'package:modugo/src/routes/paths/extract.dart';
 import 'package:modugo/src/routes/paths/regexp.dart';
 
+/// Extension on [BuildContext] that provides advanced route matching utilities.
+///
+/// These methods allow you to:
+/// - verify if a route path or name is registered
+/// - find the corresponding [GoRoute] for a given location
+/// - extract route parameters from a path
+///
+/// This is particularly useful for dynamic routing, conditional navigation,
+/// link validation, and debugging route configurations.
+///
+/// Example:
+/// ```dart
+/// final isValid = context.isKnownPath('/settings');
+/// final isNamed = context.isKnownRouteName('profile');
+///
+/// final matchedRoute = context.matchingRoute('/user/42');
+/// final params = context.matchParams('/user/42');
+/// final userId = params?['id'];
+/// ```
 extension ContextMatchExtension on BuildContext {
+  GoRouter get _goRouter => GoRouter.of(this);
+
+  /// Checks whether the given [path] matches any route currently registered in the app.
+  ///
+  /// This is useful for validating user inputs or links before navigation,
+  /// ensuring the path corresponds to a known route defined in [GoRouter.configuration].
+  ///
+  /// Example:
+  /// ```dart
+  /// final isValid = context.isKnownPath('/settings');
+  /// if (isValid) {
+  ///   context.go('/settings');
+  /// } else {
+  ///   showDialog(...); // show error
+  /// }
+  /// ```
   bool isKnownPath(String path) =>
-      _matchPath(path, GoRouter.of(this).configuration.routes);
+      _matchPath(path, _goRouter.configuration.routes);
 
+  /// Checks whether the given [name] matches any named route registered in the current [GoRouter] configuration.
+  ///
+  /// Useful for conditional navigation or validating whether a route name
+  /// exists before attempting to navigate.
+  ///
+  /// Example:
+  /// ```dart
+  /// if (context.isKnownRouteName('profile')) {
+  ///   context.goNamed('profile');
+  /// } else {
+  ///   debugPrint('Route not found');
+  /// }
+  /// ```
+  ///
+  /// This method performs a recursive search over all registered [RouteBase] objects.
   bool isKnownRouteName(String name) =>
-      _matchName(name, GoRouter.of(this).configuration.routes);
+      _matchName(name, _goRouter.configuration.routes);
 
+  /// Finds the first [GoRoute] that matches the given [location] string.
+  ///
+  /// This parses the [location] as a URI and searches for a matching route
+  /// based on the path segment, using the current [GoRouter] configuration.
+  ///
+  /// Returns `null` if no match is found.
+  ///
+  /// Example:
+  /// ```dart
+  /// final route = context.matchingRoute('/profile/settings');
+  /// if (route != null) {
+  ///   debugPrint('Matched route: ${route.name}');
+  /// } else {
+  ///   debugPrint('No route found for path');
+  /// }
+  /// ```
   GoRoute? matchingRoute(String location) {
     final uri = Uri.parse(location);
     final path = uri.path;
-    final routes = GoRouter.of(this).configuration.routes;
+    final routes = _goRouter.configuration.routes;
     return _findMatchingRoute(path, routes);
   }
 
   Map<String, String>? matchParams(String location) {
     final uri = Uri.parse(location);
     final path = uri.path;
-    final routes = GoRouter.of(this).configuration.routes;
+    final routes = _goRouter.configuration.routes;
     return _extractParams(path, routes);
   }
 
