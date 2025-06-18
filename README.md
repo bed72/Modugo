@@ -1,24 +1,24 @@
 # Modugo
 
-**Modugo** é um gerenciador modular de dependências e rotas para Flutter/Dart que organiza o ciclo de vida de módulos, dependências e rotas, inspirado na arquitetura modular proposta pelo pacote [go_router_modular](https://pub.dev/packages/go_router_modular).
+**Modugo** is a modular dependency and routing manager for Flutter/Dart that organizes the lifecycle of modules, dependencies, and routes. It is inspired by the modular architecture from [go_router_modular](https://pub.dev/packages/go_router_modular).
 
-A diferença principal é que o Modugo oferece controle completo e desacoplado da **injeção e descarte automático de dependências conforme a navegação**, com logs detalhados e estrutura extensível.
-
----
-
-## 📦 Recursos
-
-- Registro de **dependências por módulo** com `singleton`, `factory` e `lazySingleton`
-- **Ciclo de vida automático** conforme a rota é acessada ou abandonada
-- Suporte a **módulos importados** (aninhamento)
-- **Descarte automático** de dependências não utilizadas
-- Integração com **GoRouter**
-- Suporte a `ShellRoute` e `StatefulShellRoute`
-- Logs detalhados e configuráveis
+The main difference is that Modugo provides full control and decoupling of **automatic dependency injection and disposal based on navigation**, with detailed logs and an extensible structure.
 
 ---
 
-## 🚀 Instalação
+## 📦 Features
+
+- Per-module registration of **dependencies** with `singleton`, `factory`, and `lazySingleton`
+- **Automatic lifecycle management** triggered by route access or exit
+- Support for **imported modules** (nested modules)
+- **Automatic disposal** of unused dependencies
+- Integration with **GoRouter**
+- Support for `ShellRoute` and `StatefulShellRoute`
+- Detailed and configurable logging
+
+---
+
+## 🚀 Installation
 
 ```yaml
 dependencies:
@@ -27,7 +27,7 @@ dependencies:
 
 ---
 
-## 🔹 Exemplo de estrutura do projeto
+## 🔹 Example Project Structure
 
 ```
 /lib
@@ -96,15 +96,15 @@ class AppModule extends Module {
 
 ---
 
-## 💊 Injeção de Dependência
+## 💊 Dependency Injection
 
-### Tipos suportados
+### Supported Types
 
 - `addSingleton<T>((i) => ...)`
 - `addLazySingleton<T>((i) => ...)`
 - `addFactory<T>((i) => ...)`
 
-### Exemplo
+### Example
 
 ```dart
 class HomeModule extends Module {
@@ -125,17 +125,17 @@ class HomeModule extends Module {
 
 ---
 
-## ⚖️ Ciclo de Vida
+## ⚖️ Lifecycle
 
-- Dependências são registradas **automaticamente** ao acessar uma rota de módulo.
-- Ao sair de todas as rotas daquele módulo, as dependências são **descartadas automaticamente**.
-- O descarte respeita `.dispose`, `.close` ou `StreamController.close()`.
-- O `AppModule` nunca é descartado (módulo raiz).
-- Dependências em módulos importados são compartilhadas e removidas apenas quando todos os consumidores forem descartados.
+- Dependencies are **automatically registered** when accessing a module route.
+- When all routes of that module are exited, dependencies are **automatically disposed**.
+- Disposal respects `.dispose()`, `.close()`, or `StreamController.close()`.
+- The root `AppModule` is **never disposed**.
+- Dependencies in imported modules are shared and removed only when all consumers are disposed.
 
 ---
 
-## 🚣 Navegação
+## 🚣 Navigation
 
 ### `ChildRoute`
 
@@ -179,13 +179,13 @@ StatefulShellModuleRoute(
 
 ---
 
-## 🔍 Acesso às dependências
+## 🔍 Accessing Dependencies
 
 ```dart
 final controller = Modugo.get<HomeController>();
 ```
 
-Ou via contexto com extensão:
+Or via context extension:
 
 ```dart
 final controller = context.read<HomeController>();
@@ -193,7 +193,7 @@ final controller = context.read<HomeController>();
 
 ---
 
-## 🧰 Logs e Diagnóstico
+## 🧰 Logging and Diagnostics
 
 ```dart
 Modugo.configure(
@@ -202,25 +202,25 @@ Modugo.configure(
 );
 ```
 
-- Todos os logs passam pela classe `Logger`, que pode ser estendida ou customizada.
-- Logs incluem: injeção, descarte, navegação e falhas.
+- All logs pass through the `Logger` class, which can be extended or customized.
+- Logs include injection, disposal, navigation, and errors.
 
 ---
 
-## 🧼 Boas práticas
+## 🧼 Best Practices
 
-- Sempre tipar o tipo do `addSingleton, addlazySingleton` e `addFactory` explicitamente.
-- Dividir a aplicação em **módulos pequenos e coesos**.
-- Usar `AppModule` apenas para **dependências globais**.
-
----
-
-## 🤝 Contribuições
-
-Pull requests, sugestões e melhorias são bem-vindos!
+- Always specify explicit types for `addSingleton`, `addLazySingleton`, and `addFactory`.
+- Divide your app into **small, cohesive modules**.
+- Use `AppModule` only for **global dependencies**.
 
 ---
 
-## ⚙️ Licença
+## 🤝 Contributions
+
+Pull requests, suggestions, and improvements are welcome!
+
+---
+
+## ⚙️ License
 
 MIT ©

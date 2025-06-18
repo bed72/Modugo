@@ -16,15 +16,73 @@ import 'package:modugo/src/interfaces/module_interface.dart';
 import 'package:modugo/src/interfaces/injector_interface.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
+/// Abstract base class representing a modular feature or logical section of the app.
+///
+/// Each [Module] defines:
+/// - a list of imported modules ([imports]) to compose complex module trees
+/// - a list of routes ([routes]) it exposes for navigation
+/// - a list of dependency injection binds ([binds]) it manages
+///
+/// The [_modulePath] stores the base path prefix used internally during route configuration.
+///
+/// Example usage:
+/// ```dart
+/// class HomeModule extends Module {
+///   @override
+///   List<Module> get imports => [SharedModule()];
+///
+///   @override
+///   List<IModule> get routes => [ChildRoute('/', child: (c, s) => HomePage())];
+///
+///   @override
+///   List<void Function(IInjector)> get binds => [
+///     (injector) => injector.addSingleton((i) => HomeController()),
+///   ];
+/// }
+/// ```
 abstract class Module {
   late String _modulePath;
 
+  /// List of imported modules that this module depends on.
+  ///
+  /// Allows modular composition by importing submodules.
+  ///
+  /// Defaults to an empty list.
   List<Module> get imports => const [];
+
+  /// List of navigation routes this module exposes.
+  ///
+  /// Routes can be [ChildRoute], [ModuleRoute], [ShellModuleRoute], etc.
+  ///
+  /// Defaults to an empty list.
   List<IModule> get routes => const [];
+
+  /// List of dependency injection binds for this module.
+  ///
+  /// Binds are functions that receive the [IInjector] and register dependencies.
+  ///
+  /// Defaults to an empty list.
   List<void Function(IInjector)> get binds => const [];
 
   final _routerManager = Manager();
 
+  /// Configures and returns the list of [RouteBase]s defined by this module.
+  ///
+  /// This method is responsible for:
+  /// - registering binds for the module (if not already active)
+  /// - creating and combining child, shell, and module routes
+  /// - optionally logging the final set of registered route paths when diagnostics are enabled
+  ///
+  /// Parameters:
+  /// - [topLevel]: indicates if this module is the root module (default: false)
+  /// - [path]: base path prefix to apply to all routes in this module (default: empty)
+  ///
+  /// Returns a combined list of all routes defined by this module and its nested structures.
+  ///
+  /// Example:
+  /// ```dart
+  /// final routes = myModule.configureRoutes(topLevel: true, path: '/app');
+  /// ```
   List<RouteBase> configureRoutes({bool topLevel = false, String path = ''}) {
     _modulePath = path;
 
