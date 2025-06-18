@@ -1,0 +1,50 @@
+name: Publish to pub.dev
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: dart-lang/setup-dart@v2
+
+      - name: Get dependencies
+        run: dart pub get
+
+      - name: Run tests
+        run: dart test
+
+      - name: Run dry-run publish
+        run: dart pub publish --dry-run
+
+      - name: Generate and update CHANGELOG.md
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          COMMIT_MSG=$(git log -1 --pretty=format:"- %s")
+          echo -e "## $VERSION\n$COMMIT_MSG\n\n$(cat CHANGELOG.md)" > CHANGELOG.md
+
+      - name: Commit and push CHANGELOG.md to master
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git checkout master
+          git pull origin master
+          git add CHANGELOG.md
+          git commit -m "docs: update CHANGELOG for v${GITHUB_REF_NAME#v}"
+          git push origin master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to pub.dev
+        run: dart pub publish --force
