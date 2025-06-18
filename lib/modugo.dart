@@ -14,14 +14,9 @@ export 'src/interfaces/module_interface.dart';
 export 'src/interfaces/manager_interface.dart';
 export 'src/interfaces/injector_interface.dart';
 
-export 'src/routes/paths/path.dart';
-export 'src/routes/paths/parse.dart';
-export 'src/routes/paths/regexp.dart';
-export 'src/routes/paths/extract.dart';
-export 'src/routes/paths/function.dart';
-
 export 'src/routes/child_route.dart';
 export 'src/routes/module_route.dart';
+export 'src/routes/compiler_route.dart';
 export 'src/routes/shell_module_route.dart';
 export 'src/routes/stateful_shell_module_route.dart';
 
