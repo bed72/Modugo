@@ -12,7 +12,8 @@ fi
 
 VERSION=$1
 TAG="v$VERSION"
-MESSAGE="Release version $VERSION"
+DATE=$(date +%F)
+MESSAGE="release: $VERSION"
 
 # Verifica se a versão está no formato correto x.y.z
 if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -38,14 +39,14 @@ sed -i "s/^version:.*/version: $VERSION/" pubspec.yaml
 
 # Atualiza o CHANGELOG.md com a última mensagem de commit
 COMMIT_MSG=$(git log -1 --pretty=format:"- %s")
-echo -e "## $VERSION\n$COMMIT_MSG\n\n$(cat CHANGELOG.md)" > CHANGELOG.md
+echo -e "## [$VERSION] - $DATE\n\n$COMMIT_MSG\n\n$(cat CHANGELOG.md)" > CHANGELOG.md
 
 # Comita as alterações
 git add pubspec.yaml CHANGELOG.md
 git commit -m "chore: release $TAG"
 git push origin master
 
-# Cria a tag anotada
+# Cria a tag anotada com a mesma mensagem
 git tag -a "$TAG" -m "$MESSAGE"
 git push origin "$TAG"
 

@@ -1,5 +1,10 @@
-## 1.2.0
+## [1.2.0]
+
 - fix: ajusta workflow de publicação
+
+## [1.1.1]
+
+- Ajusta workflow de publicação
 
 ## [1.0.0] - 2025-06-17
 
