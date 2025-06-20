@@ -20,10 +20,21 @@ final class Manager implements IManager {
   final Map<Module, Set<Type>> _moduleTypes = {};
   final Map<Module, List<RouteAccessModel>> _activeRoutes = {};
 
+  /// A private static instance used to implement the singleton pattern.
+  ///
+  /// This ensures that only one instance of [Manager] exists throughout
+  /// the application's lifecycle.
   static final Manager _instance = Manager._();
 
+  /// Private named constructor used internally to create the singleton instance.
+  ///
+  /// Prevents external instantiation of the [Manager] class.
   Manager._();
 
+  /// Factory constructor that returns the singleton instance of [Manager].
+  ///
+  /// This provides global access to the single [Manager] instance,
+  /// ensuring consistent state and behavior across the app.
   factory Manager() => _instance;
 
   /// Returns the currently active root [Module] registered via [Modugo.configure].

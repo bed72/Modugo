@@ -85,6 +85,28 @@ extension ContextMatchExtension on BuildContext {
     return _findMatchingRoute(path, routes);
   }
 
+  /// Matches the given [location] against the configured GoRouter routes
+  /// and extracts the path parameters if a match is found.
+  ///
+  /// This is useful for manually parsing dynamic segments from a URL,
+  /// especially outside of the context of a `BuildContext` or `GoRouterState`.
+  ///
+  /// For example, if a route is defined as `/user/:id`, calling:
+  ///
+  /// ```dart
+  /// matchParams('/user/42');
+  /// ```
+  ///
+  /// will return:
+  ///
+  /// ```dart
+  /// {'id': '42'}
+  /// ```
+  ///
+  /// Returns a [Map] of path parameters if a route matches,
+  /// or `null` if no match is found.
+  ///
+  /// Throws [FormatException] if the [location] is not a valid URI.
   Map<String, String>? matchParams(String location) {
     final uri = Uri.parse(location);
     final path = uri.path;
