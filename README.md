@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/bed72/Modugo/master/images/banner.png" alt="Modugo Logo" />
+</p>
+
 # Modugo
 
 **Modugo** is a modular dependency and routing manager for Flutter/Dart that organizes the lifecycle of modules, dependencies, and routes. It is inspired by the modular architecture from [go_router_modular](https://pub.dev/packages/go_router_modular).
@@ -44,6 +48,8 @@ main.dart
 ```
 
 ---
+
+## 🟢 Getting Started
 
 ### main.dart
 

@@ -10,12 +10,6 @@ int? _disposeMilisenconds;
 /// This value controls how long a module stays in memory after it becomes inactive.
 /// Useful for preventing premature cleanup in case of quick navigation back-and-forth.
 ///
-/// Example:
-/// ```dart
-/// if (disposeMilisenconds < 500) {
-///   throw AssertionError('Must be at least 500ms');
-/// }
-/// ```
 int get disposeMilisenconds => _disposeMilisenconds ?? 2000;
 
 /// Sets the global delay (in milliseconds) used before disposing inactive modules.

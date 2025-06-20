@@ -66,6 +66,5 @@ final class _Dummy extends StatelessWidget {
   const _Dummy(this.label);
 
   @override
-  Widget build(BuildContext context) =>
-      Text(label, textDirection: TextDirection.ltr);
+  Widget build(BuildContext context) => Text(label);
 }

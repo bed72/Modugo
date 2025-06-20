@@ -74,7 +74,7 @@ void main() {
         home: Builder(
           builder: (context) {
             final path = context.buildPath('/produto/:id', {'id': 'X9'});
-            return Text(path, textDirection: TextDirection.ltr);
+            return Text(path);
           },
         ),
       ),
@@ -106,8 +106,7 @@ final class _Dummy extends StatelessWidget {
   const _Dummy(this.state);
 
   @override
-  Widget build(BuildContext context) =>
-      Text('dummy', textDirection: TextDirection.ltr);
+  Widget build(BuildContext context) => Text('dummy');
 }
 
 final class _Payload {

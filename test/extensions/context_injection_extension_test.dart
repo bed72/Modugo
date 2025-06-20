@@ -13,7 +13,7 @@ void main() {
         home: Builder(
           builder: (context) {
             final service = context.read<_Service>();
-            return Text(service.value, textDirection: TextDirection.ltr);
+            return Text(service.value);
           },
         ),
       ),
