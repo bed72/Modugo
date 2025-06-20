@@ -1,3 +1,7 @@
+## [1.2.3] - 2025-06-20
+
+- :page_facing_up: Update docs
+
 ## [1.2.2] - 2025-06-18
 
 - Merge pull request #4 from bed72/docs
