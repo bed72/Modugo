@@ -8,6 +8,7 @@
 ///
 /// To run this example, ensure Modugo is added as a dependency in your pubspec.yaml,
 /// then use `flutter run example/modugo_example.dart`.
+library;
 
 import 'package:flutter/material.dart';
 import 'package:modugo/modugo.dart';
