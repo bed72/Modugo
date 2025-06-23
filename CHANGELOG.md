@@ -1,3 +1,7 @@
+## [1.2.6] - 2025-06-23
+
+- :memo: docs update example
+
 ## [1.2.5] - 2025-06-20
 
 - :memo: update documentation, add exemple
