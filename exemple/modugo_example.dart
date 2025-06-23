@@ -51,7 +51,7 @@ final class HomeModule extends Module {
         i
           ..addLazySingleton<ModugoRepository>((_) => ModugoRepositoryImpl())
           ..addSingleton<HomeController>(
-            (i) => HomeController(i.get<ModugoRepository>()),
+            (i) => HomeController(i.get<DateTime>(), i.get<ModugoRepository>()),
           )
           ..addFactory<DateTime>((_) => DateTime.now()),
   ];
@@ -59,7 +59,7 @@ final class HomeModule extends Module {
   @override
   List<IModule> get routes => [
     ChildRoute(
-      '/home',
+      '/',
       name: 'home-route',
       child: (context, _) {
         final controller = context.read<HomeController>();
@@ -87,11 +87,13 @@ final class HomeScreen extends StatelessWidget {
 
 /// Controller that consumes [ModugoRepository] to provide business logic.
 final class HomeController {
+  final DateTime date;
   final ModugoRepository repository;
 
-  HomeController(this.repository);
+  HomeController(this.date, this.repository);
 
-  String message() => repository.welcome();
+  String message() =>
+      '${repository.welcome()}\n${date.weekday}-${date.month}-${date.year}';
 }
 
 /// Abstract contract for a data repository.
