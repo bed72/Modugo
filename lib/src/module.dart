@@ -43,6 +43,13 @@ import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 abstract class Module {
   late String _modulePath;
 
+  /// If true, this module will not have its dependencies automatically disposed.
+  ///
+  /// Useful for persistent modules like tabs in a bottom navigation bar.
+  ///
+  /// Defaults to false.
+  bool get persistent => false;
+
   /// List of imported modules that this module depends on.
   ///
   /// Allows modular composition by importing submodules.
