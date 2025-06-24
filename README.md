@@ -19,6 +19,7 @@ The main difference is that Modugo provides full control and decoupling of **aut
 - Integration with **GoRouter**
 - Support for `ShellRoute` and `StatefulShellRoute`
 - Detailed and configurable logging
+- Support for **persistent modules** that are never disposed
 
 ---
 
@@ -128,6 +129,35 @@ final class HomeModule extends Module {
   ];
 }
 ```
+
+---
+
+## ♻️ Persistent Modules
+
+By default, Modugo automatically disposes dependencies when a module is no longer active (i.e., when all its routes are exited).  
+For cases like bottom navigation tabs, you may want to **keep modules alive** even when they are not visible.
+
+To do this, override the `persistent` flag:
+
+```dart
+final class HomeModule extends Module {
+  @override
+  bool get persistent => true;
+
+  @override
+  void binds(IInjector i) {
+    i.addLazySingleton<HomeController>(() => HomeController());
+  }
+
+  @override
+  List<IModule> get routes => [
+    ChildRoute('/', child: (_, __) => const HomePage()),
+  ];
+}
+```
+
+✅ Great for `StatefulShellRoute` branches  
+🚫 Avoid for short-lived or heavy modules
 
 ---
 
