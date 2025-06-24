@@ -1,3 +1,7 @@
+## [1.2.8] - 2025-06-24
+
+- :fire: fix Logger add tastg to imports and redirects
+
 ## [1.2.6] - 2025-06-23
 
 - :memo: docs update example
