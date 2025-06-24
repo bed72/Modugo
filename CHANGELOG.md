@@ -1,3 +1,7 @@
+## [1.2.7] - 2025-06-24
+
+- :fire: update binds
+
 ## [1.2.6] - 2025-06-23
 
 - :memo: docs update example
