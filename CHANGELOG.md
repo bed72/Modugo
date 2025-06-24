@@ -1,3 +1,7 @@
+## [2.0.0] - 2025-06-24
+
+- Merge pull request #5 from bed72/persistent
+
 ## [1.2.8] - 2025-06-24
 
 - :fire: fix Logger add tastg to imports and redirects
