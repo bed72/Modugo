@@ -287,19 +287,18 @@ final class _ImportAnotherModule extends Module {
 
 final class _InnerModule extends Module {
   @override
-  List<void Function(IInjector)> get binds => [
-    (i) => i.addFactory<_Service>((_) => _Service()),
-  ];
+  void binds(IInjector i) {
+    i.addFactory<_Service>((_) => _Service());
+  }
 }
 
 final class _CyclicModule extends Module {
   @override
-  List<void Function(IInjector)> get binds => [
-    (i) =>
-        i
-          ..addFactory<_CyclicA>((i) => _CyclicA(i.get<_CyclicB>()))
-          ..addFactory<_CyclicB>((i) => _CyclicB(i.get<_CyclicA>())),
-  ];
+  void binds(IInjector i) {
+    i
+      ..addFactory<_CyclicA>((i) => _CyclicA(i.get<_CyclicB>()))
+      ..addFactory<_CyclicB>((i) => _CyclicB(i.get<_CyclicA>()));
+  }
 }
 
 final class _RootModule extends Module {

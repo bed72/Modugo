@@ -46,15 +46,14 @@ final class AppModule extends Module {
 /// The home module that handles feature-specific dependencies and routes.
 final class HomeModule extends Module {
   @override
-  List<void Function(IInjector)> get binds => [
-    (i) =>
-        i
-          ..addLazySingleton<ModugoRepository>((_) => ModugoRepositoryImpl())
-          ..addSingleton<HomeController>(
-            (i) => HomeController(i.get<DateTime>(), i.get<ModugoRepository>()),
-          )
-          ..addFactory<DateTime>((_) => DateTime.now()),
-  ];
+  void binds(IInjector i) {
+    i
+      ..addLazySingleton<ModugoRepository>((_) => ModugoRepositoryImpl())
+      ..addSingleton<HomeController>(
+        (i) => HomeController(i.get<DateTime>(), i.get<ModugoRepository>()),
+      )
+      ..addFactory<DateTime>((_) => DateTime.now());
+  }
 
   @override
   List<IModule> get routes => [

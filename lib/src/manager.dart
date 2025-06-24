@@ -174,24 +174,29 @@ final class Manager implements IManager {
   }
 
   void _registerBinds(Module module) {
-    final allRegistrars = <void Function(IInjector)>[
-      ...module.binds,
-      for (final imported in module.imports) ...imported.binds,
-    ];
-
     final typesForModule = <Type>{};
 
-    for (final register in allRegistrars) {
-      final before = Injector().registeredTypes;
-      register(Injector());
-      final after = Injector().registeredTypes;
+    final before = Injector().registeredTypes;
+    module.binds(Injector());
+    final after = Injector().registeredTypes;
 
-      final newTypes = after.difference(before);
-      for (final type in newTypes) {
+    final newTypes = after.difference(before);
+    for (final type in newTypes) {
+      _incrementBindReference(type);
+      typesForModule.add(type);
+      if (Logger.enabled) Logger.injection('[BINDS]: $type');
+    }
+
+    for (final imported in module.imports) {
+      final beforeImport = Injector().registeredTypes;
+      imported.binds(Injector());
+      final afterImport = Injector().registeredTypes;
+
+      final importedTypes = afterImport.difference(beforeImport);
+      for (final type in importedTypes) {
         _incrementBindReference(type);
         typesForModule.add(type);
-
-        if (Logger.enabled) Logger.injection('[BINDS]: $type');
+        if (Logger.enabled) Logger.injection('[IMPORTED BINDS]: $type');
       }
     }
 

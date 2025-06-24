@@ -57,12 +57,20 @@ abstract class Module {
   /// Defaults to an empty list.
   List<IModule> get routes => const [];
 
-  /// List of dependency injection binds for this module.
+  /// Registers all dependency injection bindings for this module.
   ///
-  /// Binds are functions that receive the [IInjector] and register dependencies.
+  /// Override this method to declare your dependencies using the [IInjector].
   ///
-  /// Defaults to an empty list.
-  List<void Function(IInjector)> get binds => const [];
+  /// Example:
+  /// ```dart
+  /// @override
+  /// void binds(IInjector i) {
+  ///   i
+  ///     ..addSingleton<A>(() => A())
+  ///     ..addLazySingleton<B>(() => B());
+  /// }
+  /// ```
+  void binds(IInjector i) {}
 
   final _routerManager = Manager();
 

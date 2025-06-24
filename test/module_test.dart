@@ -160,17 +160,22 @@ final class _Service {
 
 final class _InnerModule extends Module {
   @override
-  List<IModule> get routes => [
-    ChildRoute('/home', name: 'home', child: (_, __) => const Text('Home')),
-  ];
+  void binds(IInjector i) {
+    i.addFactory<_Service>((_) => _Service());
+  }
 
   @override
-  List<void Function(IInjector)> get binds => [
-    (i) => i.addFactory<_Service>((_) => _Service()),
+  List<IModule> get routes => [
+    ChildRoute('/home', name: 'home', child: (_, __) => const Text('Home')),
   ];
 }
 
 final class _ModuleWithBranch extends Module {
+  @override
+  void binds(IInjector i) {
+    i.addSingleton<_Service>((_) => _Service());
+  }
+
   @override
   List<IModule> get routes => [
     ChildRoute(
@@ -178,11 +183,6 @@ final class _ModuleWithBranch extends Module {
       name: 'with-branch-route',
       child: (_, __) => const Placeholder(),
     ),
-  ];
-
-  @override
-  List<void Function(IInjector)> get binds => [
-    (i) => i.addSingleton<_Service>((_) => _Service()),
   ];
 }
 

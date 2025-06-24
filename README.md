@@ -86,11 +86,11 @@ class AppWidget extends StatelessWidget {
 ### app_module.dart
 
 ```dart
-class AppModule extends Module {
+final class AppModule extends Module {
   @override
-  List<void Function(IInjector)> get binds => [
-    (i) => i.addSingleton<AuthService>((_) => AuthService()),
-  ];
+  void binds(IInjector i) {
+    i.addSingleton<AuthService>((_) => AuthService());
+  }
 
   @override
   List<IModule> get routes => [
@@ -113,14 +113,14 @@ class AppModule extends Module {
 ### Example
 
 ```dart
-class HomeModule extends Module {
+final class HomeModule extends Module {
   @override
-  List<void Function(IInjector)> get binds => [
-    (i) => i
-      ..addSingleton<HomeController>((i) => HomeController(i.get()))
-      ..addLazySingleton<Repository>((i) => RepositoryImpl())
-      ..addFactory<DateTime>((_) => DateTime.now()),
-  ];
+  void binds(IInjector i) {
+    i
+      ..addSingleton<HomeController>((i) => HomeController(i.get<Repository>()))
+      ..addLazySingleton<Repository>((_) => RepositoryImpl())
+      ..addFactory<DateTime>((_) => DateTime.now());
+  }
 
   @override
   List<IModule> get routes => [
