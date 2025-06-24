@@ -21,14 +21,9 @@ import 'package:modugo/src/modugo.dart';
 /// Logger.error('Failed to register bind');
 /// ```
 final class Logger {
-  /// Enables or disables all logging output globally.
-  ///
-  /// Default is `true`.
-  static bool enabled = true;
-
   /// Core method that logs a message with optional [emoji], [tag], and [level].
   ///
-  /// Respects [enabled] and [Modugo.debugLogDiagnostics] to conditionally output logs.
+  /// Respects [Modugo.debugLogDiagnostics] to conditionally output logs.
   ///
   /// Outputs the message to standard output with colored formatting.
   static void log(
@@ -37,7 +32,7 @@ final class Logger {
     String tag = 'Modugo',
     _LogLevel level = _LogLevel.info,
   }) {
-    if (!enabled || !Modugo.debugLogDiagnostics) return;
+    if (!Modugo.debugLogDiagnostics) return;
 
     final timestamp = _now();
     final coloredMessage = _colorize(

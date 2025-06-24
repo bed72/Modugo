@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/logger.dart';
-import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
@@ -71,17 +70,15 @@ final class StatefulShellModuleRoute implements IModule {
               topLevel: false,
             );
 
-            if (Modugo.debugLogDiagnostics) {
-              final registeredPaths =
-                  configuredRoutes
-                      .whereType<GoRoute>()
-                      .map((r) => r.path)
-                      .toList();
+            final registeredPaths =
+                configuredRoutes
+                    .whereType<GoRoute>()
+                    .map((r) => r.path)
+                    .toList();
 
-              Logger.info(
-                '[BRANCH] "${route.path}" → registered GoRoutes: $registeredPaths',
-              );
-            }
+            Logger.info(
+              '[BRANCH] "${route.path}" → registered GoRoutes: $registeredPaths',
+            );
 
             return StatefulShellBranch(routes: configuredRoutes);
           }

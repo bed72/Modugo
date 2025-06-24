@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
@@ -10,14 +9,6 @@ import 'package:modugo/src/interfaces/module_interface.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 void main() {
-  setUpAll(() async {
-    await Modugo.configure(
-      module: _DummyModule(),
-      debugLogDiagnostics: true,
-      errorBuilder: (_, __) => const Material(child: Text('error')),
-    );
-  });
-
   testWidgets('starts on home tab (index 0)', (tester) async {
     await tester.pumpWidget(const _ShellWidget());
     await tester.pumpAndSettle();

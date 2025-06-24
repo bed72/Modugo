@@ -57,12 +57,10 @@ final class SingletonBind<T> implements IBind<T> {
       if (instance is StreamController) instance.close();
       _instance = null;
     } catch (e, stack) {
-      if (Modugo.debugLogDiagnostics) {
-        Logger.info(
-          '[SINGLETON] Error disposing instance of type ${instance.runtimeType}: $e',
-        );
-        Logger.error('$stack');
-      }
+      Logger.info(
+        '[SINGLETON] Error disposing instance of type ${instance.runtimeType}: $e',
+      );
+      Logger.error('$stack');
     }
   }
 }

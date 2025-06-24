@@ -106,9 +106,7 @@ final class Manager implements IManager {
     _registerBinds(module);
     _activeRoutes[module] = [];
 
-    if (Modugo.debugLogDiagnostics) {
-      Logger.info('[MODULO]: ${module.runtimeType}');
-    }
+    Logger.info('[MODULO]: ${module.runtimeType}');
   }
 
   /// Registers a route [path] as active for the given [module].
@@ -160,9 +158,7 @@ final class Manager implements IManager {
     if (_module == module) return;
     if (_activeRoutes[module]?.isNotEmpty ?? false) return;
 
-    if (Modugo.debugLogDiagnostics) {
-      Logger.dispose('[UNREGISTERING] Binds from ${module.runtimeType}');
-    }
+    Logger.dispose('[UNREGISTERING] Binds from ${module.runtimeType}');
 
     final types = _moduleTypes.remove(module) ?? {};
 
@@ -184,7 +180,7 @@ final class Manager implements IManager {
     for (final type in newTypes) {
       _incrementBindReference(type);
       typesForModule.add(type);
-      if (Logger.enabled) Logger.injection('[BINDS]: $type');
+      Logger.injection('[BINDS]: $type');
     }
 
     for (final imported in module.imports) {
@@ -196,7 +192,7 @@ final class Manager implements IManager {
       for (final type in importedTypes) {
         _incrementBindReference(type);
         typesForModule.add(type);
-        if (Logger.enabled) Logger.injection('[IMPORTED BINDS]: $type');
+        Logger.injection('[IMPORTED BINDS]: $type');
       }
     }
 

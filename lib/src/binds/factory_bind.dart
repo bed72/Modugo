@@ -33,8 +33,6 @@ final class FactoryBind<T> implements IBind<T> {
   /// but logs a message if [Modugo.debugLogDiagnostics] is enabled.
   @override
   void dispose() {
-    if (Modugo.debugLogDiagnostics) {
-      Logger.info('[FACTORY] dispose() called, but no action taken.');
-    }
+    Logger.info('[FACTORY] dispose() called, but no action taken.');
   }
 }
