@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/dispose.dart';
 import 'package:modugo/src/manager.dart';
@@ -262,6 +263,34 @@ void main() {
       expect(manager.bindReferences.containsKey(_Service), isFalse);
     },
   );
+
+  group('Persistent module', () {
+    test('should not unregister persistent module binds', () async {
+      final module = _PersistentModule();
+      manager.registerBindsIfNeeded(module);
+
+      expect(module.wasRegistered, isTrue);
+      expect(Modugo.get<String>(), equals('persistent'));
+
+      manager.unregisterRoute('/home', module);
+      await Future.delayed(Duration(milliseconds: disposeMilisenconds + 72));
+
+      expect(() => Modugo.get<String>(), returnsNormally);
+    });
+
+    test('should unregister normal module binds after delay', () async {
+      final module = _DisposableModule();
+      manager.registerBindsIfNeeded(module);
+
+      expect(module.wasRegistered, isTrue);
+      expect(Modugo.get<int>(), equals(42));
+
+      manager.unregisterRoute('/path', module);
+      await Future.delayed(Duration(milliseconds: disposeMilisenconds + 72));
+
+      expect(() => Modugo.get<int>(), throwsA(isA<Exception>()));
+    });
+  });
 }
 
 final class _Service {
@@ -289,6 +318,29 @@ final class _InnerModule extends Module {
   @override
   void binds(IInjector i) {
     i.addFactory<_Service>((_) => _Service());
+  }
+}
+
+final class _PersistentModule extends Module {
+  @override
+  bool get persistent => true;
+
+  bool wasRegistered = false;
+
+  @override
+  void binds(IInjector i) {
+    wasRegistered = true;
+    i.addSingleton<String>((_) => 'persistent');
+  }
+}
+
+final class _DisposableModule extends Module {
+  bool wasRegistered = false;
+
+  @override
+  void binds(IInjector i) {
+    wasRegistered = true;
+    i.addSingleton<int>((_) => 42);
   }
 }
 

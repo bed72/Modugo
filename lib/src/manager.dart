@@ -158,6 +158,12 @@ final class Manager implements IManager {
     if (_module == module) return;
     if (_activeRoutes[module]?.isNotEmpty ?? false) return;
 
+    if (module.persistent) {
+      Logger.warn('[SKIP DISPOSAL] Persistent module: ${module.runtimeType}');
+
+      return;
+    }
+
     Logger.dispose('[UNREGISTERING] Binds from ${module.runtimeType}');
 
     final types = _moduleTypes.remove(module) ?? {};
