@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:go_router/go_router.dart';
+import 'package:modugo/src/interfaces/guard_interface.dart';
 
 import 'package:modugo/src/transition.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
@@ -67,6 +68,12 @@ final class ChildRoute implements IModule {
   final FutureOr<String?> Function(BuildContext context, GoRouterState state)?
   redirect;
 
+  /// Optional list of guards that can intercept navigation to this route.
+  ///
+  /// Guards can perform checks and return `true` to allow navigation or `false`
+  /// to block it. They can also perform asynchronous operations.
+  final List<IGuard>? guards;
+
   /// Creates a [ChildRoute] with the required [path] and [child] builder.
   ///
   /// Additional behavior like transition, guard, or redirection can be configured via optional parameters.
@@ -74,6 +81,7 @@ final class ChildRoute implements IModule {
     this.path, {
     required this.child,
     this.name,
+    this.guards,
     this.onExit,
     this.redirect,
     this.transition,
