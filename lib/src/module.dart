@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -132,58 +134,23 @@ abstract class Module {
   }) {
     _validPath(childRoute.path, 'ChildRoute');
 
-    if (childRoute.guards != null && childRoute.guards!.isNotEmpty) {
-      return GoRoute(
-        path: effectivePath,
-        name: childRoute.name,
-        redirect: (context, state) async {
-          for (final guard in childRoute.guards!) {
-            return await guard.canActivate(context, state);
-          }
-          return null;
-        },
-        parentNavigatorKey: childRoute.parentNavigatorKey,
-        builder: (context, state) {
-          try {
-            _register(path: state.uri.toString());
-
-            Logger.info('[MODULE ROUTE] ${state.uri}');
-            Logger.info(
-              '[GO ROUTER] path for ${childRoute.name}: $effectivePath',
-            );
-
-            return childRoute.child(context, state);
-          } catch (e, s) {
-            _unregister(state.uri.toString());
-
-            Logger.error('Error building route ${state.uri}: $e\n$s');
-
-            rethrow;
-          }
-        },
-        onExit:
-            (context, state) => _handleRouteExit(
-              context,
-              module: this,
-              state: state,
-              route: childRoute,
-            ),
-        pageBuilder:
-            childRoute.pageBuilder != null
-                ? (context, state) => childRoute.pageBuilder!(context, state)
-                : (context, state) => _buildCustomTransitionPage(
-                  context,
-                  state: state,
-                  route: childRoute,
-                ),
-      );
-    }
-
     return GoRoute(
       path: effectivePath,
       name: childRoute.name,
-      redirect: childRoute.redirect,
       parentNavigatorKey: childRoute.parentNavigatorKey,
+      redirect: (context, state) async {
+        for (final guard in childRoute.guards) {
+          final result = await guard.redirect(context, state);
+
+          if (result != null) return result;
+        }
+
+        if (childRoute.redirect != null) {
+          return await childRoute.redirect!(context, state);
+        }
+
+        return null;
+      },
       builder: (context, state) {
         try {
           _register(path: state.uri.toString());
@@ -248,17 +215,6 @@ abstract class Module {
     return GoRoute(
       parentNavigatorKey: childRoute?.parentNavigatorKey,
       name: module.name?.isNotEmpty == true ? module.name : null,
-      redirect:
-          (context, state) =>
-              module.redirect?.call(context, state) ??
-              childRoute?.redirect?.call(context, state),
-      builder:
-          (context, state) => _buildModuleChild(
-            context,
-            state: state,
-            module: module,
-            route: childRoute,
-          ),
       routes: module.module.configureRoutes(topLevel: false, path: module.path),
       path: _normalizePath(
         topLevel: topLevel,
@@ -267,6 +223,30 @@ abstract class Module {
           path: _composePath(path, module.path + (childRoute?.path ?? '')),
         ),
       ),
+      builder:
+          (context, state) => _buildModuleChild(
+            context,
+            state: state,
+            module: module,
+            route: childRoute,
+          ),
+      redirect: (context, state) async {
+        for (final guard in module.guards) {
+          final result = await guard.redirect(context, state);
+          if (result != null) return result;
+        }
+
+        if (module.redirect != null) {
+          final result = module.redirect!(context, state);
+          if (result != null) return result;
+        }
+
+        if (childRoute?.redirect != null) {
+          return await childRoute!.redirect!(context, state);
+        }
+
+        return null;
+      },
       onExit: (context, state) {
         if (childRoute == null) return Future.value(true);
 

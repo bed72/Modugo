@@ -106,7 +106,7 @@ final class Manager implements IManager {
     _registerBinds(module);
     _activeRoutes[module] = [];
 
-    ModugoLogger.info('${module.runtimeType}');
+    ModugoLogger.info('${module.runtimeType} UP');
   }
 
   /// Registers a route [path] as active for the given [module].
@@ -159,12 +159,12 @@ final class Manager implements IManager {
     if (_activeRoutes[module]?.isNotEmpty ?? false) return;
 
     if (module.persistent) {
-      ModugoLogger.info('Persistent module: ${module.runtimeType}');
+      ModugoLogger.info('${module.runtimeType} PERSISTENT');
 
       return;
     }
 
-    ModugoLogger.dispose('Binds from ${module.runtimeType}');
+    ModugoLogger.dispose('${module.runtimeType} DOWN');
 
     final types = _moduleTypes.remove(module) ?? {};
 

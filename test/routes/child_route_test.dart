@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/transition.dart';
 import 'package:modugo/src/routes/child_route.dart';
+import 'package:modugo/src/interfaces/guard_interface.dart';
 
 void main() {
   group('ChildRoute.safeRootRoute', () {
@@ -127,4 +129,56 @@ void main() {
       expect(route.parentNavigatorKey, isNull);
     });
   });
+
+  group('ChildRoute - guards', () {
+    test('should assign guards list correctly', () {
+      final guard1 = _GuardAllow();
+      final guard2 = _GuardBlock();
+
+      final route = ChildRoute(
+        '/secure',
+        guards: [guard1, guard2],
+        child: (_, __) => const Placeholder(),
+      );
+
+      expect(route.guards, isNotNull);
+      expect(route.guards.length, 2);
+      expect(route.guards.first, isA<_GuardAllow>());
+      expect(route.guards.last, isA<_GuardBlock>());
+    });
+
+    test('should default to empty guards list when not provided', () {
+      final route = ChildRoute('/open', child: (_, __) => const Placeholder());
+
+      expect(route.guards, isEmpty);
+    });
+
+    test('should not affect equality when guards differ', () {
+      final a = ChildRoute(
+        '/route',
+        guards: [_GuardAllow()],
+        child: (_, __) => const Placeholder(),
+      );
+
+      final b = ChildRoute(
+        '/route',
+        guards: [_GuardBlock()],
+        child: (_, __) => const Placeholder(),
+      );
+
+      expect(a, equals(b));
+    });
+  });
+}
+
+final class _GuardAllow implements IGuard {
+  @override
+  Future<String?> redirect(BuildContext context, GoRouterState state) async =>
+      null;
+}
+
+final class _GuardBlock implements IGuard {
+  @override
+  Future<String?> redirect(BuildContext context, GoRouterState state) async =>
+      '/blocked';
 }

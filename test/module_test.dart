@@ -6,11 +6,14 @@ import 'package:modugo/src/module.dart';
 import 'package:modugo/src/dispose.dart';
 import 'package:modugo/src/manager.dart';
 import 'package:modugo/src/injector.dart';
+
+import 'package:modugo/src/interfaces/guard_interface.dart';
+import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/interfaces/injector_interface.dart';
+
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
-import 'package:modugo/src/interfaces/module_interface.dart';
-import 'package:modugo/src/interfaces/injector_interface.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 import 'fakes/fakes.dart';
@@ -150,6 +153,91 @@ void main() {
       expect(routes.any((r) => r is StatefulShellRoute), isTrue);
     });
   });
+
+  group('ModuleRoute - guards and redirect precedence', () {
+    test('redirects immediately if any guard blocks', () async {
+      final module = _SimpleChildModule();
+      final guardedRoute = ModuleRoute(
+        '/guarded',
+        module: module,
+        guards: [_GuardAllow(), _GuardBlock('/denied')],
+      );
+
+      final parent = _CustomParentModule([guardedRoute]);
+
+      final routes = parent.configureRoutes(topLevel: true);
+      final goRoute = routes.whereType<GoRoute>().firstWhere(
+        (r) => r.path == '/guarded',
+      );
+
+      final result = await goRoute.redirect!(BuildContextFake(), StateFake());
+      expect(result, '/denied');
+    });
+
+    test('falls back to ModuleRoute.redirect if all guards allow', () async {
+      final module = _SimpleChildModule();
+
+      final guardedRoute = ModuleRoute(
+        '/guarded',
+        module: module,
+        guards: [_GuardAllow()],
+        redirect: (_, __) => '/fallback',
+      );
+
+      final parent = _CustomParentModule([guardedRoute]);
+
+      final routes = parent.configureRoutes(topLevel: true);
+      final goRoute = routes.whereType<GoRoute>().firstWhere(
+        (r) => r.path == '/guarded',
+      );
+
+      final result = await goRoute.redirect!(BuildContextFake(), StateFake());
+      expect(result, '/fallback');
+    });
+
+    test(
+      'uses ChildRoute.redirect only if guards and module.redirect allow',
+      () async {
+        final module = _SimpleChildModuleWithRedirect();
+        final parent = _ParentModuleWithModuleRoute(child: module);
+
+        final route = ModuleRoute(
+          '/guarded',
+          module: module,
+          guards: [_GuardAllow()],
+        );
+
+        parent.routes.clear();
+        parent.routes.add(route);
+
+        final routes = parent.configureRoutes(topLevel: true);
+        final goRoute = routes.whereType<GoRoute>().first;
+
+        final result = await goRoute.redirect!(BuildContextFake(), StateFake());
+        expect(result, '/child-redirect');
+      },
+    );
+
+    test('returns null if guards allow and no redirects are defined', () async {
+      final module = _SimpleChildModule();
+      final parent = _ParentModuleWithModuleRoute(child: module);
+
+      final route = ModuleRoute(
+        '/guarded',
+        module: module,
+        guards: [_GuardAllow()],
+      );
+
+      parent.routes.clear();
+      parent.routes.add(route);
+
+      final routes = parent.configureRoutes(topLevel: true);
+      final goRoute = routes.whereType<GoRoute>().first;
+
+      final result = await goRoute.redirect!(BuildContextFake(), StateFake());
+      expect(result, isNull);
+    });
+  });
 }
 
 final class _ModuleInterface implements IModule {}
@@ -263,4 +351,46 @@ final class _ParentModuleWithModuleRoute extends Module {
 
   @override
   List<IModule> get routes => [ModuleRoute('/child', module: child)];
+}
+
+final class _CustomParentModule extends Module {
+  final List<IModule> customRoutes;
+
+  _CustomParentModule(this.customRoutes);
+
+  @override
+  List<IModule> get routes => customRoutes;
+}
+
+final class _SimpleChildModule extends Module {
+  @override
+  List<IModule> get routes => [
+    ChildRoute('/', child: (_, __) => const Text('Page')),
+  ];
+}
+
+final class _SimpleChildModuleWithRedirect extends Module {
+  @override
+  List<IModule> get routes => [
+    ChildRoute(
+      '/',
+      child: (_, __) => const Text('Page'),
+      redirect: (_, __) => '/child-redirect',
+    ),
+  ];
+}
+
+final class _GuardAllow implements IGuard {
+  @override
+  Future<String?> redirect(BuildContext context, GoRouterState state) async =>
+      null;
+}
+
+final class _GuardBlock implements IGuard {
+  final String path;
+  _GuardBlock(this.path);
+
+  @override
+  Future<String?> redirect(BuildContext context, GoRouterState state) async =>
+      path;
 }

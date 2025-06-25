@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/routes/module_route.dart';
+import 'package:modugo/src/interfaces/guard_interface.dart';
 
 void main() {
   group('ModuleRoute - equality and hashCode', () {
@@ -76,6 +77,50 @@ void main() {
       expect(route.redirect, isNull);
     });
   });
+
+  group('ModuleRoute - guards', () {
+    test('should assign guards list correctly', () {
+      final guard1 = _GuardAllow();
+      final guard2 = _GuardBlock();
+      final module = _DummyModule();
+
+      final route = ModuleRoute(
+        '/secure',
+        module: module,
+        guards: [guard1, guard2],
+      );
+
+      expect(route.guards, isNotNull);
+      expect(route.guards.length, 2);
+      expect(route.guards.first, isA<_GuardAllow>());
+      expect(route.guards.last, isA<_GuardBlock>());
+    });
+
+    test('should default to empty guards list when not provided', () {
+      final module = _DummyModule();
+      final route = ModuleRoute('/public', module: module);
+
+      expect(route.guards, isEmpty);
+    });
+
+    test('should not affect equality when guards differ', () {
+      final module = _DummyModule();
+
+      final a = ModuleRoute(
+        '/settings',
+        module: module,
+        guards: [_GuardAllow()],
+      );
+
+      final b = ModuleRoute(
+        '/settings',
+        module: module,
+        guards: [_GuardBlock()],
+      );
+
+      expect(a, equals(b)); // guards are intentionally excluded from equality
+    });
+  });
 }
 
 final class _DummyModule extends Module {}
@@ -83,6 +128,18 @@ final class _DummyModule extends Module {}
 final class _FakeBuildContext extends BuildContext {
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+final class _GuardAllow implements IGuard {
+  @override
+  Future<String?> redirect(BuildContext context, GoRouterState state) async =>
+      null;
+}
+
+final class _GuardBlock implements IGuard {
+  @override
+  Future<String?> redirect(BuildContext context, GoRouterState state) async =>
+      '/blocked';
 }
 
 final class _FakeGoRouterState extends GoRouterState {

@@ -37,6 +37,11 @@ final class ChildRoute implements IModule {
   /// Optional name to support named navigation.
   final String? name;
 
+  /// Optional list of route guards executed before activating this route.
+  ///
+  /// Each guard can allow the navigation or return a redirect path.
+  final List<IGuard> guards;
+
   /// Optional transition animation for this route.
   ///
   /// Defaults to whatever is configured globally or by the router.
@@ -68,12 +73,6 @@ final class ChildRoute implements IModule {
   final FutureOr<String?> Function(BuildContext context, GoRouterState state)?
   redirect;
 
-  /// Optional list of guards that can intercept navigation to this route.
-  ///
-  /// Guards can perform checks and return `true` to allow navigation or `false`
-  /// to block it. They can also perform asynchronous operations.
-  final List<IGuard>? guards;
-
   /// Creates a [ChildRoute] with the required [path] and [child] builder.
   ///
   /// Additional behavior like transition, guard, or redirection can be configured via optional parameters.
@@ -81,12 +80,12 @@ final class ChildRoute implements IModule {
     this.path, {
     required this.child,
     this.name,
-    this.guards,
     this.onExit,
     this.redirect,
     this.transition,
     this.pageBuilder,
     this.parentNavigatorKey,
+    this.guards = const [],
   });
 
   /// Returns a special [ChildRoute] that serves as a no-op root placeholder.
