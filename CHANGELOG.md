@@ -1,3 +1,7 @@
+## [2.2.0] - 2025-06-25
+
+- Add Guard
+
 ## [2.1.0] - 2025-06-25
 
 - Merge pull request #6 from bed72/logger
