@@ -1,3 +1,7 @@
+## [2.1.0] - 2025-06-25
+
+- Merge pull request #6 from bed72/logger
+
 ## [2.0.0] - 2025-06-24
 
 - Merge pull request #5 from bed72/persistent
