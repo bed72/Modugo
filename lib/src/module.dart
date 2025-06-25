@@ -118,7 +118,7 @@ abstract class Module {
       ...moduleRoutes,
     ].whereType<GoRoute>().map((r) => r.path);
 
-    Logger.info(
+    ModugoLogger.navigation(
       'Final recorded routes: ${paths.isEmpty ? "(/) or ('')" : "$paths"}',
     );
 
@@ -141,16 +141,11 @@ abstract class Module {
         try {
           _register(path: state.uri.toString());
 
-          Logger.info('[MODULE ROUTE] ${state.uri}');
-          Logger.info(
-            '[GO ROUTER] path for ${childRoute.name}: $effectivePath',
-          );
-
           return childRoute.child(context, state);
         } catch (e, s) {
           _unregister(state.uri.toString());
 
-          Logger.error('Error building route ${state.uri}: $e\n$s');
+          ModugoLogger.error('Error building route ${state.uri}: $e\n$s');
 
           rethrow;
         }
@@ -265,8 +260,6 @@ abstract class Module {
             for (final type in newTypes) {
               _routerManager.bindReferences[type] =
                   (_routerManager.bindReferences[type] ?? 0) + 1;
-
-              Logger.injection('[SHELL BIND]: $type');
             }
           }
         }
@@ -309,11 +302,9 @@ abstract class Module {
             navigatorKey: route.navigatorKey,
             parentNavigatorKey: route.parentNavigatorKey,
             restorationScopeId: route.restorationScopeId,
-            builder: (context, state, child) {
-              Logger.info('[SHELL ROUTE]: ${state.uri}');
-
-              return route.builder!(context, state, child);
-            },
+            builder:
+                (context, state, child) =>
+                    route.builder!(context, state, child),
             pageBuilder:
                 route.pageBuilder != null
                     ? (context, state, child) =>
@@ -328,10 +319,6 @@ abstract class Module {
         final normalizedPath = _normalizePath(path: path, topLevel: topLevel);
         shellRoutes.add(
           route.toRoute(topLevel: topLevel, path: normalizedPath),
-        );
-
-        Logger.info(
-          '[STATEFUL SHELL MODULE ROUTE] registered with ${route.routes.length} branches.',
         );
       }
     }
@@ -369,7 +356,7 @@ abstract class Module {
     try {
       CompilerRoute(path);
     } catch (e) {
-      Logger.error('Invalid path in $type: $path → $e');
+      ModugoLogger.error('Invalid path in $type: $path → $e');
 
       throw ArgumentError.value(
         path,

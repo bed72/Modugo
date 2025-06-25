@@ -1,100 +1,111 @@
 // coverage:ignore-file
 // ignore_for_file: library_private_types_in_public_api
 
-import 'dart:io';
-
+import 'package:logger/logger.dart';
 import 'package:modugo/src/modugo.dart';
 
-/// A simple logging utility used internally by Modugo.
+/// A singleton logger used internally by Modugo to output diagnostic
+/// messages with customizable formatting and emojis.
 ///
-/// Provides multiple logging methods corresponding to different severity levels,
-/// each prepending a timestamp, emoji, and tag to messages.
+/// The logger respects the [Modugo.debugLogDiagnostics] flag, so logs will
+/// only be emitted when this flag is set to `true`.
 ///
-/// Logging output is colored for readability in terminals that support ANSI colors.
-///
-/// Logging can be globally enabled or disabled via [enabled] and
-/// respects the [Modugo.debugLogDiagnostics] flag.
+/// Internally, it uses the `logger` package with a custom [_ModugoPrettyPrinter]
+/// to colorize and format output consistently.
 ///
 /// Example usage:
 /// ```dart
-/// Logger.info('Module loaded');
-/// Logger.error('Failed to register bind');
+/// ModugoLogger.info('Module initialized');
+/// ModugoLogger.error('Failed to resolve dependency');
 /// ```
-final class Logger {
-  /// Core method that logs a message with optional [emoji], [tag], and [level].
+final class ModugoLogger {
+  /// Singleton instance of [ModugoLogger].
+  static final ModugoLogger _instance = ModugoLogger._internal();
+
+  /// Factory constructor to return the singleton instance.
+  factory ModugoLogger() => _instance;
+
+  /// Internal logger from the `logger` package.
+  late final Logger _logger;
+
+  /// Internal constructor that sets up the logger with a custom printer.
+  ModugoLogger._internal() {
+    _logger = Logger(level: Level.all, printer: _ModugoPrettyPrinter());
+  }
+
+  /// Logs a custom message with optional emoji, tag, and log [level].
   ///
-  /// Respects [Modugo.debugLogDiagnostics] to conditionally output logs.
-  ///
-  /// Outputs the message to standard output with colored formatting.
+  /// If [Modugo.debugLogDiagnostics] is false, the log is suppressed.
   static void log(
     String message, {
     String emoji = '',
     String tag = 'Modugo',
-    _LogLevel level = _LogLevel.info,
+    Level level = Level.info,
   }) {
     if (!Modugo.debugLogDiagnostics) return;
 
-    final timestamp = _now();
-    final coloredMessage = _colorize(
-      level,
-      '[$timestamp] $emoji [$tag] $message',
-    );
-    stdout.writeln(coloredMessage);
+    final fullMessage = '$emoji [$tag] $message';
+
+    final _ = switch (level) {
+      Level.info => _instance._logger.i(fullMessage),
+      Level.debug => _instance._logger.d(fullMessage),
+      Level.error => _instance._logger.e(fullMessage),
+      Level.warning => _instance._logger.w(fullMessage),
+      _ => _instance._logger.i(fullMessage),
+    };
   }
 
-  /// Logs an informational message (green text).
+  /// Logs an informational message with 👀 emoji and `INFO` tag.
   static void info(String message, {String tag = 'INFO'}) =>
-      log(message, tag: tag, emoji: ' 👀 ', level: _LogLevel.info);
+      log(message, emoji: ' 👀 ', tag: tag, level: Level.info);
 
-  /// Logs an error message (red text).
-  static void error(String message, {String tag = 'ERROR'}) =>
-      log(message, tag: tag, emoji: ' ❌ ', level: _LogLevel.error);
-
-  /// Logs a warning message (yellow text).
+  /// Logs a warning message with 😟 emoji and `WARN` tag.
   static void warn(String message, {String tag = 'WARN'}) =>
-      log(message, tag: tag, emoji: ' 😟 ', level: _LogLevel.warn);
+      log(message, emoji: ' 😟 ', tag: tag, level: Level.warning);
 
-  /// Logs a navigation-related message (blue text).
+  /// Logs an error message with ❌ emoji and `ERROR` tag.
+  static void error(String message, {String tag = 'ERROR'}) =>
+      log(message, emoji: ' ❌ ', tag: tag, level: Level.error);
+
+  /// Logs a navigation-related message with 🧭 emoji and `NAV` tag.
   static void navigation(String message, {String tag = 'NAV'}) =>
-      log(message, tag: tag, emoji: ' 🧭 ', level: _LogLevel.trace);
+      log(message, emoji: ' 🧭 ', tag: tag, level: Level.trace);
 
-  /// Logs a dispose-related message (magenta text).
+  /// Logs a disposal-related message with 🗑️ emoji and `DISPOSE` tag.
   static void dispose(String message, {String tag = 'DISPOSE'}) =>
-      log(message, tag: tag, emoji: ' 🗑️ ', level: _LogLevel.fatal);
+      log(message, emoji: ' 🗑️ ', tag: tag, level: Level.off);
 
-  /// Logs an injection-related message (orange text).
+  /// Logs an injection-related message with 💉 emoji and `INJECT` tag.
   static void injection(String message, {String tag = 'INJECT'}) =>
-      log(message, tag: tag, emoji: ' 💉 ', level: _LogLevel.debug);
+      log(message, emoji: ' 💉 ', tag: tag, level: Level.debug);
+}
 
-  /// Returns the current time as a formatted string `HH:mm:ss`.
-  static String _now() {
+/// A custom log printer for Modugo that colorizes messages based on level,
+/// adds a timestamp, and formats the output consistently.
+final class _ModugoPrettyPrinter extends LogPrinter {
+  /// Mapping of log levels to ANSI colors.
+  final Map<Level, AnsiColor> _levelColors = {
+    Level.info: AnsiColor.fg(10),
+    Level.trace: AnsiColor.fg(12),
+    Level.error: AnsiColor.fg(196),
+    Level.debug: AnsiColor.fg(208),
+    Level.fatal: AnsiColor.fg(199),
+    Level.warning: AnsiColor.fg(208),
+  };
+
+  @override
+  List<String> log(LogEvent event) {
+    final timestamp = _now();
+    final message = event.message.toString();
+    final color = _levelColors[event.level] ?? AnsiColor.none();
+
+    return ['${color('[$timestamp]')} ${color(message)}'];
+  }
+
+  /// Returns current time as a formatted string `HH:mm:ss`.
+  String _now() {
     final now = DateTime.now();
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     return '${twoDigits(now.hour)}:${twoDigits(now.minute)}:${twoDigits(now.second)}';
   }
-
-  /// Wraps the [message] in ANSI color codes based on the [level].
-  ///
-  /// Supports colors:
-  /// - info: green
-  /// - warn: yellow
-  /// - trace: blue
-  /// - error: red
-  /// - debug: orange
-  /// - fatal: magenta
-  static String _colorize(_LogLevel level, String message) {
-    final colorCode = switch (level) {
-      _LogLevel.info => '\x1B[32m',
-      _LogLevel.warn => '\x1B[93m',
-      _LogLevel.trace => '\x1B[34m',
-      _LogLevel.error => '\x1B[31m',
-      _LogLevel.debug => '\x1B[33m',
-      _LogLevel.fatal => '\x1B[35m',
-    };
-    const reset = '\x1B[0m';
-    return '$colorCode$message$reset';
-  }
 }
-
-/// Defines the severity levels used by [Logger].
-enum _LogLevel { info, trace, error, debug, fatal, warn }
