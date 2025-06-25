@@ -124,6 +124,54 @@ void main() {
     },
   );
 
+  test(
+    'StatefulShellModuleRoute applies guard when ModuleRoute path is "/"',
+    () async {
+      final module = _StatefulShellGuardedModule();
+
+      final routes = module.configureRoutes(topLevel: true);
+      final shell = routes.whereType<StatefulShellRoute>().first;
+
+      final guardedRoute =
+          shell.branches.first.routes.whereType<GoRoute>().first;
+      final result = await guardedRoute.redirect!(_FakeContext(), _FakeState());
+
+      expect(result, '/not-allowed');
+    },
+  );
+
+  test('composePath joins base and sub correctly and cleans slashes', () {
+    final wrapper = StatefulShellModuleRoute(
+      routes: [],
+      builder: (_, __, ___) => const Placeholder(),
+    );
+
+    expect(wrapper.composePath('/', 'profile'), '/profile');
+    expect(wrapper.composePath('/settings/', '/profile/'), '/settings/profile');
+    expect(wrapper.composePath('', ''), '/');
+    expect(wrapper.composePath('a/', '/b'), '/a/b');
+  });
+
+  test(
+    'isRootRouteForModule returns true for "/", "" or matching ModuleRoute path',
+    () {
+      dummyBuilder(BuildContext _, GoRouterState __) => const Placeholder();
+      final route = ModuleRoute('/home', module: _DummyModule());
+
+      final routeWrapper = StatefulShellModuleRoute(
+        routes: [],
+        builder: (_, __, ___) => const Placeholder(),
+      );
+
+      bool result(RouteBase base) =>
+          routeWrapper.isRootRouteForModule(base, route);
+
+      expect(result(GoRoute(path: '/', builder: dummyBuilder)), isTrue);
+      expect(result(GoRoute(path: '/home', builder: dummyBuilder)), isTrue);
+      expect(result(GoRoute(path: '/other', builder: dummyBuilder)), isFalse);
+    },
+  );
+
   test('should be equal even if guards differ in ModuleRoute', () {
     builder(_, __, ___) => const Placeholder();
     final sharedModule = _DummyModule();
