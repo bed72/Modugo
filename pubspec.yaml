@@ -1,5 +1,5 @@
 name: modugo
-version: 2.0.0
+version: 2.1.0
 homepage: https://github.com/bed72/Modugo
 repository: https://github.com/bed72/Modugo
 description: Roteamento modular e injeção de dependências para Flutter com GoRouter.
@@ -12,6 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
 
+  logger: ^2.6.0
   go_router: ^15.2.0
 
 dev_dependencies:

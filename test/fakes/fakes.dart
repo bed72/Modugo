@@ -9,7 +9,7 @@ import 'package:modugo/src/module.dart';
 
 FutureOr<GoRouter> startModugoFake({
   required Module module,
-  bool debugLogDiagnostics = false,
+  bool debugLogDiagnostics = true,
 }) async => Modugo.configure(
   module: module,
   delayDisposeMilliseconds: 600,

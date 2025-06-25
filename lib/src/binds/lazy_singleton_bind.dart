@@ -55,10 +55,10 @@ final class LazySingletonBind<T> implements IBind<T> {
       if (instance is StreamController) instance.close();
       _instance = null;
     } catch (e, stack) {
-      Logger.info(
-        '[LAZY SINGLETON] Error disposing instance of type ${instance.runtimeType}: $e',
+      ModugoLogger.injection(
+        'Error disposing instance of type ${instance.runtimeType}: $e',
       );
-      Logger.error('$stack');
+      ModugoLogger.error('$stack');
     }
   }
 }
