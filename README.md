@@ -252,6 +252,18 @@ ModuleRoute(
 )
 ```
 
+Guards are also supported inside `ShellModuleRoute` and `StatefulShellModuleRoute` branches:
+
+```dart
+StatefulShellModuleRoute(
+  builder: (_, __, shell) => shell,
+  routes: [
+    ModuleRoute('/settings', module: SettingsModule(), guards: [SettingsGuard()]),
+    ModuleRoute('/account', module: AccountModule()),
+  ],
+)
+```
+
 ### ℹ️ Behavior
 
 - If a guard returns a non-null path, navigation is redirected.

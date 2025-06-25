@@ -324,11 +324,24 @@ abstract class Module {
 
         shellRoutes.add(
           ShellRoute(
-            redirect: route.redirect,
+            routes: innerRoutes,
             observers: route.observers,
             navigatorKey: route.navigatorKey,
             parentNavigatorKey: route.parentNavigatorKey,
             restorationScopeId: route.restorationScopeId,
+            redirect: (context, state) async {
+              for (final guard in route.guards) {
+                final result = await guard.redirect(context, state);
+                if (result != null) return result;
+              }
+
+              if (route.redirect != null) {
+                return await route.redirect!(context, state);
+              }
+
+              return null;
+            },
+
             builder:
                 (context, state, child) =>
                     route.builder!(context, state, child),
@@ -337,7 +350,6 @@ abstract class Module {
                     ? (context, state, child) =>
                         route.pageBuilder!(context, state, child)
                     : null,
-            routes: innerRoutes,
           ),
         );
       }

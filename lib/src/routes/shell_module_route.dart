@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
+import 'package:modugo/src/interfaces/guard_interface.dart';
 
 import 'package:modugo/src/interfaces/module_interface.dart';
 import 'package:modugo/src/interfaces/injector_interface.dart';
@@ -34,6 +35,11 @@ import 'package:modugo/src/interfaces/injector_interface.dart';
 final class ShellModuleRoute implements IModule {
   /// The list of child modules to be rendered inside the shell.
   final List<IModule> routes;
+
+  /// Optional list of guards that control access to the shell route.
+  ///
+  /// Each guard can redirect to another path or allow access.
+  final List<IGuard> guards;
 
   /// Optional ID used for state restoration (Flutter feature).
   final String? restorationScopeId;
@@ -87,6 +93,7 @@ final class ShellModuleRoute implements IModule {
     this.pageBuilder,
     this.navigatorKey,
     this.binds = const [],
+    this.guards = const [],
     this.parentNavigatorKey,
     this.restorationScopeId,
   });

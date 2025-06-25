@@ -1,10 +1,14 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/logger.dart';
+
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
+
 import 'package:modugo/src/interfaces/module_interface.dart';
 
 /// A modular route that enables stateful navigation using [StatefulShellRoute].
@@ -70,17 +74,45 @@ final class StatefulShellModuleRoute implements IModule {
               topLevel: false,
             );
 
-            final registeredPaths =
-                configuredRoutes
-                    .whereType<GoRoute>()
-                    .map((r) => r.path)
-                    .toList();
+            final updatedRoutes =
+                configuredRoutes.map((r) {
+                  if (r is! GoRoute) return r;
 
+                  final isRoot =
+                      r.path == route.path || r.path == '/' || r.path == '';
+
+                  if (!isRoot) return r;
+
+                  return GoRoute(
+                    path: r.path,
+                    name: r.name,
+                    builder: r.builder,
+                    pageBuilder: r.pageBuilder,
+                    parentNavigatorKey: r.parentNavigatorKey,
+                    onExit: r.onExit,
+                    redirect: (context, state) async {
+                      for (final guard in route.guards) {
+                        final result = await guard.redirect(context, state);
+                        if (result != null) return result;
+                      }
+
+                      if (route.redirect != null) {
+                        final result = route.redirect!(context, state);
+                        if (result != null) return result;
+                      }
+
+                      return await r.redirect?.call(context, state);
+                    },
+                  );
+                }).toList();
+
+            final registeredPaths =
+                updatedRoutes.whereType<GoRoute>().map((r) => r.path).toList();
             ModugoLogger.navigation(
               '"${route.path}" → registered GoRoutes: $registeredPaths',
             );
 
-            return StatefulShellBranch(routes: configuredRoutes);
+            return StatefulShellBranch(routes: updatedRoutes);
           }
 
           if (route is ChildRoute) {
@@ -88,7 +120,6 @@ final class StatefulShellModuleRoute implements IModule {
               routes: [
                 GoRoute(
                   builder: route.child,
-                  redirect: route.redirect,
                   path: normalizePath(route.path),
                   name: route.name ?? 'branch_$index',
                   parentNavigatorKey: route.parentNavigatorKey,
@@ -97,6 +128,19 @@ final class StatefulShellModuleRoute implements IModule {
                           ? (context, state) =>
                               route.pageBuilder!(context, state)
                           : null,
+                  redirect: (context, state) async {
+                    for (final guard in route.guards) {
+                      final result = await guard.redirect(context, state);
+                      if (result != null) return result;
+                    }
+
+                    if (route.redirect != null) {
+                      final result = await route.redirect!(context, state);
+                      if (result != null) return result;
+                    }
+
+                    return null;
+                  },
                 ),
               ],
             );
