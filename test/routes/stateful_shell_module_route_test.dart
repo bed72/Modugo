@@ -166,7 +166,7 @@ void main() {
       bool result(RouteBase base) =>
           routeWrapper.isRootRouteForModule(base, route);
 
-      expect(result(GoRoute(path: '/', builder: dummyBuilder)), isTrue);
+      expect(result(GoRoute(path: '/', builder: dummyBuilder)), isFalse);
       expect(result(GoRoute(path: '/home', builder: dummyBuilder)), isTrue);
       expect(result(GoRoute(path: '/other', builder: dummyBuilder)), isFalse);
     },
@@ -189,6 +189,27 @@ void main() {
 
     expect(a, equals(b));
   });
+
+  test(
+    'StatefulShellModuleRoute applies guard when ModuleRoute path is not "/"',
+    () async {
+      final module = _StatefulShellGuardedModuleWithRealPath();
+
+      final routes = module.configureRoutes(topLevel: true);
+      final shell = routes.whereType<StatefulShellRoute>().first;
+
+      final guardedRoute = shell.branches.first.routes
+          .whereType<GoRoute>()
+          .firstWhere(
+            (_) => true,
+            orElse: () => throw TestFailure('No GoRoute found in first branch'),
+          );
+
+      final result = await guardedRoute.redirect!(_FakeContext(), _FakeState());
+
+      expect(result, '/not-allowed');
+    },
+  );
 }
 
 final class _UnsupportedRoute implements IModule {}
@@ -235,6 +256,13 @@ final class _GuardedChildModule extends Module {
   @override
   List<IModule> get routes => [
     ChildRoute('/', child: (_, __) => const Placeholder()),
+  ];
+}
+
+final class _GuardedChildModuleWithRealPath extends Module {
+  @override
+  List<IModule> get routes => [
+    ChildRoute('/guarded', child: (_, __) => const Placeholder()),
   ];
 }
 
@@ -292,6 +320,22 @@ final class _StatefulShellGuardedModule extends Module {
           guards: [_BlockGuard()],
         ),
         ModuleRoute('/profile', module: _SimpleModule()),
+      ],
+    ),
+  ];
+}
+
+final class _StatefulShellGuardedModuleWithRealPath extends Module {
+  @override
+  List<IModule> get routes => [
+    StatefulShellModuleRoute(
+      builder: (_, __, shell) => shell,
+      routes: [
+        ModuleRoute(
+          '/guarded',
+          module: _GuardedChildModuleWithRealPath(),
+          guards: [_BlockGuard()],
+        ),
       ],
     ),
   ];

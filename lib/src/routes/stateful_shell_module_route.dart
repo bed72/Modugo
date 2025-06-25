@@ -160,50 +160,40 @@ final class StatefulShellModuleRoute implements IModule {
   String normalizePath(String path) =>
       path.trim().isEmpty ? '/' : path.replaceAll(RegExp(r'/+'), '/');
 
-  /// Composes two route segments into a single normalized path.
+  /// Joins a base path and a subpath into a clean, normalized route string.
   ///
-  /// This function:
-  /// - Joins `base` and `sub` with a slash `/`
-  /// - Collapses multiple consecutive slashes into one
-  /// - Ensures the result starts with a single `/`
-  /// - Removes any trailing slash (unless the result is just `/`)
+  /// - Collapses repeated slashes
+  /// - Ensures single leading slash
+  /// - Removes trailing slash unless it's the root "/"
   ///
   /// Examples:
-  /// - `composePath('/settings/', '/profile/')` → `/settings/profile`
-  /// - `composePath('', '')` → `/`
-  ///
-  /// Useful for composing nested route paths consistently.
+  /// - composePath('/settings/', '/profile/') → '/settings/profile'
+  /// - composePath('', '') → '/'
   String composePath(String base, String sub) {
     final joined = [base, sub].where((p) => p.isNotEmpty).join('/');
-
     final cleaned = joined.replaceAll(RegExp(r'/+'), '/');
-
     final normalized = cleaned.startsWith('/') ? cleaned : '/$cleaned';
     return normalized.endsWith('/') && normalized.length > 1
         ? normalized.substring(0, normalized.length - 1)
         : normalized;
   }
 
-  /// Determines whether a given [RouteBase] represents the root route of a [ModuleRoute].
+  /// Determines whether the given [routeBase] is the root [GoRoute] of the [moduleRoute].
   ///
-  /// This is used within `StatefulShellModuleRoute` to identify which [GoRoute]
-  /// inside the module should receive the module-level guards and redirects.
+  /// This is used to apply guards and redirects to the correct route inside
+  /// a [ModuleRoute] branch in a [StatefulShellModuleRoute].
   ///
-  /// A route is considered the root if:
-  /// - Its path matches the [ModuleRoute]'s path
-  /// - Its path is `'/'` or `''`
-  /// - It matches the composed path of the module with `'/'`
-  ///
-  /// Returns `true` if it is the root route; otherwise `false`.
+  /// The root route is considered to be the **first GoRoute** defined by the module.
   bool isRootRouteForModule(RouteBase routeBase, ModuleRoute moduleRoute) {
     if (routeBase is! GoRoute) return false;
 
-    final path = routeBase.path.trim();
+    final configuredRoutes = moduleRoute.module.configureRoutes(
+      path: '',
+      topLevel: false,
+    );
 
-    return path == moduleRoute.path ||
-        path == '/' ||
-        path.isEmpty ||
-        path == composePath(moduleRoute.path, '/');
+    final firstGoRoute = configuredRoutes.whereType<GoRoute>().firstOrNull;
+    return firstGoRoute != null && routeBase.path == firstGoRoute.path;
   }
 
   @override
