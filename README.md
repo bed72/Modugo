@@ -20,6 +20,7 @@ The main difference is that Modugo provides full control and decoupling of **aut
 - Support for `ShellRoute` and `StatefulShellRoute`
 - Detailed and configurable logging
 - Support for **persistent modules** that are never disposed
+- Built-in support for **Route Guards**
 
 ---
 
@@ -134,7 +135,7 @@ final class HomeModule extends Module {
 
 ## ♻️ Persistent Modules
 
-By default, Modugo automatically disposes dependencies when a module is no longer active (i.e., when all its routes are exited).  
+By default, Modugo automatically disposes dependencies when a module is no longer active (i.e., when all its routes are exited).
 For cases like bottom navigation tabs, you may want to **keep modules alive** even when they are not visible.
 
 To do this, override the `persistent` flag:
@@ -156,7 +157,7 @@ final class HomeModule extends Module {
 }
 ```
 
-✅ Great for `StatefulShellRoute` branches  
+✅ Great for `StatefulShellRoute` branches
 🚫 Avoid for short-lived or heavy modules
 
 ---
@@ -215,6 +216,51 @@ StatefulShellModuleRoute(
 
 ---
 
+## ⚰️ Route Guards
+
+You can protect routes using `IGuard`, which allows you to define redirection logic before a route is activated.
+
+### 1. Define a guard
+
+```dart
+class AuthGuard implements IGuard {
+  @override
+  FutureOr<String?> redirect(BuildContext context, GoRouterState state) async {
+    final auth = Modugo.get<AuthService>();
+    return auth.isLoggedIn ? null : '/login';
+  }
+}
+```
+
+### 2. Apply to a route
+
+```dart
+ChildRoute(
+  '/profile',
+  child: (_, __) => const ProfilePage(),
+  guards: [AuthGuard()],
+)
+```
+
+Or:
+
+```dart
+ModuleRoute(
+  '/admin',
+  module: AdminModule(),
+  guards: [AdminGuard()],
+)
+```
+
+### ℹ️ Behavior
+
+- If a guard returns a non-null path, navigation is redirected.
+- Guards run **before** the route's `redirect` logic.
+- Redirects are executed in order: **guards** ➔ **route.redirect** ➔ **child.redirect (if ModuleRoute)**
+- Modugo never assumes where to redirect. It's up to you.
+
+---
+
 ## 🔍 Accessing Dependencies
 
 ```dart
@@ -229,7 +275,7 @@ final controller = context.read<HomeController>();
 
 ---
 
-## 🧰 Logging and Diagnostics
+## 🧠 Logging and Diagnostics
 
 ```dart
 Modugo.configure(

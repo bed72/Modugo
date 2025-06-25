@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:go_router/go_router.dart';
+import 'package:modugo/src/interfaces/guard_interface.dart';
 
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
@@ -40,6 +41,11 @@ final class ModuleRoute implements IModule {
   /// This module will provide its own routes and bindings.
   final Module module;
 
+  /// Optional list of guards that control access to this module.
+  ///
+  /// Each guard can redirect to another path or allow access.
+  final List<IGuard> guards;
+
   /// Optional function that redirects the user to another path
   /// before entering the module.
   ///
@@ -52,6 +58,7 @@ final class ModuleRoute implements IModule {
     required this.module,
     this.name,
     this.redirect,
+    this.guards = const [],
   });
 
   @override

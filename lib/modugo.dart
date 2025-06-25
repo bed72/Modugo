@@ -10,6 +10,7 @@ export 'src/binds/singleton_bind.dart';
 export 'src/binds/lazy_singleton_bind.dart';
 
 export 'src/interfaces/bind_interface.dart';
+export 'src/interfaces/guard_interface.dart';
 export 'src/interfaces/module_interface.dart';
 export 'src/interfaces/manager_interface.dart';
 export 'src/interfaces/injector_interface.dart';

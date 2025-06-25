@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:go_router/go_router.dart';
+import 'package:modugo/src/interfaces/guard_interface.dart';
 
 import 'package:modugo/src/transition.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
@@ -35,6 +36,11 @@ final class ChildRoute implements IModule {
 
   /// Optional name to support named navigation.
   final String? name;
+
+  /// Optional list of route guards executed before activating this route.
+  ///
+  /// Each guard can allow the navigation or return a redirect path.
+  final List<IGuard> guards;
 
   /// Optional transition animation for this route.
   ///
@@ -79,6 +85,7 @@ final class ChildRoute implements IModule {
     this.transition,
     this.pageBuilder,
     this.parentNavigatorKey,
+    this.guards = const [],
   });
 
   /// Returns a special [ChildRoute] that serves as a no-op root placeholder.
