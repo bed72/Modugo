@@ -3,12 +3,21 @@ import 'dart:convert';
 
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
-import 'package:modugo/src/injector.dart';
 
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/dispose.dart';
 import 'package:modugo/src/manager.dart';
+import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/transition.dart';
+
+import 'package:modugo/src/interfaces/module_interface.dart';
+
+import 'package:modugo/src/routes/child_route.dart';
+import 'package:modugo/src/routes/match_route.dart';
+import 'package:modugo/src/routes/module_route.dart';
+import 'package:modugo/src/routes/shell_module_route.dart';
+import 'package:modugo/src/routes/models/route_pattern_model.dart';
+import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 /// Alias for the core configuration class used to bootstrap and manage Modugo.
 ///
@@ -67,6 +76,23 @@ final class ModugoConfiguration {
   ///
   /// Shortcut for `Injector().get<T>()`.
   static T get<T>() => Injector().get<T>();
+
+  /// Attempts to match a given [location] to a registered route with a [RoutePatternModel].
+  ///
+  /// Returns a [MatchRoute] containing the matched route and extracted parameters,
+  /// or `null` if no match is found.
+  static MatchRoute? matchRoute(String location) {
+    final allModules = _collectModules(Modugo.manager.rootModule);
+
+    for (final module in allModules) {
+      for (final route in module.routes) {
+        final match = _matchRouteRecursive(route, location);
+        if (match != null) return match;
+      }
+    }
+
+    return null;
+  }
 
   /// Configures the entire Modugo system by:
   /// - building the root router from the [module]
@@ -135,5 +161,45 @@ final class ModugoConfiguration {
     );
 
     return _router!;
+  }
+
+  /// Recursively attempts to match a single [IModule] route (any type) to the [location].
+  static MatchRoute? _matchRouteRecursive(IModule route, String location) {
+    final pattern = switch (route) {
+      ChildRoute r => r.routePattern,
+      ModuleRoute r => r.routePattern,
+      ShellModuleRoute r => r.routePattern,
+      StatefulShellModuleRoute r => r.routePattern,
+      _ => null,
+    };
+
+    if (pattern != null && pattern.regex.hasMatch(location)) {
+      final params = pattern.extractParams(location);
+      return MatchRoute(route: route, params: params);
+    }
+
+    if (route is ModuleRoute) {
+      final childRoutes = route.module.routes;
+      for (final child in childRoutes) {
+        final match = _matchRouteRecursive(child, location);
+        if (match != null) return match;
+      }
+    }
+
+    return null;
+  }
+
+  /// Recursively flattens all modules starting from [root].
+  static List<Module> _collectModules(Module root) {
+    final buffer = <Module>[];
+    void visit(Module mod) {
+      buffer.add(mod);
+      for (final imported in mod.imports) {
+        visit(imported);
+      }
+    }
+
+    visit(root);
+    return buffer;
   }
 }
