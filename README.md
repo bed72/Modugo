@@ -393,7 +393,7 @@ Modugo.configure(
 );
 ```
 
-- All logs pass through the `Logger` class, which can be extended or customized.
+- All logs pass through the `ModugoLogger` class, which can be extended or customized.
 - Logs include injection, disposal, navigation, and errors.
 
 ---
