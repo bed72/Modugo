@@ -16,6 +16,7 @@ export 'src/interfaces/manager_interface.dart';
 export 'src/interfaces/injector_interface.dart';
 
 export 'src/routes/child_route.dart';
+export 'src/routes/match_route.dart';
 export 'src/routes/module_route.dart';
 export 'src/routes/compiler_route.dart';
 export 'src/routes/shell_module_route.dart';
