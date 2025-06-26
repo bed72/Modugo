@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'package:go_router/go_router.dart';
@@ -50,7 +52,8 @@ final class ModuleRoute implements IModule {
   /// before entering the module.
   ///
   /// Returning `null` allows access. Returning a string will redirect to that path.
-  final String? Function(BuildContext, GoRouterState)? redirect;
+  final FutureOr<String?> Function(BuildContext context, GoRouterState state)?
+  redirect;
 
   /// Creates a [ModuleRoute] that links a [path] to a nested [module].
   const ModuleRoute(

@@ -241,7 +241,11 @@ final class _DummyModule extends Module {
 final class _ProductModule extends Module {
   @override
   List<IModule> get routes => [
-    ChildRoute.safeRootRoute(),
+    ChildRoute(
+      '/',
+      name: 'safe-root-route',
+      child: (_, __) => const SizedBox.shrink(),
+    ),
     ChildRoute(
       '/:name/dp/:webcode',
       name: 'produto_details',

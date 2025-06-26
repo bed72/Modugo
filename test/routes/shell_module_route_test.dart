@@ -272,7 +272,7 @@ void main() {
             builder: (context, state, child) => const Placeholder(),
             redirect: (context, state) async {
               for (final guard in shellRoute.guards) {
-                final result = await guard.redirect(context, state);
+                final result = await guard.call(context, state);
                 if (result != null) return result;
               }
 
@@ -322,14 +322,13 @@ final class _ShellGuardedModule extends Module {
 
 final class _BlockingGuard implements IGuard {
   @override
-  Future<String?> redirect(BuildContext context, GoRouterState state) async =>
+  Future<String?> call(BuildContext context, GoRouterState state) async =>
       '/blocked';
 }
 
 final class _FakeGuardAllow implements IGuard {
   @override
-  Future<String?> redirect(BuildContext context, GoRouterState state) async =>
-      null;
+  Future<String?> call(BuildContext context, GoRouterState state) async => null;
 }
 
 final class _FakeGuardBlock implements IGuard {
@@ -337,7 +336,7 @@ final class _FakeGuardBlock implements IGuard {
   _FakeGuardBlock(this.redirectPath);
 
   @override
-  Future<String?> redirect(BuildContext context, GoRouterState state) async =>
+  Future<String?> call(BuildContext context, GoRouterState state) async =>
       redirectPath;
 }
 

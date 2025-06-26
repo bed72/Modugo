@@ -14,7 +14,7 @@ import 'package:go_router/go_router.dart';
 /// ```dart
 /// class AuthGuard implements IGuard {
 ///   @override
-///   FutureOr<String?> redirect(BuildContext context, GoRouterState state) {
+///   FutureOr<String?> call(BuildContext context, GoRouterState state) {
 ///     final authService = Modugo.get<AuthService>();
 ///     return authService.isLoggedIn ? null : '/login';
 ///   }
@@ -25,5 +25,5 @@ abstract class IGuard {
   ///
   /// Returns `null` if access is allowed, or a string path to redirect
   /// to another location (e.g., `/login`) if access is denied.
-  FutureOr<String?> redirect(BuildContext context, GoRouterState state);
+  FutureOr<String?> call(BuildContext context, GoRouterState state);
 }

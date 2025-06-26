@@ -140,8 +140,7 @@ abstract class Module {
       parentNavigatorKey: childRoute.parentNavigatorKey,
       redirect: (context, state) async {
         for (final guard in childRoute.guards) {
-          final result = await guard.redirect(context, state);
-
+          final result = await guard.call(context, state);
           if (result != null) return result;
         }
 
@@ -232,7 +231,7 @@ abstract class Module {
           ),
       redirect: (context, state) async {
         for (final guard in module.guards) {
-          final result = await guard.redirect(context, state);
+          final result = await guard.call(context, state);
           if (result != null) return result;
         }
 
@@ -331,7 +330,7 @@ abstract class Module {
             restorationScopeId: route.restorationScopeId,
             redirect: (context, state) async {
               for (final guard in route.guards) {
-                final result = await guard.redirect(context, state);
+                final result = await guard.call(context, state);
                 if (result != null) return result;
               }
 

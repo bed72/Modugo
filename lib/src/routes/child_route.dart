@@ -88,16 +88,6 @@ final class ChildRoute implements IModule {
     this.guards = const [],
   });
 
-  /// Returns a special [ChildRoute] that serves as a no-op root placeholder.
-  ///
-  /// Useful when a placeholder route is needed for structural reasons,
-  /// such as avoiding GoRouter errors with empty shell branches.
-  factory ChildRoute.safeRootRoute() => ChildRoute(
-    '/',
-    name: 'safe-root-route',
-    child: (_, __) => const SizedBox.shrink(),
-  );
-
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

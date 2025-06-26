@@ -153,18 +153,24 @@ void main() {
   });
 
   test(
-    'isRootRouteForModule returns true for "/", "" or matching ModuleRoute path',
+    'isRootRouteForModule returns true for matching ModuleRoute root GoRoute',
     () {
-      dummyBuilder(BuildContext _, GoRouterState __) => const Placeholder();
-      final route = ModuleRoute('/home', module: _DummyModule());
+      Widget dummyBuilder(BuildContext _, GoRouterState __) =>
+          const Placeholder();
 
-      final routeWrapper = StatefulShellModuleRoute(
+      final route = ModuleRoute('/home', module: _DummyModule());
+      final wrapper = StatefulShellModuleRoute(
         routes: [],
         builder: (_, __, ___) => const Placeholder(),
       );
 
+      final configuredRoutes = [
+        GoRoute(path: '/home', builder: dummyBuilder),
+        GoRoute(path: '/home/extra', builder: dummyBuilder),
+      ];
+
       bool result(RouteBase base) =>
-          routeWrapper.isRootRouteForModule(base, route);
+          wrapper.isRootRouteForModule(base, route, configuredRoutes);
 
       expect(result(GoRoute(path: '/', builder: dummyBuilder)), isFalse);
       expect(result(GoRoute(path: '/home', builder: dummyBuilder)), isTrue);
@@ -216,25 +222,25 @@ final class _UnsupportedRoute implements IModule {}
 
 final class _BlockGuard implements IGuard {
   @override
-  Future<String?> redirect(BuildContext context, GoRouterState state) async =>
+  Future<String?> call(BuildContext context, GoRouterState state) async =>
       '/not-allowed';
 }
 
 final class _ChildBlockGuard implements IGuard {
   @override
-  Future<String?> redirect(BuildContext context, GoRouterState state) async =>
+  Future<String?> call(BuildContext context, GoRouterState state) async =>
       '/denied';
 }
 
 final class _GuardA implements IGuard {
   @override
-  Future<String?> redirect(BuildContext context, GoRouterState state) async =>
+  Future<String?> call(BuildContext context, GoRouterState state) async =>
       '/first';
 }
 
 final class _GuardB implements IGuard {
   @override
-  Future<String?> redirect(BuildContext context, GoRouterState state) async =>
+  Future<String?> call(BuildContext context, GoRouterState state) async =>
       '/second';
 }
 

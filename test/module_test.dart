@@ -382,8 +382,7 @@ final class _SimpleChildModuleWithRedirect extends Module {
 
 final class _GuardAllow implements IGuard {
   @override
-  Future<String?> redirect(BuildContext context, GoRouterState state) async =>
-      null;
+  Future<String?> call(BuildContext context, GoRouterState state) async => null;
 }
 
 final class _GuardBlock implements IGuard {
@@ -391,6 +390,5 @@ final class _GuardBlock implements IGuard {
   _GuardBlock(this.path);
 
   @override
-  Future<String?> redirect(BuildContext context, GoRouterState state) async =>
-      path;
+  Future<String?> call(BuildContext context, GoRouterState state) async => path;
 }

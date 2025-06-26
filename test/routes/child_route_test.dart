@@ -7,15 +7,6 @@ import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/interfaces/guard_interface.dart';
 
 void main() {
-  group('ChildRoute.safeRootRoute', () {
-    test('should return a ChildRoute with path / and expected defaults', () {
-      final route = ChildRoute.safeRootRoute();
-
-      expect(route, isA<ChildRoute>());
-      expect(route.path, '/');
-      expect(route.name, 'safe-root-route');
-    });
-  });
   group('ChildRoute - equality and hashCode', () {
     test('should be equal when all compared fields are equal', () {
       final key = GlobalKey<NavigatorState>();
@@ -173,12 +164,11 @@ void main() {
 
 final class _GuardAllow implements IGuard {
   @override
-  Future<String?> redirect(BuildContext context, GoRouterState state) async =>
-      null;
+  Future<String?> call(BuildContext context, GoRouterState state) async => null;
 }
 
 final class _GuardBlock implements IGuard {
   @override
-  Future<String?> redirect(BuildContext context, GoRouterState state) async =>
+  Future<String?> call(BuildContext context, GoRouterState state) async =>
       '/blocked';
 }

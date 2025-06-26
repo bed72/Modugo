@@ -132,13 +132,12 @@ final class _FakeBuildContext extends BuildContext {
 
 final class _GuardAllow implements IGuard {
   @override
-  Future<String?> redirect(BuildContext context, GoRouterState state) async =>
-      null;
+  Future<String?> call(BuildContext context, GoRouterState state) async => null;
 }
 
 final class _GuardBlock implements IGuard {
   @override
-  Future<String?> redirect(BuildContext context, GoRouterState state) async =>
+  Future<String?> call(BuildContext context, GoRouterState state) async =>
       '/blocked';
 }
 

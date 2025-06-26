@@ -157,4 +157,84 @@ void main() {
       expect(name, equals('/'));
     });
   });
+
+  group('RouteModuleModel.ensureLeadingSlash', () {
+    test('adds slash when missing', () {
+      expect(RouteModuleModel.ensureLeadingSlash('abc'), '/abc');
+    });
+
+    test('does not add slash if already present', () {
+      expect(RouteModuleModel.ensureLeadingSlash('/abc'), '/abc');
+    });
+
+    test('works with empty string', () {
+      expect(RouteModuleModel.ensureLeadingSlash(''), '/');
+    });
+  });
+
+  group('RouteModuleModel.hasEmbeddedParams', () {
+    test('detects embedded param with colon', () {
+      expect(RouteModuleModel.hasEmbeddedParams('/produto/:id'), isTrue);
+      expect(
+        RouteModuleModel.hasEmbeddedParams('/user/:userId/details'),
+        isTrue,
+      );
+    });
+
+    test('returns false for static routes', () {
+      expect(RouteModuleModel.hasEmbeddedParams('/home'), isFalse);
+      expect(RouteModuleModel.hasEmbeddedParams('/user/details'), isFalse);
+    });
+  });
+
+  group('RouteModuleModel.normalizePath', () {
+    test('removes repeated slashes', () {
+      expect(RouteModuleModel.normalizePath('/a//b///c'), '/a/b/c');
+    });
+
+    test('ensures trailing slash if not root', () {
+      expect(RouteModuleModel.normalizePath('/abc'), '/abc');
+      expect(RouteModuleModel.normalizePath('/abc/'), '/abc');
+    });
+
+    test('keeps only root slash as-is', () {
+      expect(RouteModuleModel.normalizePath('/'), '/');
+    });
+
+    test('removes trailing slash except for root', () {
+      expect(RouteModuleModel.normalizePath('/abc/'), '/abc');
+      expect(RouteModuleModel.normalizePath('/abc///'), '/abc');
+    });
+  });
+
+  group('RouteModuleModel.removeDuplicatedPrefix', () {
+    test('removes prefix if present', () {
+      expect(
+        RouteModuleModel.removeDuplicatedPrefix('/module', '/module/home'),
+        'home',
+      );
+      expect(
+        RouteModuleModel.removeDuplicatedPrefix('/user', '/user/:id'),
+        ':id',
+      );
+    });
+
+    test('removes extra slash if needed', () {
+      expect(
+        RouteModuleModel.removeDuplicatedPrefix('/prefix', '/prefix//sub'),
+        '/sub',
+      );
+    });
+
+    test('returns route unchanged if prefix not found', () {
+      expect(
+        RouteModuleModel.removeDuplicatedPrefix('/auth', '/home'),
+        '/home',
+      );
+    });
+
+    test('works when route is equal to prefix', () {
+      expect(RouteModuleModel.removeDuplicatedPrefix('/abc', '/abc'), '');
+    });
+  });
 }

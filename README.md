@@ -225,7 +225,7 @@ You can protect routes using `IGuard`, which allows you to define redirection lo
 ```dart
 class AuthGuard implements IGuard {
   @override
-  FutureOr<String?> redirect(BuildContext context, GoRouterState state) async {
+  FutureOr<String?> call(BuildContext context, GoRouterState state) async {
     final auth = Modugo.get<AuthService>();
     return auth.isLoggedIn ? null : '/login';
   }

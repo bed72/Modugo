@@ -63,20 +63,26 @@ final class StatefulShellModuleRoute implements IModule {
   /// Throws:
   /// - [UnsupportedError] if a route is not a [ModuleRoute] or [ChildRoute].
   RouteBase toRoute({required String path, required bool topLevel}) {
+    final configuredRoutesMap = <ModuleRoute, List<RouteBase>>{};
+    for (final route in routes.whereType<ModuleRoute>()) {
+      configuredRoutesMap[route] = route.module.configureRoutes(
+        path: '',
+        topLevel: false,
+      );
+    }
+
     final branches =
         routes.asMap().entries.map((entry) {
           final index = entry.key;
           final route = entry.value;
 
           if (route is ModuleRoute) {
-            final configuredRoutes = route.module.configureRoutes(
-              path: '',
-              topLevel: false,
-            );
+            final configuredRoutes = configuredRoutesMap[route]!;
 
             final updatedRoutes =
                 configuredRoutes.map((r) {
-                  if (r is! GoRoute || !isRootRouteForModule(r, route)) {
+                  if (r is! GoRoute ||
+                      !isRootRouteForModule(r, route, configuredRoutes)) {
                     return r;
                   }
 
@@ -89,7 +95,7 @@ final class StatefulShellModuleRoute implements IModule {
                     onExit: r.onExit,
                     redirect: (context, state) async {
                       for (final guard in route.guards) {
-                        final result = await guard.redirect(context, state);
+                        final result = await guard.call(context, state);
                         if (result != null) return result;
                       }
 
@@ -127,7 +133,7 @@ final class StatefulShellModuleRoute implements IModule {
                           : null,
                   redirect: (context, state) async {
                     for (final guard in route.guards) {
-                      final result = await guard.redirect(context, state);
+                      final result = await guard.call(context, state);
                       if (result != null) return result;
                     }
 
@@ -178,19 +184,24 @@ final class StatefulShellModuleRoute implements IModule {
         : normalized;
   }
 
-  /// Determines whether the given [routeBase] is the root [GoRoute] of the [moduleRoute].
+  /// Checks whether the given [routeBase] is the root [GoRoute] of a [moduleRoute].
   ///
-  /// This is used to apply guards and redirects to the correct route inside
-  /// a [ModuleRoute] branch in a [StatefulShellModuleRoute].
+  /// This method is used within [StatefulShellModuleRoute] to determine if a specific
+  /// route should receive guard or redirect logic from the parent [ModuleRoute].
   ///
-  /// The root route is considered to be the **first GoRoute** defined by the module.
-  bool isRootRouteForModule(RouteBase routeBase, ModuleRoute moduleRoute) {
-    if (routeBase is! GoRoute) return false;
+  /// The "root route" is defined as the **first [GoRoute]** in the list returned
+  /// by `moduleRoute.module.configureRoutes(...)`.
+  ///
+  /// - Returns `true` if [routeBase] is a [GoRoute] and its path matches the first
+  ///   [GoRoute] found in [configuredRoutes].
+  /// - Returns `false` otherwise.
 
-    final configuredRoutes = moduleRoute.module.configureRoutes(
-      path: '',
-      topLevel: false,
-    );
+  bool isRootRouteForModule(
+    RouteBase routeBase,
+    ModuleRoute moduleRoute,
+    List<RouteBase> configuredRoutes,
+  ) {
+    if (routeBase is! GoRoute) return false;
 
     final firstGoRoute = configuredRoutes.whereType<GoRoute>().firstOrNull;
     return firstGoRoute != null && routeBase.path == firstGoRoute.path;
