@@ -1,3 +1,7 @@
+## [2.3.3] - 2025-06-25
+
+- :fire: update guards
+
 ## [2.3.2] - 2025-06-25
 
 - :fire: add guards in others routes
