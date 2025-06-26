@@ -291,6 +291,24 @@ void main() {
       expect(() => Modugo.get<int>(), throwsA(isA<Exception>()));
     });
   });
+
+  group('Manager.rootModule', () {
+    test('returns the module after being set', () {
+      final manager = Manager();
+      final module = _EmptyModule();
+
+      manager.module = module;
+
+      expect(manager.rootModule, equals(module));
+    });
+
+    test('throws if accessed before being set', () {
+      final manager = Manager();
+      manager.module = null;
+
+      expect(() => manager.rootModule, throwsStateError);
+    });
+  });
 }
 
 final class _Service {

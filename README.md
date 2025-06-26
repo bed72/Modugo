@@ -21,6 +21,7 @@ The main difference is that Modugo provides full control and decoupling of **aut
 - Detailed and configurable logging
 - Support for **persistent modules** that are never disposed
 - Built-in support for **Route Guards**
+- Built-in support for **Regex-based Route Matching**
 
 ---
 
@@ -101,6 +102,52 @@ final class AppModule extends Module {
   ];
 }
 ```
+
+---
+
+## 🔍 Route Matching with Regex
+
+Modugo supports a powerful matching system using regex-based patterns. This allows you to:
+
+- Validate paths and deep links before navigating
+- Extract dynamic parameters independently of GoRouter
+- Handle external URLs, web support, and custom redirect logic
+
+### Defining a pattern:
+
+```dart
+ChildRoute(
+  '/user/:id',
+  routePattern: RoutePatternModel.from(r'^/user/(\d+)\$', paramNames: ['id']),
+  child: (_, __) => const UserPage(),
+)
+```
+
+### Matching a location:
+
+```dart
+final match = Modugo.matchRoute('/user/42');
+
+if (match != null) {
+  print(match.route); // matched route instance
+  print(match.params); // { 'id': '42' }
+} else {
+  print('No match');
+}
+```
+
+### Supported Route Types:
+
+- `ChildRoute`
+- `ModuleRoute`
+- `ShellModuleRoute`
+- `StatefulShellModuleRoute`
+
+Useful for:
+
+- Deep link validation
+- Analytics and logging
+- Fallback routing and redirects
 
 ---
 

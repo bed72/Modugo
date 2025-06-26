@@ -5,11 +5,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/injector.dart';
 
-import 'package:modugo/src/routes/child_route.dart';
-import 'package:modugo/src/routes/shell_module_route.dart';
-
 import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
+
+import 'package:modugo/src/routes/child_route.dart';
+import 'package:modugo/src/routes/module_route.dart';
+import 'package:modugo/src/routes/shell_module_route.dart';
+import 'package:modugo/src/routes/models/route_pattern_model.dart';
 
 void main() {
   group('ShellModuleRoute - equality and hashCode', () {
@@ -305,9 +307,82 @@ void main() {
       },
     );
   });
+
+  group('ShellModuleRoute with RoutePatternModel', () {
+    test('matches correct path and extracts parameters', () {
+      final route = ShellModuleRoute(
+        routes: [ModuleRoute('/home', module: _DummyModule())],
+        builder: (_, __, ___) => const Placeholder(),
+        routePattern: RoutePatternModel.from(
+          r'^/org/(\w+)/home$',
+          paramNames: ['orgId'],
+        ),
+      );
+
+      final pattern = route.routePattern!;
+      expect(pattern.regex.hasMatch('/org/acme/home'), isTrue);
+
+      final params = pattern.extractParams('/org/acme/home');
+      expect(params, equals({'orgId': 'acme'}));
+    });
+
+    test('returns false when path does not match pattern', () {
+      final route = ShellModuleRoute(
+        routes: [],
+        builder: (_, __, ___) => const Placeholder(),
+        routePattern: RoutePatternModel.from(
+          r'^/dashboard/(\w+)$',
+          paramNames: ['section'],
+        ),
+      );
+
+      final match = route.routePattern!.regex.hasMatch('/settings/profile');
+      expect(match, isFalse);
+
+      final params = route.routePattern!.extractParams('/settings/profile');
+      expect(params, isEmpty);
+    });
+
+    test('== returns true when all fields including routePattern match', () {
+      final pattern = RoutePatternModel.from(r'^/shell$', paramNames: []);
+      final routeA = ShellModuleRoute(
+        routes: [],
+        builder: (_, __, ___) => const Placeholder(),
+        routePattern: pattern,
+      );
+      final routeB = ShellModuleRoute(
+        routes: [],
+        builder: (_, __, ___) => const Placeholder(),
+        routePattern: pattern,
+      );
+
+      expect(routeA, equals(routeB));
+      expect(routeA.hashCode, equals(routeB.hashCode));
+    });
+
+    test('== returns false when routePatterns differ', () {
+      final routeA = ShellModuleRoute(
+        routes: [],
+        builder: (_, __, ___) => const Placeholder(),
+        routePattern: RoutePatternModel.from(r'^/a$', paramNames: []),
+      );
+      final routeB = ShellModuleRoute(
+        routes: [],
+        builder: (_, __, ___) => const Placeholder(),
+        routePattern: RoutePatternModel.from(r'^/b$', paramNames: []),
+      );
+
+      expect(routeA, isNot(equals(routeB)));
+    });
+  });
 }
 
 final class _DummyModuleRoute implements IModule {}
+
+final class _DummyModule extends Module {
+  @override
+  List<IModule> get routes => [];
+}
 
 final class _ShellGuardedModule extends Module {
   @override

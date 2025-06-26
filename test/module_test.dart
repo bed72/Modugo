@@ -2,19 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:modugo/src/module.dart';
-import 'package:modugo/src/dispose.dart';
-import 'package:modugo/src/manager.dart';
-import 'package:modugo/src/injector.dart';
-
-import 'package:modugo/src/interfaces/guard_interface.dart';
-import 'package:modugo/src/interfaces/module_interface.dart';
-import 'package:modugo/src/interfaces/injector_interface.dart';
-
-import 'package:modugo/src/routes/child_route.dart';
-import 'package:modugo/src/routes/module_route.dart';
-import 'package:modugo/src/routes/shell_module_route.dart';
-import 'package:modugo/src/routes/stateful_shell_module_route.dart';
+import 'package:modugo/modugo.dart';
 
 import 'fakes/fakes.dart';
 
@@ -238,12 +226,108 @@ void main() {
       expect(result, isNull);
     });
   });
+
+  group('Modugo.matchRoute', () {
+    setUp(() {
+      Modugo.manager.module = null;
+    });
+
+    test('returns null if no route matches', () {
+      final root = _EmptyModule();
+      Modugo.manager.module = root;
+
+      final result = Modugo.matchRoute('/non-existent');
+      expect(result, isNull);
+    });
+
+    test('matches ChildRoute with routePattern', () {
+      final route = ChildRoute(
+        '/user/:id',
+        routePattern: RoutePatternModel.from(
+          r'^/user/(\d+)$',
+          paramNames: ['id'],
+        ),
+        child: (_, __) => const Placeholder(),
+      );
+
+      final root = _ModuleWith([route]);
+      Modugo.manager.module = root;
+
+      final result = Modugo.matchRoute('/user/42');
+      expect(result, isNotNull);
+      expect(result!.params['id'], '42');
+      expect(result.route, equals(route));
+    });
+
+    test('matches ModuleRoute with routePattern', () {
+      final nested = _ModuleWith([]);
+      final route = ModuleRoute(
+        '/profile',
+        module: nested,
+        routePattern: RoutePatternModel.from(r'^/profile$', paramNames: []),
+      );
+
+      final root = _ModuleWith([route]);
+      Modugo.manager.module = root;
+
+      final result = Modugo.matchRoute('/profile');
+      expect(result, isNotNull);
+      expect(result!.route, equals(route));
+    });
+
+    test('matches ShellModuleRoute with routePattern', () {
+      final shell = ShellModuleRoute(
+        routes: [],
+        builder: (_, __, ___) => const Placeholder(),
+        routePattern: RoutePatternModel.from(r'^/shell$', paramNames: []),
+      );
+
+      final root = _ModuleWith([shell]);
+      Modugo.manager.module = root;
+
+      final result = Modugo.matchRoute('/shell');
+      expect(result, isNotNull);
+      expect(result!.route, equals(shell));
+    });
+
+    test('matches StatefulShellModuleRoute with routePattern', () {
+      final shell = StatefulShellModuleRoute(
+        routes: [],
+        builder: (_, __, ___) => const Placeholder(),
+        routePattern: RoutePatternModel.from(
+          r'^/tabs/(home|settings)$',
+          paramNames: ['tab'],
+        ),
+      );
+
+      final root = _ModuleWith([shell]);
+      Modugo.manager.module = root;
+
+      final result = Modugo.matchRoute('/tabs/home');
+      expect(result, isNotNull);
+      expect(result!.params['tab'], 'home');
+      expect(result.route, equals(shell));
+    });
+  });
 }
 
 final class _ModuleInterface implements IModule {}
 
 final class _Service {
   int value = 0;
+}
+
+final class _EmptyModule extends Module {
+  @override
+  List<IModule> get routes => [];
+}
+
+final class _ModuleWith extends Module {
+  final List<IModule> _routes;
+  _ModuleWith(this._routes);
+
+  @override
+  List<IModule> get routes => _routes;
 }
 
 final class _InnerModule extends Module {

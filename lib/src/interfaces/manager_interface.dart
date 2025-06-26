@@ -22,6 +22,14 @@ abstract interface class IManager {
   /// Usually assigned during [Modugo.configure].
   set module(Module? module);
 
+  /// Returns the root [Module] instance that was registered via [Modugo.configure].
+  ///
+  /// This is the top-level module for the app and is used internally
+  /// by features like [Modugo.matchRoute] and lifecycle control.
+  ///
+  /// Throws a [StateError] if called before [Modugo.configure].
+  Module get rootModule;
+
   /// A map tracking how many times each [Bind] type has been registered.
   ///
   /// This is used to support reference counting and safe disposal.

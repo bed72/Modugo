@@ -6,10 +6,11 @@ import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/logger.dart';
 
+import 'package:modugo/src/interfaces/module_interface.dart';
+
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
-
-import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/routes/models/route_pattern_model.dart';
 
 /// A modular route that enables stateful navigation using [StatefulShellRoute].
 ///
@@ -20,6 +21,9 @@ import 'package:modugo/src/interfaces/module_interface.dart';
 /// and renders them via an [IndexedStack]-based layout using the provided [builder].
 ///
 /// Each branch maintains its own stateful navigation context.
+///
+/// Optionally supports [routePattern] to enable custom regex-based
+/// matching and parameter extraction independent of GoRouter.
 ///
 /// Example:
 /// ```dart
@@ -40,6 +44,12 @@ final class StatefulShellModuleRoute implements IModule {
   /// Each item represents a separate navigation stack.
   final List<IModule> routes;
 
+  /// Optional route matching pattern using regex and parameter names.
+  ///
+  /// This allows the module to be matched via a regular expression
+  /// independently of GoRouter's matching logic.
+  final RoutePatternModel? routePattern;
+
   /// The widget builder for rendering the full shell layout with tabs.
   ///
   /// It provides access to the current [GoRouterState] and the [StatefulNavigationShell],
@@ -52,7 +62,11 @@ final class StatefulShellModuleRoute implements IModule {
   builder;
 
   /// Creates a [StatefulShellModuleRoute] with the provided branch [routes] and [builder].
-  const StatefulShellModuleRoute({required this.routes, required this.builder});
+  const StatefulShellModuleRoute({
+    required this.routes,
+    required this.builder,
+    this.routePattern,
+  });
 
   /// Converts this module into a [RouteBase] for GoRouter.
   ///
@@ -213,8 +227,10 @@ final class StatefulShellModuleRoute implements IModule {
       other is StatefulShellModuleRoute &&
           builder == other.builder &&
           runtimeType == other.runtimeType &&
+          routePattern == other.routePattern &&
           listEquals(routes, other.routes);
 
   @override
-  int get hashCode => Object.hashAll(routes) ^ builder.hashCode;
+  int get hashCode =>
+      Object.hashAll(routes) ^ builder.hashCode ^ routePattern.hashCode;
 }
