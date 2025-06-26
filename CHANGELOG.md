@@ -1,3 +1,7 @@
+## [2.4.0] - 2025-06-26
+
+- Merge pull request #8 from bed72/regex
+
 ## [2.3.4] - 2025-06-25
 
 - :fire: update README
