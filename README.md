@@ -157,7 +157,7 @@ final class HomeModule extends Module {
 }
 ```
 
-✅ Great for `StatefulShellRoute` branches
+✅ Great for `StatefulShellRoute` branches  
 🚫 Avoid for short-lived or heavy modules
 
 ---
@@ -188,24 +188,74 @@ ModuleRoute('/profile', module: ProfileModule()),
 
 ### `ShellModuleRoute`
 
+Use `ShellModuleRoute` when you want to create a navigation window **inside a specific area of your UI**, similar to `RouteOutlet` in Flutter Modular. This is commonly used in layout scenarios with menus or tabs, where only part of the screen changes based on navigation.
+
+> ℹ️ Internally, it uses GoRouter’s `ShellRoute`.  
+> Learn more: [ShellRoute docs](https://pub.dev/documentation/go_router/latest/go_router/ShellRoute-class.html)
+
+#### Module Setup
+
 ```dart
-ShellModuleRoute(
-  builder: (context, state, child) => MyShell(child: child),
-  routes: [
-    ChildRoute('/tab1', child: (_, __) => const Tab1Page()),
-    ChildRoute('/tab2', child: (_, __) => const Tab2Page()),
-  ],
-  binds: [
-    (i) => i.addLazySingleton(() => TabController()),
-  ],
-)
+final class HomeModule extends Module {
+  @override
+  List<IModule> get routes => [
+    ShellModuleRoute(
+      builder: (context, state, child) => PageWidget(child: child),
+      routes: [
+        ChildRoute('/user', child: (_, __) => const UserPage()),
+        ChildRoute('/config', child: (_, __) => const ConfigPage()),
+        ChildRoute('/orders', child: (_, __) => const OrdersPage()),
+      ],
+    ),
+  ];
+}
 ```
+
+#### Shell Page
+
+```dart
+class PageWidget extends StatelessWidget {
+  final Widget child;
+
+  const PageWidget({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        children: [
+          Expanded(child: child),
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.settings),
+                onPressed: () => context.go('/config'),
+              ),
+              IconButton(
+                icon: const Icon(Icons.person),
+                onPressed: () => context.go('/user'),
+              ),
+              IconButton(
+                icon: const Icon(Icons.shopping_cart),
+                onPressed: () => context.go('/orders'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+✅ Great for creating sub-navigation inside pages  
+🎯 Useful for dashboards, admin panels, or multi-section UIs
 
 ### `StatefulShellModuleRoute`
 
 ```dart
 StatefulShellModuleRoute(
-  builder: (context, state, shell) => BottomNavBar(shell: shell),
+  builder: (context, state, shell) => BottomBarWidget(shell: shell),
   routes: [
     ModuleRoute(path: '/', module: HomeModule()),
     ModuleRoute(path: '/profile', module: ProfileModule()),
