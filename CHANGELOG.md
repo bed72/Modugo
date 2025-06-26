@@ -1,3 +1,7 @@
+## [2.3.4] - 2025-06-25
+
+- :fire: update README
+
 ## [2.3.3] - 2025-06-25
 
 - :fire: update guards
