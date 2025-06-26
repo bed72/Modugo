@@ -1,3 +1,7 @@
+## [2.4.1] - 2025-06-26
+
+- :fire: update Loggers
+
 ## [2.4.0] - 2025-06-26
 
 - Merge pull request #8 from bed72/regex
