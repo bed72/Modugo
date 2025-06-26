@@ -3,10 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:go_router/go_router.dart';
-import 'package:modugo/src/interfaces/guard_interface.dart';
 
 import 'package:modugo/src/module.dart';
+
+import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
+
+import 'package:modugo/src/routes/models/route_pattern_model.dart';
 
 /// A route that maps a [path] to a child [Module] within the Modugo navigation system.
 ///
@@ -17,6 +20,9 @@ import 'package:modugo/src/interfaces/module_interface.dart';
 /// You can also optionally:
 /// - assign a [name] for named navigation
 /// - add a [redirect] function to control access dynamically
+///
+/// Optionally supports [routePattern] to enable custom regex-based
+/// matching and parameter extraction independent of GoRouter.
 ///
 /// Example:
 /// ```dart
@@ -48,6 +54,12 @@ final class ModuleRoute implements IModule {
   /// Each guard can redirect to another path or allow access.
   final List<IGuard> guards;
 
+  /// Optional route matching pattern using regex and parameter names.
+  ///
+  /// This allows the module to be matched via a regular expression
+  /// independently of GoRouter's matching logic.
+  final RoutePatternModel? routePattern;
+
   /// Optional function that redirects the user to another path
   /// before entering the module.
   ///
@@ -61,6 +73,7 @@ final class ModuleRoute implements IModule {
     required this.module,
     this.name,
     this.redirect,
+    this.routePattern,
     this.guards = const [],
   });
 
@@ -71,8 +84,10 @@ final class ModuleRoute implements IModule {
           path == other.path &&
           name == other.name &&
           module == other.module &&
-          runtimeType == other.runtimeType;
+          runtimeType == other.runtimeType &&
+          routePattern == other.routePattern;
 
   @override
-  int get hashCode => path.hashCode ^ name.hashCode ^ module.hashCode;
+  int get hashCode =>
+      path.hashCode ^ name.hashCode ^ module.hashCode ^ routePattern.hashCode;
 }

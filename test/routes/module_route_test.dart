@@ -3,8 +3,11 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/module.dart';
-import 'package:modugo/src/routes/module_route.dart';
+
 import 'package:modugo/src/interfaces/guard_interface.dart';
+
+import 'package:modugo/src/routes/module_route.dart';
+import 'package:modugo/src/routes/models/route_pattern_model.dart';
 
 void main() {
   group('ModuleRoute - equality and hashCode', () {
@@ -118,7 +121,107 @@ void main() {
         guards: [_GuardBlock()],
       );
 
-      expect(a, equals(b)); // guards are intentionally excluded from equality
+      expect(a, equals(b));
+    });
+  });
+
+  group('ModuleRoute with RoutePatternModel', () {
+    test('matches correct path and extracts parameters', () {
+      final route = ModuleRoute(
+        '/product/:id',
+        module: _DummyModule(),
+        routePattern: RoutePatternModel.from(
+          r'^/product/(\d+)$',
+          paramNames: ['id'],
+        ),
+      );
+
+      final pattern = route.routePattern!;
+      expect(pattern.regex.hasMatch('/product/42'), isTrue);
+
+      final params = pattern.extractParams('/product/42');
+      expect(params, {'id': '42'});
+    });
+
+    test('does not match invalid path', () {
+      final route = ModuleRoute(
+        '/product/:id',
+        module: _DummyModule(),
+        routePattern: RoutePatternModel.from(
+          r'^/product/(\d+)$',
+          paramNames: ['id'],
+        ),
+      );
+
+      final pattern = route.routePattern!;
+      expect(pattern.regex.hasMatch('/invalid/42'), isFalse);
+
+      final params = pattern.extractParams('/invalid/42');
+      expect(params, isEmpty);
+    });
+
+    test('supports multiple parameters in path', () {
+      final route = ModuleRoute(
+        '/order/:orderId/item/:itemId',
+        module: _DummyModule(),
+        routePattern: RoutePatternModel.from(
+          r'^/order/(\d+)/item/(\w+)$',
+          paramNames: ['orderId', 'itemId'],
+        ),
+      );
+
+      final pattern = route.routePattern!;
+      expect(pattern.regex.hasMatch('/order/12/item/abc'), isTrue);
+
+      final params = pattern.extractParams('/order/12/item/abc');
+      expect(params, {'orderId': '12', 'itemId': 'abc'});
+    });
+
+    test('== returns true for equal routes and patterns', () {
+      final module = _DummyModule();
+
+      final routeA = ModuleRoute(
+        '/user/:id',
+        module: module,
+        routePattern: RoutePatternModel.from(
+          r'^/user/(\w+)$',
+          paramNames: ['id'],
+        ),
+      );
+
+      final routeB = ModuleRoute(
+        '/user/:id',
+        module: module,
+        routePattern: RoutePatternModel.from(
+          r'^/user/(\w+)$',
+          paramNames: ['id'],
+        ),
+      );
+
+      expect(routeA, equals(routeB));
+      expect(routeA.hashCode, equals(routeB.hashCode));
+    });
+
+    test('== returns false when routePatterns differ', () {
+      final routeA = ModuleRoute(
+        '/user/:id',
+        module: _DummyModule(),
+        routePattern: RoutePatternModel.from(
+          r'^/user/(\w+)$',
+          paramNames: ['id'],
+        ),
+      );
+
+      final routeB = ModuleRoute(
+        '/user/:id',
+        module: _DummyModule(),
+        routePattern: RoutePatternModel.from(
+          r'^/user/(\d+)$',
+          paramNames: ['id'],
+        ),
+      );
+
+      expect(routeA, isNot(equals(routeB)));
     });
   });
 }

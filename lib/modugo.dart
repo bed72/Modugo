@@ -23,9 +23,12 @@ export 'src/routes/stateful_shell_module_route.dart';
 
 export 'src/routes/models/route_model.dart';
 export 'src/routes/models/path_token_model.dart';
+export 'src/routes/models/route_pattern_model.dart';
 export 'src/routes/models/parameter_token_model.dart';
 
 export 'src/extensions/context_state_extension.dart';
 export 'src/extensions/context_match_extension.dart';
 export 'src/extensions/context_injection_extension.dart';
 export 'src/extensions/context_navigation_extension.dart';
+
+export 'package:go_router/go_router.dart' show GoRouterState;

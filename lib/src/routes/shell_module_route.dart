@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
-import 'package:modugo/src/interfaces/guard_interface.dart';
 
+import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
 import 'package:modugo/src/interfaces/injector_interface.dart';
+
+import 'package:modugo/src/routes/models/route_pattern_model.dart';
 
 /// A modular shell route that wraps a group of child [IModule] routes within a common layout or container.
 ///
@@ -18,6 +20,9 @@ import 'package:modugo/src/interfaces/injector_interface.dart';
 /// - optional [observers], [restorationScopeId], and [parentNavigatorKey]
 /// - a [builder] or [pageBuilder] to render a common UI container
 /// - optional [binds] for temporary dependency injection scoped to the shell
+///
+/// Optionally supports [routePattern] to enable custom regex-based
+/// matching and parameter extraction independent of GoRouter.
 ///
 /// Example:
 /// ```dart
@@ -43,6 +48,12 @@ final class ShellModuleRoute implements IModule {
 
   /// Optional ID used for state restoration (Flutter feature).
   final String? restorationScopeId;
+
+  /// Optional route matching pattern using regex and parameter names.
+  ///
+  /// This allows the module to be matched via a regular expression
+  /// independently of GoRouter's matching logic.
+  final RoutePatternModel? routePattern;
 
   /// Optional navigator observers for tracking navigation events.
   final List<NavigatorObserver>? observers;
@@ -92,6 +103,7 @@ final class ShellModuleRoute implements IModule {
     this.observers,
     this.pageBuilder,
     this.navigatorKey,
+    this.routePattern,
     this.binds = const [],
     this.guards = const [],
     this.parentNavigatorKey,
@@ -103,9 +115,10 @@ final class ShellModuleRoute implements IModule {
       identical(this, other) ||
       other is ShellModuleRoute &&
           runtimeType == other.runtimeType &&
+          routePattern == other.routePattern &&
+          navigatorKey == other.navigatorKey &&
           listEquals(routes, other.routes) &&
           listEquals(observers, other.observers) &&
-          navigatorKey == other.navigatorKey &&
           restorationScopeId == other.restorationScopeId &&
           parentNavigatorKey == other.parentNavigatorKey;
 
@@ -114,6 +127,7 @@ final class ShellModuleRoute implements IModule {
       Object.hashAll(routes) ^
       Object.hashAll(observers ?? []) ^
       navigatorKey.hashCode ^
+      routePattern.hashCode ^
       restorationScopeId.hashCode ^
       parentNavigatorKey.hashCode;
 }
