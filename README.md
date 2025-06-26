@@ -275,12 +275,12 @@ class PageWidget extends StatelessWidget {
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.settings),
-                onPressed: () => context.go('/config'),
-              ),
-              IconButton(
                 icon: const Icon(Icons.person),
                 onPressed: () => context.go('/user'),
+              ),
+              IconButton(
+                icon: const Icon(Icons.settings),
+                onPressed: () => context.go('/config'),
               ),
               IconButton(
                 icon: const Icon(Icons.shopping_cart),
@@ -393,7 +393,7 @@ Modugo.configure(
 );
 ```
 
-- All logs pass through the `ModugoLogger` class, which can be extended or customized.
+- All logs pass through the `Logger` class, which can be extended or customized.
 - Logs include injection, disposal, navigation, and errors.
 
 ---

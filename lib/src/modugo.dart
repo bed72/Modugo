@@ -120,8 +120,8 @@ final class ModugoConfiguration {
     Listenable? refreshListenable,
     bool debugLogDiagnostics = false,
     List<NavigatorObserver>? observers,
+    int delayDisposeMilliseconds = 727,
     Codec<Object?, Object?>? extraCodec,
-    int delayDisposeMilliseconds = 1000,
     GlobalKey<NavigatorState>? navigatorKey,
     bool debugLogDiagnosticsGoRouter = false,
     bool overridePlatformDefaultLocation = false,
@@ -130,7 +130,7 @@ final class ModugoConfiguration {
     void Function(BuildContext, GoRouterState, GoRouter)? onException,
     FutureOr<String?> Function(BuildContext, GoRouterState)? redirect,
     Page<dynamic> Function(BuildContext, GoRouterState)? errorPageBuilder,
-  }) async {
+  }) {
     if (_router != null) return _router!;
 
     _transition = pageTransition;

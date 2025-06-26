@@ -1,111 +1,108 @@
 // coverage:ignore-file
-// ignore_for_file: library_private_types_in_public_api
 
-import 'package:logger/logger.dart';
 import 'package:modugo/src/modugo.dart';
 
-/// A singleton logger used internally by Modugo to output diagnostic
-/// messages with customizable formatting and emojis.
+import 'package:talker_logger/talker_logger.dart';
+
+/// A singleton logger utility used internally by Modugo to emit
+/// diagnostic messages during development or debugging.
 ///
-/// The logger respects the [Modugo.debugLogDiagnostics] flag, so logs will
-/// only be emitted when this flag is set to `true`.
+/// This logger is backed by the `talker_logger` package and uses
+/// custom color schemes and tags for better visibility.
 ///
-/// Internally, it uses the `logger` package with a custom [_ModugoPrettyPrinter]
-/// to colorize and format output consistently.
+/// Logging is only enabled when [Modugo.debugLogDiagnostics] is set to `true`.
+/// This ensures that logs are omitted in production environments.
 ///
 /// Example usage:
 /// ```dart
 /// ModugoLogger.info('Module initialized');
 /// ModugoLogger.error('Failed to resolve dependency');
 /// ```
-final class ModugoLogger {
-  /// Singleton instance of [ModugoLogger].
-  static final ModugoLogger _instance = ModugoLogger._internal();
+final class Logger {
+  /// Internal logger instance from `talker_logger`.
+  late final TalkerLogger _logger;
 
-  /// Factory constructor to return the singleton instance.
-  factory ModugoLogger() => _instance;
+  /// Singleton instance of [Logger].
+  static final Logger _instance = Logger._internal();
 
-  /// Internal logger from the `logger` package.
-  late final Logger _logger;
+  /// Factory constructor returning the singleton instance.
+  factory Logger() => _instance;
 
-  /// Internal constructor that sets up the logger with a custom printer.
-  ModugoLogger._internal() {
-    _logger = Logger(level: Level.all, printer: _ModugoPrettyPrinter());
+  /// Internal constructor that initializes the [TalkerLogger]
+  /// with custom visual settings and log levels.
+  Logger._internal() {
+    _logger = TalkerLogger(
+      settings: TalkerLoggerSettings(
+        maxLineWidth: 172,
+        enableColors: true,
+        defaultTitle: 'MODUGO',
+        colors: {
+          LogLevel.info: AnsiPen()..blue(),
+          LogLevel.error: AnsiPen()..red(),
+          LogLevel.debug: AnsiPen()..green(),
+          LogLevel.verbose: AnsiPen()..gray(),
+          LogLevel.critical: AnsiPen()..cyan(),
+          LogLevel.warning: AnsiPen()..yellow(),
+        },
+      ),
+    );
   }
 
-  /// Logs a custom message with optional emoji, tag, and log [level].
-  ///
-  /// If [Modugo.debugLogDiagnostics] is false, the log is suppressed.
-  static void log(
-    String message, {
-    String emoji = '',
-    String tag = 'Modugo',
-    Level level = Level.info,
-  }) {
-    if (!Modugo.debugLogDiagnostics) return;
-
-    final fullMessage = '$emoji [$tag] $message';
-
-    final _ = switch (level) {
-      Level.info => _instance._logger.i(fullMessage),
-      Level.debug => _instance._logger.d(fullMessage),
-      Level.error => _instance._logger.e(fullMessage),
-      Level.warning => _instance._logger.w(fullMessage),
-      _ => _instance._logger.i(fullMessage),
-    };
-  }
-
-  /// Logs an informational message with 👀 emoji and `INFO` tag.
-  static void info(String message, {String tag = 'INFO'}) =>
-      log(message, emoji: ' 👀 ', tag: tag, level: Level.info);
-
-  /// Logs a warning message with 😟 emoji and `WARN` tag.
-  static void warn(String message, {String tag = 'WARN'}) =>
-      log(message, emoji: ' 😟 ', tag: tag, level: Level.warning);
-
-  /// Logs an error message with ❌ emoji and `ERROR` tag.
+  /// Logs an error message with a red highlight.
   static void error(String message, {String tag = 'ERROR'}) =>
-      log(message, emoji: ' ❌ ', tag: tag, level: Level.error);
+      _log(message, tag: tag, level: LogLevel.error);
 
-  /// Logs a navigation-related message with 🧭 emoji and `NAV` tag.
-  static void navigation(String message, {String tag = 'NAV'}) =>
-      log(message, emoji: ' 🧭 ', tag: tag, level: Level.trace);
+  /// Logs a warning message with a yellow highlight.
+  static void warn(String message, {String tag = 'WARNING'}) =>
+      _log(message, tag: tag, level: LogLevel.warning);
 
-  /// Logs a disposal-related message with 🗑️ emoji and `DISPOSE` tag.
+  /// Logs a debug message related to module logic.
+  static void module(String message, {String tag = 'MODULE'}) =>
+      _log(message, tag: tag, level: LogLevel.critical);
+
+  /// Logs a debug message related to disposal logic.
   static void dispose(String message, {String tag = 'DISPOSE'}) =>
-      log(message, emoji: ' 🗑️ ', tag: tag, level: Level.off);
+      _log(message, tag: tag, level: LogLevel.debug);
 
-  /// Logs an injection-related message with 💉 emoji and `INJECT` tag.
+  /// Logs a debug message related to dependency injection.
   static void injection(String message, {String tag = 'INJECT'}) =>
-      log(message, emoji: ' 💉 ', tag: tag, level: Level.debug);
-}
+      _log(message, tag: tag, level: LogLevel.debug);
 
-/// A custom log printer for Modugo that colorizes messages based on level,
-/// adds a timestamp, and formats the output consistently.
-final class _ModugoPrettyPrinter extends LogPrinter {
-  /// Mapping of log levels to ANSI colors.
-  final Map<Level, AnsiColor> _levelColors = {
-    Level.info: AnsiColor.fg(10),
-    Level.trace: AnsiColor.fg(12),
-    Level.error: AnsiColor.fg(196),
-    Level.debug: AnsiColor.fg(208),
-    Level.fatal: AnsiColor.fg(199),
-    Level.warning: AnsiColor.fg(208),
-  };
+  /// Logs an informational message with a blue highlight.
+  static void information(String message, {String tag = 'INFORMATION'}) =>
+      _log(message, tag: tag, level: LogLevel.info);
 
-  @override
-  List<String> log(LogEvent event) {
-    final timestamp = _now();
-    final message = event.message.toString();
-    final color = _levelColors[event.level] ?? AnsiColor.none();
+  /// Logs a debug message related to navigation logic.
+  static void navigation(String message, {String tag = 'NAVIGATION'}) =>
+      _log(message, tag: tag, level: LogLevel.debug);
 
-    return ['${color('[$timestamp]')} ${color(message)}'];
-  }
-
-  /// Returns current time as a formatted string `HH:mm:ss`.
-  String _now() {
+  /// Returns the current time formatted as `HH:mm:ss`.
+  static String _now() {
     final now = DateTime.now();
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     return '${twoDigits(now.hour)}:${twoDigits(now.minute)}:${twoDigits(now.second)}';
+  }
+
+  /// Logs a message with the given [level] and [tag], optionally prefixed with a timestamp.
+  ///
+  /// This method respects the [Modugo.debugLogDiagnostics] flag and will
+  /// skip logging if the flag is set to `false`.
+  static void _log(
+    String message, {
+    String tag = '',
+    LogLevel level = LogLevel.info,
+  }) {
+    if (!Modugo.debugLogDiagnostics) return;
+
+    final fullMessage = '[${_now()}] [$tag] $message';
+
+    final _ = switch (level) {
+      LogLevel.info => _instance._logger.info(fullMessage),
+      LogLevel.debug => _instance._logger.debug(fullMessage),
+      LogLevel.error => _instance._logger.error(fullMessage),
+      LogLevel.warning => _instance._logger.warning(fullMessage),
+      LogLevel.critical => _instance._logger.critical(fullMessage),
+      _ => _instance._logger.info(fullMessage),
+    };
   }
 }

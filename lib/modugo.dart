@@ -1,3 +1,4 @@
+export 'src/logger.dart';
 export 'src/modugo.dart';
 export 'src/module.dart';
 export 'src/dispose.dart';

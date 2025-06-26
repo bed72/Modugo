@@ -125,7 +125,7 @@ final class StatefulShellModuleRoute implements IModule {
 
             final registeredPaths =
                 updatedRoutes.whereType<GoRoute>().map((r) => r.path).toList();
-            ModugoLogger.navigation(
+            Logger.navigation(
               '"${route.path}" → registered GoRoutes: $registeredPaths',
             );
 

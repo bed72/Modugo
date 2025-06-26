@@ -120,7 +120,7 @@ abstract class Module {
       ...moduleRoutes,
     ].whereType<GoRoute>().map((r) => r.path);
 
-    ModugoLogger.navigation(
+    Logger.navigation(
       'Final recorded routes: ${paths.isEmpty ? "(/) or ('')" : "$paths"}',
     );
 
@@ -158,7 +158,7 @@ abstract class Module {
         } catch (e, s) {
           _unregister(state.uri.toString());
 
-          ModugoLogger.error('Error building route ${state.uri}: $e\n$s');
+          Logger.error('Error building route ${state.uri}: $e\n$s');
 
           rethrow;
         }
@@ -394,7 +394,7 @@ abstract class Module {
     try {
       CompilerRoute(path);
     } catch (e) {
-      ModugoLogger.error('Invalid path in $type: $path → $e');
+      Logger.error('Invalid path in $type: $path → $e');
 
       throw ArgumentError.value(
         path,
