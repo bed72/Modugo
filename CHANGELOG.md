@@ -1,3 +1,7 @@
+## [2.4.2] - 2025-06-26
+
+- :fire: update version
+
 ## [2.4.1] - 2025-06-26
 
 - :fire: update Loggers
