@@ -186,10 +186,10 @@ final class ModugoConfiguration {
       final config = _router?.routerDelegate.currentConfiguration;
       if (config == null) return;
 
-      final current = config.fullPath;
+      final current = config.last.matchedLocation;
       final previous = routeNotifier.value.current;
 
-      Logger.warn('UPDATE NOTIFIER');
+      Logger.warn('UPDATE NOTIFIER BY ROUTE $current');
       routeNotifier.update(
         RouteChangeEvent(current: current, previous: previous),
       );
