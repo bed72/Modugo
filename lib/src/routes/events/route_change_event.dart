@@ -6,10 +6,10 @@ import 'package:modugo/src/routes/events/route_action_event.dart';
 /// Used by [RouteNotifier] to broadcast route transitions.
 final class RouteChangeEvent {
   /// The previous route location.
-  final String previous;
+  final String? previous;
 
   /// The current route location.
-  final String current;
+  final String? current;
 
   /// The type of navigation action that triggered the change.
   final RouteActionEvent action;

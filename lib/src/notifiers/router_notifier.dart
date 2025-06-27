@@ -39,8 +39,6 @@ final class RouteNotifier extends ValueNotifier<RouteChangeEvent> {
   ///
   /// Notifies listeners only if the [current] route differs from the last known one.
   void update(RouteChangeEvent event) {
-    if (event.current != value.current) {
-      value = event;
-    }
+    if (event.current != value.current) value = event;
   }
 }

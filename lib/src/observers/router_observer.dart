@@ -54,14 +54,12 @@ final class RouteTrackingObserver extends NavigatorObserver {
     final currentPath = current?.settings.name;
     final previousPath = previous?.settings.name;
 
-    if (currentPath != null && previousPath != null) {
-      Modugo.routeNotifier.update(
-        RouteChangeEvent(
-          action: action,
-          current: currentPath,
-          previous: previousPath,
-        ),
-      );
-    }
+    Modugo.routeNotifier.update(
+      RouteChangeEvent(
+        action: action,
+        current: currentPath,
+        previous: previousPath,
+      ),
+    );
   }
 }
