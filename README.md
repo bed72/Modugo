@@ -105,81 +105,6 @@ final class AppModule extends Module {
 
 ---
 
-## 🔍 Route Matching with Regex
-
-Modugo supports a powerful matching system using regex-based patterns. This allows you to:
-
-- Validate paths and deep links before navigating
-- Extract dynamic parameters independently of GoRouter
-- Handle external URLs, web support, and custom redirect logic
-
-### Defining a pattern:
-
-```dart
-ChildRoute(
-  '/user/:id',
-  routePattern: RoutePatternModel.from(r'^/user/(\d+)\$', paramNames: ['id']),
-  child: (_, __) => const UserPage(),
-)
-```
-
-### Matching a location:
-
-```dart
-final match = Modugo.matchRoute('/user/42');
-
-if (match != null) {
-  print(match.route); // matched route instance
-  print(match.params); // { 'id': '42' }
-} else {
-  print('No match');
-}
-```
-
-### Supported Route Types:
-
-- `ChildRoute`
-- `ModuleRoute`
-- `ShellModuleRoute`
-- `StatefulShellModuleRoute`
-
-Useful for:
-
-- Deep link validation
-- Analytics and logging
-- Fallback routing and redirects
-
----
-
-## 💊 Dependency Injection
-
-### Supported Types
-
-- `addSingleton<T>((i) => ...)`
-- `addLazySingleton<T>((i) => ...)`
-- `addFactory<T>((i) => ...)`
-
-### Example
-
-```dart
-final class HomeModule extends Module {
-  @override
-  void binds(IInjector i) {
-    i
-      ..addSingleton<HomeController>((i) => HomeController(i.get<Repository>()))
-      ..addLazySingleton<Repository>((_) => RepositoryImpl())
-      ..addFactory<DateTime>((_) => DateTime.now());
-  }
-
-  @override
-  List<IModule> get routes => [
-    ChildRoute('/home', child: (context, state) => const HomePage()),
-  ];
-}
-```
-
----
-
 ## ♻️ Persistent Modules
 
 By default, Modugo automatically disposes dependencies when a module is no longer active (i.e., when all its routes are exited).
@@ -216,6 +141,28 @@ final class HomeModule extends Module {
 - Disposal respects `.dispose()`, `.close()`, or `StreamController.close()`.
 - The root `AppModule` is **never disposed**.
 - Dependencies in imported modules are shared and removed only when all consumers are disposed.
+
+---
+
+## 🧠 Logging and Diagnostics
+
+```dart
+Modugo.configure(
+  module: AppModule(),
+  debugLogDiagnostics: true,
+);
+```
+
+- All logs pass through the `Logger` class, which can be extended or customized.
+- Logs include injection, disposal, navigation, and errors.
+
+---
+
+## 🧼 Best Practices
+
+- Always specify explicit types for `addSingleton`, `addLazySingleton`, and `addFactory`.
+- Divide your app into **small, cohesive modules**.
+- Use `AppModule` only for **global dependencies**.
 
 ---
 
@@ -300,6 +247,28 @@ class PageWidget extends StatelessWidget {
 
 ### `StatefulShellModuleRoute`
 
+StatefulShellModuleRoute is ideal for creating tab-based navigation with state preservation per tab — such as apps using BottomNavigationBar, TabBar, or any layout with parallel sections.
+
+✅ Benefits
+
+Each tab has its own navigation stack.
+
+Switching tabs preserves their state and history.
+
+Seamless integration with Modugo modules, including guards and lifecycle.
+
+🎯 Use Cases
+
+Bottom navigation with independent tabs (e.g. Home, Profile, Favorites)
+
+Admin panels or dashboards with persistent navigation
+
+Apps like Instagram, Twitter, or banking apps with separate stacked flows
+
+💡 How it Works
+
+Internally uses go_router's StatefulShellRoute to manage multiple Navigator branches. Each ModuleRoute below becomes an independent branch with its own routing stack.
+
 ```dart
 StatefulShellModuleRoute(
   builder: (context, state, shell) => BottomBarWidget(shell: shell),
@@ -310,6 +279,62 @@ StatefulShellModuleRoute(
   ],
 )
 ```
+
+To keep module state across tabs:
+
+```dart
+final class ProfileModule extends Module {
+  @override
+  bool get persistent => true;
+  ...
+}
+```
+
+---
+
+## 🔍 Route Matching with Regex
+
+Modugo supports a powerful matching system using regex-based patterns. This allows you to:
+
+- Validate paths and deep links before navigating
+- Extract dynamic parameters independently of GoRouter
+- Handle external URLs, web support, and custom redirect logic
+
+### Defining a pattern:
+
+```dart
+ChildRoute(
+  '/user/:id',
+  routePattern: RoutePatternModel.from(r'^/user/(\d+)\$', paramNames: ['id']),
+  child: (_, __) => const UserPage(),
+)
+```
+
+### Matching a location:
+
+```dart
+final match = Modugo.matchRoute('/user/42');
+
+if (match != null) {
+  print(match.route); // matched route instance
+  print(match.params); // { 'id': '42' }
+} else {
+  print('No match');
+}
+```
+
+### Supported Route Types:
+
+- `ChildRoute`
+- `ModuleRoute`
+- `ShellModuleRoute`
+- `StatefulShellModuleRoute`
+
+Useful for:
+
+- Deep link validation
+- Analytics and logging
+- Fallback routing and redirects
 
 ---
 
@@ -458,6 +483,35 @@ StatefulShellModuleRoute(
 
 ---
 
+## 💊 Dependency Injection
+
+### Supported Types
+
+- `addSingleton<T>((i) => ...)`
+- `addLazySingleton<T>((i) => ...)`
+- `addFactory<T>((i) => ...)`
+
+### Example
+
+```dart
+final class HomeModule extends Module {
+  @override
+  void binds(IInjector i) {
+    i
+      ..addSingleton<HomeController>((i) => HomeController(i.get<Repository>()))
+      ..addLazySingleton<Repository>((_) => RepositoryImpl())
+      ..addFactory<DateTime>((_) => DateTime.now());
+  }
+
+  @override
+  List<IModule> get routes => [
+    ChildRoute('/home', child: (context, state) => const HomePage()),
+  ];
+}
+```
+
+---
+
 ## 🔍 Accessing Dependencies
 
 ```dart
@@ -469,28 +523,6 @@ Or via context extension:
 ```dart
 final controller = context.read<HomeController>();
 ```
-
----
-
-## 🧠 Logging and Diagnostics
-
-```dart
-Modugo.configure(
-  module: AppModule(),
-  debugLogDiagnostics: true,
-);
-```
-
-- All logs pass through the `Logger` class, which can be extended or customized.
-- Logs include injection, disposal, navigation, and errors.
-
----
-
-## 🧼 Best Practices
-
-- Always specify explicit types for `addSingleton`, `addLazySingleton`, and `addFactory`.
-- Divide your app into **small, cohesive modules**.
-- Use `AppModule` only for **global dependencies**.
 
 ---
 
