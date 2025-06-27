@@ -4,15 +4,17 @@ import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/dispose.dart';
 import 'package:modugo/src/manager.dart';
 import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/transition.dart';
 
-import 'package:modugo/src/observers/router_observer.dart';
 import 'package:modugo/src/notifiers/router_notifier.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
+
+import 'package:modugo/src/routes/events/route_change_event.dart';
 
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/match_route.dart';
@@ -163,6 +165,7 @@ final class ModugoConfiguration {
     _router = GoRouter(
       routes: routes,
       redirect: redirect,
+      observers: observers,
       extraCodec: extraCodec,
       onException: onException,
       errorBuilder: errorBuilder,
@@ -175,10 +178,22 @@ final class ModugoConfiguration {
       errorPageBuilder: errorPageBuilder,
       restorationScopeId: restorationScopeId,
       debugLogDiagnostics: debugLogDiagnosticsGoRouter,
-      observers: [RouteTrackingObserver(), ...?observers],
       refreshListenable: refreshListenable ?? routeNotifier,
       overridePlatformDefaultLocation: overridePlatformDefaultLocation,
     );
+
+    _router?.routerDelegate.addListener(() {
+      final config = _router?.routerDelegate.currentConfiguration;
+      if (config == null) return;
+
+      final current = config.fullPath;
+      final previous = routeNotifier.value.current;
+
+      Logger.warn('UPDATE NOTIFIER');
+      routeNotifier.update(
+        RouteChangeEvent(current: current, previous: previous),
+      );
+    });
 
     return _router!;
   }

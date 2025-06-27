@@ -18,7 +18,6 @@ export 'src/interfaces/module_interface.dart';
 export 'src/interfaces/manager_interface.dart';
 export 'src/interfaces/injector_interface.dart';
 
-export 'src/routes/events/route_action_event.dart';
 export 'src/routes/events/route_change_event.dart';
 
 export 'src/routes/child_route.dart';

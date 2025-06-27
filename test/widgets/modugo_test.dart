@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:modugo/src/interfaces/module_interface.dart';
 
 import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/module.dart';
 
+import 'package:modugo/src/interfaces/module_interface.dart';
+
 import 'package:modugo/src/routes/child_route.dart';
-import 'package:modugo/src/routes/events/route_action_event.dart';
 import 'package:modugo/src/routes/events/route_change_event.dart';
 
 void main() {
@@ -24,13 +24,8 @@ void main() {
         lastEvent = notifier.value;
       });
 
-      // Simula uma navegação de "/" para "/details"
       notifier.update(
-        const RouteChangeEvent(
-          previous: '/',
-          current: '/details',
-          action: RouteActionEvent.push,
-        ),
+        const RouteChangeEvent(previous: '/', current: '/details'),
       );
 
       await tester.pump();
@@ -38,7 +33,6 @@ void main() {
       expect(lastEvent, isNotNull);
       expect(lastEvent!.previous, '/');
       expect(lastEvent!.current, '/details');
-      expect(lastEvent!.action, RouteActionEvent.push);
 
       expect(notifier.value, equals(lastEvent));
     });

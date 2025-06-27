@@ -358,7 +358,6 @@ It includes:
 
 - `previous`: previous route path
 - `current`: current route path
-- `action`: the navigation action (`push`, `pop`, `replace`, `redirect`, etc.)
 
 You can subscribe to it from anywhere:
 
@@ -366,7 +365,7 @@ You can subscribe to it from anywhere:
 Modugo.routeNotifier.addListener(() {
   final event = Modugo.routeNotifier.value;
 
-  if (event.current == 'name-route' && event.action == RouteActionEvent.pop) {
+  if (event.current == 'route') {
     refreshHomeWidgets();
   }
 });

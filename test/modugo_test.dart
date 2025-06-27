@@ -11,7 +11,6 @@ import 'package:modugo/src/interfaces/module_interface.dart';
 import 'package:modugo/src/interfaces/injector_interface.dart';
 
 import 'package:modugo/src/routes/child_route.dart';
-import 'package:modugo/src/routes/events/route_action_event.dart';
 import 'package:modugo/src/routes/events/route_change_event.dart';
 
 import 'package:modugo/src/notifiers/router_notifier.dart';
@@ -53,7 +52,6 @@ void main() {
       final notifier = RouteNotifier();
       expect(notifier.value.current, '/');
       expect(notifier.value.previous, '/');
-      expect(notifier.value.action, RouteActionEvent.push);
     });
 
     test('does not notify on identical current route', () {
@@ -63,11 +61,7 @@ void main() {
       notifier.addListener(() => callCount++);
 
       notifier.update(
-        const RouteChangeEvent(
-          current: '/',
-          previous: '/previous',
-          action: RouteActionEvent.pop,
-        ),
+        const RouteChangeEvent(current: '/', previous: '/previous'),
       );
 
       expect(callCount, equals(0));
@@ -80,43 +74,23 @@ void main() {
       notifier.addListener(() => count++);
 
       notifier.update(
-        const RouteChangeEvent(
-          previous: '/',
-          current: '/initial',
-          action: RouteActionEvent.push,
-        ),
+        const RouteChangeEvent(previous: '/', current: '/initial'),
       ); // notify
 
       notifier.update(
-        const RouteChangeEvent(
-          previous: '/initial',
-          current: '/initial',
-          action: RouteActionEvent.redirect,
-        ),
+        const RouteChangeEvent(previous: '/initial', current: '/initial'),
       ); // no notify
 
       notifier.update(
-        const RouteChangeEvent(
-          previous: '/initial',
-          current: '/next',
-          action: RouteActionEvent.push,
-        ),
+        const RouteChangeEvent(previous: '/initial', current: '/next'),
       ); // notify
 
       notifier.update(
-        const RouteChangeEvent(
-          previous: '/next',
-          current: '/next',
-          action: RouteActionEvent.push,
-        ),
+        const RouteChangeEvent(previous: '/next', current: '/next'),
       ); // no notify
 
       notifier.update(
-        const RouteChangeEvent(
-          previous: '/next',
-          current: '/final',
-          action: RouteActionEvent.pop,
-        ),
+        const RouteChangeEvent(previous: '/next', current: '/final'),
       ); // notify
 
       expect(count, equals(3));

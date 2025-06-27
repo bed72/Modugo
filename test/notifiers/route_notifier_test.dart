@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+
 import 'package:modugo/src/notifiers/router_notifier.dart';
 
-import 'package:modugo/src/routes/events/route_action_event.dart';
 import 'package:modugo/src/routes/events/route_change_event.dart';
 
 void main() {
@@ -11,7 +11,6 @@ void main() {
 
       expect(notifier.value.current, '/');
       expect(notifier.value.previous, '/');
-      expect(notifier.value.action, RouteActionEvent.push);
     });
 
     test('update with different current triggers notification', () {
@@ -23,17 +22,12 @@ void main() {
       });
 
       notifier.update(
-        const RouteChangeEvent(
-          previous: '/',
-          current: '/details',
-          action: RouteActionEvent.push,
-        ),
+        const RouteChangeEvent(previous: '/', current: '/details'),
       );
 
       expect(notified, isTrue);
       expect(notifier.value.previous, '/');
       expect(notifier.value.current, '/details');
-      expect(notifier.value.action, RouteActionEvent.push);
     });
 
     test('update with same current does not notify', () {
@@ -44,16 +38,9 @@ void main() {
         notifyCount++;
       });
 
-      notifier.update(
-        const RouteChangeEvent(
-          previous: '/',
-          current: '/',
-          action: RouteActionEvent.redirect,
-        ),
-      );
+      notifier.update(const RouteChangeEvent(previous: '/', current: '/'));
 
       expect(notifyCount, equals(0));
-      expect(notifier.value.action, isNot(RouteActionEvent.redirect));
     });
 
     test('multiple updates trigger only on current change', () {
@@ -63,41 +50,24 @@ void main() {
       notifier.addListener(() => notifyCount++);
 
       notifier.update(
-        const RouteChangeEvent(
-          previous: '/',
-          current: '/',
-          action: RouteActionEvent.push,
-        ),
+        const RouteChangeEvent(previous: '/', current: '/'),
       ); // no notify
 
       notifier.update(
-        const RouteChangeEvent(
-          previous: '/',
-          current: '/a',
-          action: RouteActionEvent.push,
-        ),
+        const RouteChangeEvent(previous: '/', current: '/a'),
       ); // notify
 
       notifier.update(
-        const RouteChangeEvent(
-          current: '/a',
-          previous: '/a',
-          action: RouteActionEvent.pop,
-        ),
+        const RouteChangeEvent(current: '/a', previous: '/a'),
       ); // no notify
 
       notifier.update(
-        const RouteChangeEvent(
-          current: '/b',
-          previous: '/a',
-          action: RouteActionEvent.redirect,
-        ),
+        const RouteChangeEvent(current: '/b', previous: '/a'),
       ); // notify
 
       expect(notifyCount, equals(2));
       expect(notifier.value.current, '/b');
       expect(notifier.value.previous, '/a');
-      expect(notifier.value.action, RouteActionEvent.redirect);
     });
   });
 }
