@@ -366,7 +366,7 @@ You can subscribe to it from anywhere:
 Modugo.routeNotifier.addListener(() {
   final event = Modugo.routeNotifier.value;
 
-  if (event.current == '/home' && event.action.isPush) {
+  if (event.current == '/home' && event.action == RouteActionEvent.pop) {
     refreshHomeWidgets();
   }
 });
