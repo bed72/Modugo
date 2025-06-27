@@ -1,3 +1,7 @@
+## [2.4.9] - 2025-06-27
+
+- :tada: notifier
+
 ## [2.4.8] - 2025-06-27
 
 - :fire: update notifier
