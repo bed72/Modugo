@@ -39,24 +39,6 @@ extension ContextNavigationExtension on BuildContext {
   /// ```
   GoRouter get goRouter => GoRouter.of(this);
 
-  /// Retrieves the current [GoRouterState] associated with this [BuildContext].
-  ///
-  /// This provides access to:
-  /// - current `path`, `uri`, `name`
-  /// - route parameters and query parameters
-  /// - any extra data passed during navigation
-  ///
-  /// Useful when you need to inspect the current route state inside a widget,
-  /// such as reading parameters or checking which route is active.
-  ///
-  /// Example:
-  /// ```dart
-  /// final name = context.state.name;
-  /// final id = context.state.pathParameters['id'];
-  /// final tab = context.state.uri.queryParameters['tab'];
-  /// ```
-  GoRouterState get state => GoRouterState.of(this);
-
   /// Forces a reload of the current route by navigating to the same URI again.
   ///
   /// This is useful when you want to refresh the state or UI associated
@@ -75,7 +57,7 @@ extension ContextNavigationExtension on BuildContext {
   /// context.go(context.state.uri.toString());
   /// ```
   void reload() {
-    goRouter.go(state.uri.toString());
+    goRouter.go(GoRouterState.of(this).uri.toString());
   }
 
   /// Returns `true` if the navigation stack can be popped (i.e. there's a previous route).

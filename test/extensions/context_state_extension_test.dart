@@ -10,9 +10,9 @@ void main() {
       initialLocation: '/product/42?show=true&count=5',
       routes: [
         GoRoute(
-          path: '/product/:id',
           name: 'product',
-          builder: (context, state) {
+          path: '/product/:id',
+          builder: (_, state) {
             return _Dummy(state);
           },
         ),
@@ -25,20 +25,17 @@ void main() {
 
     final context = tester.element(find.byType(_Dummy));
 
-    expect(context.path, '/product/:id');
-    expect(context.locationSegments, ['product', '42']);
-
-    expect(context.getPathParam('id'), '42');
-
-    expect(context.getStringQueryParam('count'), '5');
-    expect(context.getIntQueryParam('count'), 5);
-    expect(context.getBoolQueryParam('show'), isTrue);
-    expect(context.getBoolQueryParam('missing'), isNull);
-
+    expect(context.path, '/product/42');
     expect(context.isInitialRoute, isFalse);
-
-    expect(context.isCurrentRoute('product'), isTrue);
+    expect(context.getPathParam('id'), '42');
+    expect(context.getIntQueryParam('count'), 5);
     expect(context.isCurrentRoute('home'), isFalse);
+    expect(context.isCurrentRoute('product'), isTrue);
+    expect(context.getStringQueryParam('count'), '5');
+    expect(context.getBoolQueryParam('show'), isTrue);
+    expect(context.locationSegments, ['product', '42']);
+    expect(context.getBoolQueryParam('missing'), isNull);
+    expect(context.fullPath, '/product/42?show=true&count=5');
   });
 
   testWidgets('getExtra and argumentsOrThrow work', (tester) async {
@@ -46,8 +43,8 @@ void main() {
       initialLocation: '/next',
       routes: [
         GoRoute(
-          path: '/next',
           name: 'next',
+          path: '/next',
           builder: (context, state) => _Dummy(state),
         ),
       ],
@@ -98,6 +95,76 @@ void main() {
     final exception = tester.takeException();
     expect(exception, isA<ArgumentError>());
     expect((exception as ArgumentError).message, contains('Expected key "id"'));
+  });
+
+  testWidgets('BuildContext.uri returns correct Uri', (tester) async {
+    final router = GoRouter(
+      initialLocation: '/test?query=value',
+      routes: [
+        GoRoute(
+          path: '/test',
+          builder: (context, state) => const Text('Test Page'),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+
+    await tester.pumpAndSettle();
+
+    final context = tester.element(find.text('Test Page'));
+
+    expect(context.uri.path, '/test');
+    expect(context.fullPath, '/test?query=value');
+    expect(context.uri.queryParameters['query'], 'value');
+  });
+
+  testWidgets('BuildContext.name returns route name if defined', (
+    tester,
+  ) async {
+    final router = GoRouter(
+      initialLocation: '/named',
+      routes: [
+        GoRoute(
+          path: '/named',
+          name: 'namedRoute',
+          builder: (context, state) => const Text('Named Page'),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+
+    await tester.pumpAndSettle();
+
+    final context = tester.element(find.text('Named Page'));
+
+    expect(context.name, 'namedRoute');
+  });
+
+  testWidgets('BuildContext.fullPath returns route path pattern', (
+    tester,
+  ) async {
+    final router = GoRouter(
+      initialLocation: '/caneca-cafe/dp/7227D27',
+      routes: [
+        GoRoute(
+          path: '/:name/dp/:webcode',
+          builder: (context, state) => const Text('Product Page'),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+
+    await tester.pumpAndSettle();
+
+    final context = tester.element(find.text('Product Page'));
+
+    expect(context.path, '/caneca-cafe/dp/7227D27');
+    expect(context.getPathParam('webcode'), '7227D27');
+    expect(context.fullPath, '/caneca-cafe/dp/7227D27');
+    expect(context.getPathParam('name'), 'caneca-cafe');
   });
 }
 

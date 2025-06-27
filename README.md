@@ -251,19 +251,15 @@ StatefulShellModuleRoute is ideal for creating tab-based navigation with state p
 
 ✅ Benefits
 
-Each tab has its own navigation stack.
-
-Switching tabs preserves their state and history.
-
-Seamless integration with Modugo modules, including guards and lifecycle.
+- Each tab has its own navigation stack.
+- Switching tabs preserves their state and history.
+- Seamless integration with Modugo modules, including guards and lifecycle.
 
 🎯 Use Cases
 
-Bottom navigation with independent tabs (e.g. Home, Profile, Favorites)
-
-Admin panels or dashboards with persistent navigation
-
-Apps like Instagram, Twitter, or banking apps with separate stacked flows
+- Bottom navigation with independent tabs (e.g. Home, Profile, Favorites)
+- Admin panels or dashboards with persistent navigation
+- Apps like Instagram, Twitter, or banking apps with separate stacked flows
 
 💡 How it Works
 
