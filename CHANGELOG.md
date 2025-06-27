@@ -1,3 +1,7 @@
+## [2.4.3] - 2025-06-26
+
+- :fire: update notifier
+
 ## [2.4.2] - 2025-06-26
 
 - :fire: update version
