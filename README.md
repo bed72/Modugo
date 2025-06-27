@@ -313,6 +313,94 @@ StatefulShellModuleRoute(
 
 ---
 
+## 🔄 Route Change Tracking
+
+Modugo offers a built-in mechanism to track route changes globally via a `RouteNotifier`.
+This is especially useful when you want to:
+
+- Refresh parts of the UI when the location changes
+- React to tab switches or deep links
+- Trigger side effects like analytics or data reloading
+
+---
+
+### How it works
+
+Modugo exposes a global `RouteNotifier` instance:
+
+```dart
+Modugo.routeNotifier // type: ValueNotifier<RouteChangeEvent>
+```
+
+This object emits a \[RouteChangeEvent] whenever navigation occurs.
+It includes:
+
+- `previous`: previous route path
+- `current`: current route path
+- `action`: the navigation action (`push`, `pop`, `replace`, `redirect`, etc.)
+
+You can subscribe to it from anywhere:
+
+```dart
+Modugo.routeNotifier.addListener(() {
+  final event = Modugo.routeNotifier.value;
+
+  if (event.current == '/home' && event.action.isPush) {
+    refreshHomeWidgets();
+  }
+});
+```
+
+---
+
+### Example Use Case
+
+If your app uses dynamic tabs, webviews, or needs to react to specific navigation changes,
+you can use the notifier to refresh content or trigger logic based on the current or previous route.
+
+This is especially useful in cases like:
+
+- Restoring scroll position
+- Refreshing carousels
+- Triggering custom analytics
+- Resetting view state
+
+---
+
+### Automatic Integration
+
+Modugo automatically uses `routeNotifier` as the default `refreshListenable` for GoRouter:
+
+```dart
+Modugo.configure(
+  module: AppModule(),
+  // You can override this, but if omitted:
+  // → refreshListenable: Modugo.routeNotifier,
+);
+```
+
+It also injects an internal `RouteTrackingObserver` that keeps the notifier in sync with real route changes:
+
+```dart
+observers: [
+  RouteTrackingObserver(),
+  ...?yourObservers,
+]
+```
+
+No manual setup is required.
+
+---
+
+### Benefits
+
+- ✅ Full visibility of route transitions
+- 🧠 Provides rich context: previous/current/action
+- 🔀 Enables reactive patterns beyond widget tree
+- 🧰 Test-friendly and extensible
+
+---
+
 ## ⚰️ Route Guards
 
 You can protect routes using `IGuard`, which allows you to define redirection logic before a route is activated.

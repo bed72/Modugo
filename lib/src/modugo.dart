@@ -10,6 +10,8 @@ import 'package:modugo/src/manager.dart';
 import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/transition.dart';
 
+import 'package:modugo/src/observers/router_observer.dart';
+import 'package:modugo/src/notifiers/router_notifier.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
 
 import 'package:modugo/src/routes/child_route.dart';
@@ -68,6 +70,24 @@ final class ModugoConfiguration {
 
   /// Global manager instance for handling modules and route lifecycle.
   static final manager = Manager();
+
+  /// A global [RouteNotifier] that emits the current location path when navigation occurs.
+  ///
+  /// This is used internally by Modugo as the default [refreshListenable]
+  /// for [GoRouter] if none is provided. It allows widgets or services
+  /// to listen and react to navigation changes without directly depending on
+  /// the router.
+  ///
+  /// Example:
+  /// ```dart
+  /// Modugo.routeNotifier.addListener(() {
+  ///   final path = Modugo.routeNotifier.value;
+  ///   if (path == '/home') {
+  ///     refreshHomeCarousel();
+  ///   }
+  /// });
+  /// ```
+  static final routeNotifier = RouteNotifier();
 
   static bool? _debugLogDiagnostics;
   static TypeTransition? _transition;
@@ -143,7 +163,6 @@ final class ModugoConfiguration {
     _router = GoRouter(
       routes: routes,
       redirect: redirect,
-      observers: observers,
       extraCodec: extraCodec,
       onException: onException,
       errorBuilder: errorBuilder,
@@ -154,9 +173,10 @@ final class ModugoConfiguration {
       routerNeglect: routerNeglect,
       initialLocation: initialRoute,
       errorPageBuilder: errorPageBuilder,
-      refreshListenable: refreshListenable,
       restorationScopeId: restorationScopeId,
       debugLogDiagnostics: debugLogDiagnosticsGoRouter,
+      observers: [RouteTrackingObserver(), ...?observers],
+      refreshListenable: refreshListenable ?? routeNotifier,
       overridePlatformDefaultLocation: overridePlatformDefaultLocation,
     );
 

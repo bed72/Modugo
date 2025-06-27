@@ -6,6 +6,8 @@ export 'src/manager.dart';
 export 'src/injector.dart';
 export 'src/transition.dart';
 
+export 'src/notifiers/router_notifier.dart';
+
 export 'src/binds/factory_bind.dart';
 export 'src/binds/singleton_bind.dart';
 export 'src/binds/lazy_singleton_bind.dart';
@@ -15,6 +17,9 @@ export 'src/interfaces/guard_interface.dart';
 export 'src/interfaces/module_interface.dart';
 export 'src/interfaces/manager_interface.dart';
 export 'src/interfaces/injector_interface.dart';
+
+export 'src/routes/events/route_action_event.dart';
+export 'src/routes/events/route_change_event.dart';
 
 export 'src/routes/child_route.dart';
 export 'src/routes/match_route.dart';

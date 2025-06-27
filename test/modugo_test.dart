@@ -6,9 +6,15 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/module.dart';
-import 'package:modugo/src/routes/child_route.dart';
+
 import 'package:modugo/src/interfaces/module_interface.dart';
 import 'package:modugo/src/interfaces/injector_interface.dart';
+
+import 'package:modugo/src/routes/child_route.dart';
+import 'package:modugo/src/routes/events/route_action_event.dart';
+import 'package:modugo/src/routes/events/route_change_event.dart';
+
+import 'package:modugo/src/notifiers/router_notifier.dart';
 import 'package:modugo/src/extensions/context_injection_extension.dart';
 
 void main() {
@@ -40,6 +46,82 @@ void main() {
     final m1 = Modugo.manager;
     final m2 = Modugo.manager;
     expect(identical(m1, m2), isTrue);
+  });
+
+  group('Modugo.routeNotifier integration', () {
+    test('routeNotifier has default value "/"', () {
+      final notifier = RouteNotifier();
+      expect(notifier.value.current, '/');
+      expect(notifier.value.previous, '/');
+      expect(notifier.value.action, RouteActionEvent.push);
+    });
+
+    test('does not notify on identical current route', () {
+      final notifier = RouteNotifier();
+      int callCount = 0;
+
+      notifier.addListener(() => callCount++);
+
+      notifier.update(
+        const RouteChangeEvent(
+          current: '/',
+          previous: '/previous',
+          action: RouteActionEvent.pop,
+        ),
+      );
+
+      expect(callCount, equals(0));
+    });
+
+    test('notifies only when current route changes', () {
+      final notifier = RouteNotifier();
+      int count = 0;
+
+      notifier.addListener(() => count++);
+
+      notifier.update(
+        const RouteChangeEvent(
+          previous: '/',
+          current: '/initial',
+          action: RouteActionEvent.push,
+        ),
+      ); // notify
+
+      notifier.update(
+        const RouteChangeEvent(
+          previous: '/initial',
+          current: '/initial',
+          action: RouteActionEvent.redirect,
+        ),
+      ); // no notify
+
+      notifier.update(
+        const RouteChangeEvent(
+          previous: '/initial',
+          current: '/next',
+          action: RouteActionEvent.push,
+        ),
+      ); // notify
+
+      notifier.update(
+        const RouteChangeEvent(
+          previous: '/next',
+          current: '/next',
+          action: RouteActionEvent.push,
+        ),
+      ); // no notify
+
+      notifier.update(
+        const RouteChangeEvent(
+          previous: '/next',
+          current: '/final',
+          action: RouteActionEvent.pop,
+        ),
+      ); // notify
+
+      expect(count, equals(3));
+      expect(notifier.value.current, equals('/final'));
+    });
   });
 }
 
