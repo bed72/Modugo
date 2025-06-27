@@ -1,3 +1,7 @@
+## [2.4.4] - 2025-06-27
+
+- :fire: update docs
+
 ## [2.4.3] - 2025-06-26
 
 - :fire: update notifier
