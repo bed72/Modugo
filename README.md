@@ -350,22 +350,17 @@ This is especially useful when you want to:
 Modugo exposes a global `RouteNotifier` instance:
 
 ```dart
-Modugo.routeNotifier // type: ValueNotifier<RouteChangeEvent>
+Modugo.routeNotifier // type: ValueNotifier<String>
 ```
 
-This object emits a \[RouteChangeEvent] whenever navigation occurs.
-It includes:
-
-- `previous`: previous route path
-- `current`: current route path
-
+This object emits a \[String] path whenever navigation occurs.
 You can subscribe to it from anywhere:
 
 ```dart
 Modugo.routeNotifier.addListener(() {
-  final event = Modugo.routeNotifier.value;
+  final location = Modugo.routeNotifier.value;
 
-  if (event.current == 'route') {
+  if (location == '/home') {
     refreshHomeWidgets();
   }
 });
@@ -398,17 +393,6 @@ Modugo.configure(
   // → refreshListenable: Modugo.routeNotifier,
 );
 ```
-
-It also injects an internal `RouteTrackingObserver` that keeps the notifier in sync with real route changes:
-
-```dart
-observers: [
-  RouteTrackingObserver(),
-  ...?yourObservers,
-]
-```
-
-No manual setup is required.
 
 ---
 

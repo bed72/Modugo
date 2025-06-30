@@ -1,19 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:modugo/src/notifiers/router_notifier.dart';
-
-import 'package:modugo/src/routes/events/route_change_event.dart';
 
 void main() {
   group('RouteNotifier', () {
-    test('initial value uses default event', () {
+    test('initial value is root route', () {
       final notifier = RouteNotifier();
 
-      expect(notifier.value.current, '/');
-      expect(notifier.value.previous, '/');
+      expect(notifier.value, '/');
     });
 
-    test('update with different current triggers notification', () {
+    test('update with different route triggers notification', () {
       final notifier = RouteNotifier();
       bool notified = false;
 
@@ -21,16 +17,13 @@ void main() {
         notified = true;
       });
 
-      notifier.update(
-        const RouteChangeEvent(previous: '/', current: '/details'),
-      );
+      notifier.update = '/details';
 
       expect(notified, isTrue);
-      expect(notifier.value.previous, '/');
-      expect(notifier.value.current, '/details');
+      expect(notifier.value, '/details');
     });
 
-    test('update with same current does not notify', () {
+    test('update with same route does not notify', () {
       final notifier = RouteNotifier();
       int notifyCount = 0;
 
@@ -38,36 +31,24 @@ void main() {
         notifyCount++;
       });
 
-      notifier.update(const RouteChangeEvent(previous: '/', current: '/'));
+      notifier.update = '/';
 
       expect(notifyCount, equals(0));
     });
 
-    test('multiple updates trigger only on current change', () {
+    test('multiple updates only notify on route change', () {
       final notifier = RouteNotifier();
       int notifyCount = 0;
 
       notifier.addListener(() => notifyCount++);
 
-      notifier.update(
-        const RouteChangeEvent(previous: '/', current: '/'),
-      ); // no notify
-
-      notifier.update(
-        const RouteChangeEvent(previous: '/', current: '/a'),
-      ); // notify
-
-      notifier.update(
-        const RouteChangeEvent(current: '/a', previous: '/a'),
-      ); // no notify
-
-      notifier.update(
-        const RouteChangeEvent(current: '/b', previous: '/a'),
-      ); // notify
+      notifier.update = '/'; // no notify
+      notifier.update = '/a'; // notify
+      notifier.update = '/a'; // no notify
+      notifier.update = '/b'; // notify
 
       expect(notifyCount, equals(2));
-      expect(notifier.value.current, '/b');
-      expect(notifier.value.previous, '/a');
+      expect(notifier.value, '/b');
     });
   });
 }

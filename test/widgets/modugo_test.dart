@@ -4,37 +4,31 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/module.dart';
 
-import 'package:modugo/src/interfaces/module_interface.dart';
-
 import 'package:modugo/src/routes/child_route.dart';
-import 'package:modugo/src/routes/events/route_change_event.dart';
+import 'package:modugo/src/interfaces/module_interface.dart';
 
 void main() {
   group('Modugo.routeNotifier integration', () {
-    testWidgets('routeNotifier emits RouteChangeEvent correctly', (
+    testWidgets('routeNotifier emits location changes correctly', (
       tester,
     ) async {
       await Modugo.configure(module: _DummyModule(), initialRoute: '/');
 
       final notifier = Modugo.routeNotifier;
 
-      RouteChangeEvent? lastEvent;
+      String? lastLocation;
 
       notifier.addListener(() {
-        lastEvent = notifier.value;
+        lastLocation = notifier.value;
       });
 
-      notifier.update(
-        const RouteChangeEvent(previous: '/', current: '/details'),
-      );
+      notifier.update = '/details';
 
       await tester.pump();
 
-      expect(lastEvent, isNotNull);
-      expect(lastEvent!.previous, '/');
-      expect(lastEvent!.current, '/details');
-
-      expect(notifier.value, equals(lastEvent));
+      expect(lastLocation, isNotNull);
+      expect(lastLocation, '/details');
+      expect(notifier.value, equals(lastLocation));
     });
   });
 }
