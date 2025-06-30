@@ -174,9 +174,9 @@ final class ModugoConfiguration {
       routerNeglect: routerNeglect,
       initialLocation: initialRoute,
       errorPageBuilder: errorPageBuilder,
+      refreshListenable: refreshListenable,
       restorationScopeId: restorationScopeId,
       debugLogDiagnostics: debugLogDiagnosticsGoRouter,
-      refreshListenable: refreshListenable ?? routeNotifier,
       overridePlatformDefaultLocation: overridePlatformDefaultLocation,
     );
 
