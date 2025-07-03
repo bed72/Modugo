@@ -208,8 +208,14 @@ final class ModugoConfiguration {
       return MatchRoute(route: route, params: params);
     }
 
-    if (route is ModuleRoute) {
-      final childRoutes = route.module.routes;
+    final childRoutes = switch (route) {
+      ModuleRoute r => r.module.routes,
+      ShellModuleRoute r => r.routes,
+      StatefulShellModuleRoute r => r.routes,
+      _ => null,
+    };
+
+    if (childRoutes != null) {
       for (final child in childRoutes) {
         final match = _matchRouteRecursive(child, location);
         if (match != null) return match;
