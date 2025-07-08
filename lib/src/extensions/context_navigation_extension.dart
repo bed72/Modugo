@@ -237,6 +237,35 @@ extension ContextNavigationExtension on BuildContext {
     queryParameters: queryParameters,
   );
 
+  /// Replaces the current navigation stack with a sequence of valid [paths].
+  ///
+  /// Invalid paths (i.e., those not found in the router config) are skipped.
+  ///
+  /// The first valid path is used with [go] to clear the stack,
+  /// and remaining valid paths are pushed sequentially.
+  ///
+  /// Example:
+  /// ```dart
+  /// context.replaceStack([
+  ///   '/home',
+  ///   '/profile',
+  ///   '/invalid/route', // <- will be ignored
+  /// ]);
+  /// ```
+  Future<void> replaceStack(List<String> paths) async {
+    final validPaths = paths.where(canPush).toList();
+
+    if (validPaths.isEmpty) return;
+
+    go(validPaths.first);
+
+    await Future.delayed(const Duration(milliseconds: 50));
+
+    for (final path in validPaths.skip(1)) {
+      await push(path);
+    }
+  }
+
   RegExp _buildRegExp(String pattern) {
     final keys = <String>[];
     return pathToRegExp(pattern, parameters: keys);
