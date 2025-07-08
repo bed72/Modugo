@@ -1,3 +1,7 @@
+## [2.5.4] - 2025-07-08
+
+- :fire: update dependencies
+
 ## [2.5.3] - 2025-07-03
 
 - :fire: fix matchRoute
