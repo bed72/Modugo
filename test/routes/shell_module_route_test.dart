@@ -72,6 +72,25 @@ void main() {
       expect(a, isNot(equals(b)));
     });
 
+    test('creates ShellModuleRoute with binds, keys and layout', () {
+      final shellKey = GlobalKey<NavigatorState>();
+      final parentKey = GlobalKey<NavigatorState>();
+
+      final route = ShellModuleRoute(
+        binds: [(_) {}],
+        navigatorKey: shellKey,
+        restorationScopeId: 'shell',
+        parentNavigatorKey: parentKey,
+        builder: (_, __, child) => Material(child: child),
+        routes: [ModuleRoute('/', module: _DummyModule())],
+      );
+
+      expect(route.routes, hasLength(1));
+      expect(route.navigatorKey, shellKey);
+      expect(route.restorationScopeId, 'shell');
+      expect(route.parentNavigatorKey, parentKey);
+    });
+
     test('should not be equal when navigatorKey differs', () {
       final a = ShellModuleRoute(
         navigatorKey: GlobalKey(),

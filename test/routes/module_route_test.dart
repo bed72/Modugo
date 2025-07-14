@@ -5,11 +5,36 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:modugo/src/module.dart';
 
 import 'package:modugo/src/interfaces/guard_interface.dart';
+import 'package:modugo/src/interfaces/module_interface.dart';
 
+import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/models/route_pattern_model.dart';
 
 void main() {
+  group('ModuleRoute - navigation key', () {
+    test('creates ModuleRoute with all optional parameters', () {
+      final key = GlobalKey<NavigatorState>();
+
+      final route = ModuleRoute(
+        '/produto',
+        name: 'produto-module',
+        module: _DummyModule(),
+        guards: [_GuardAllow()],
+        parentNavigatorKey: key,
+        redirect: (context, state) async => '/redirected',
+        routePattern: RoutePatternModel.from(r'^/produto$'),
+      );
+
+      expect(route.path, '/produto');
+      expect(route.guards, isNotEmpty);
+      expect(route.name, 'produto-module');
+      expect(route.parentNavigatorKey, key);
+      expect(route.module, isA<_DummyModule>());
+      expect(route.routePattern?.regex.pattern, r'^/produto$');
+    });
+  });
+
   group('ModuleRoute - equality and hashCode', () {
     test('should be equal when path, name and module are equal', () {
       final module = _DummyModule();
@@ -226,7 +251,12 @@ void main() {
   });
 }
 
-final class _DummyModule extends Module {}
+final class _DummyModule extends Module {
+  @override
+  List<IModule> get routes => [
+    ChildRoute('/', child: (_, __) => const Placeholder()),
+  ];
+}
 
 final class _FakeBuildContext extends BuildContext {
   @override

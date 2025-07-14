@@ -212,8 +212,9 @@ abstract class Module {
     if (childRoute != null) _validPath(childRoute.path, 'ModuleRoute');
 
     return GoRoute(
-      parentNavigatorKey: childRoute?.parentNavigatorKey,
       name: module.name?.isNotEmpty == true ? module.name : null,
+      parentNavigatorKey:
+          module.parentNavigatorKey ?? childRoute?.parentNavigatorKey,
       routes: module.module.configureRoutes(topLevel: false, path: module.path),
       path: _normalizePath(
         topLevel: topLevel,

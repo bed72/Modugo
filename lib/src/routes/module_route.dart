@@ -19,6 +19,7 @@ import 'package:modugo/src/routes/models/route_pattern_model.dart';
 ///
 /// You can also optionally:
 /// - assign a [name] for named navigation
+/// - optional [parentNavigatorKey]
 /// - add a [redirect] function to control access dynamically
 ///
 /// Optionally supports [routePattern] to enable custom regex-based
@@ -60,6 +61,9 @@ final class ModuleRoute implements IModule {
   /// independently of GoRouter's matching logic.
   final RoutePatternModel? routePattern;
 
+  /// The navigator key of the parent (for nested navigator hierarchy).
+  final GlobalKey<NavigatorState>? parentNavigatorKey;
+
   /// Optional function that redirects the user to another path
   /// before entering the module.
   ///
@@ -75,6 +79,7 @@ final class ModuleRoute implements IModule {
     this.redirect,
     this.routePattern,
     this.guards = const [],
+    this.parentNavigatorKey,
   });
 
   @override
@@ -85,9 +90,14 @@ final class ModuleRoute implements IModule {
           name == other.name &&
           module == other.module &&
           runtimeType == other.runtimeType &&
-          routePattern == other.routePattern;
+          routePattern == other.routePattern &&
+          parentNavigatorKey == other.parentNavigatorKey;
 
   @override
   int get hashCode =>
-      path.hashCode ^ name.hashCode ^ module.hashCode ^ routePattern.hashCode;
+      path.hashCode ^
+      name.hashCode ^
+      module.hashCode ^
+      routePattern.hashCode ^
+      parentNavigatorKey.hashCode;
 }

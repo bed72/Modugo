@@ -287,6 +287,38 @@ void main() {
       expect(routeA, isNot(equals(routeB)));
     });
   });
+
+  group('StatefulShellModuleRoute - navigation key', () {
+    test('toRoute generates StatefulShellRoute.indexedStack', () {
+      final route = StatefulShellModuleRoute(
+        routes: [ModuleRoute('/', module: _DummyModule())],
+        builder: (_, __, ___) => const Placeholder(),
+      );
+
+      final result = route.toRoute(path: '/', topLevel: true);
+
+      expect(result, isA<StatefulShellRoute>());
+    });
+    test('builds StatefulShellModuleRoute with correct config', () {
+      final key = GlobalKey<StatefulNavigationShellState>();
+      final parentKey = GlobalKey<NavigatorState>();
+
+      final route = StatefulShellModuleRoute(
+        key: key,
+        parentNavigatorKey: parentKey,
+        restorationScopeId: 'shell-scope',
+        builder: (_, __, ___) => const Placeholder(),
+        routes: [
+          ModuleRoute('/', module: _DummyModule()),
+          ChildRoute('/profile', child: (_, __) => const Placeholder()),
+        ],
+      );
+
+      expect(route.key, key);
+      expect(route.parentNavigatorKey, parentKey);
+      expect(route.restorationScopeId, 'shell-scope');
+    });
+  });
 }
 
 final class _UnsupportedRoute implements IModule {}

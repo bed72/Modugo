@@ -21,6 +21,9 @@ import 'package:modugo/src/routes/models/route_pattern_model.dart';
 /// and renders them via an [IndexedStack]-based layout using the provided [builder].
 ///
 /// Each branch maintains its own stateful navigation context.
+/// The shell provides:
+/// - a shared [key] for nested navigation
+/// - optional [restorationScopeId], and [parentNavigatorKey]
 ///
 /// Optionally supports [routePattern] to enable custom regex-based
 /// matching and parameter extraction independent of GoRouter.
@@ -44,11 +47,20 @@ final class StatefulShellModuleRoute implements IModule {
   /// Each item represents a separate navigation stack.
   final List<IModule> routes;
 
+  /// Optional ID used for state restoration (Flutter feature).
+  final String? restorationScopeId;
+
   /// Optional route matching pattern using regex and parameter names.
   ///
   /// This allows the module to be matched via a regular expression
   /// independently of GoRouter's matching logic.
   final RoutePatternModel? routePattern;
+
+  /// The navigator key of the parent (for nested navigator hierarchy).
+  final GlobalKey<NavigatorState>? parentNavigatorKey;
+
+  /// Navigator key used to isolate navigation inside the shell.
+  final GlobalKey<StatefulNavigationShellState>? key;
 
   /// The widget builder for rendering the full shell layout with tabs.
   ///
@@ -66,6 +78,9 @@ final class StatefulShellModuleRoute implements IModule {
     required this.routes,
     required this.builder,
     this.routePattern,
+    this.key,
+    this.parentNavigatorKey,
+    this.restorationScopeId,
   });
 
   /// Converts this module into a [RouteBase] for GoRouter.
@@ -169,8 +184,11 @@ final class StatefulShellModuleRoute implements IModule {
         }).toList();
 
     return StatefulShellRoute.indexedStack(
+      key: key,
       builder: builder,
       branches: branches,
+      parentNavigatorKey: parentNavigatorKey,
+      restorationScopeId: restorationScopeId,
     );
   }
 
@@ -226,11 +244,19 @@ final class StatefulShellModuleRoute implements IModule {
       identical(this, other) ||
       other is StatefulShellModuleRoute &&
           builder == other.builder &&
+          listEquals(routes, other.routes) &&
           runtimeType == other.runtimeType &&
           routePattern == other.routePattern &&
-          listEquals(routes, other.routes);
+          key == other.key &&
+          restorationScopeId == other.restorationScopeId &&
+          parentNavigatorKey == other.parentNavigatorKey;
 
   @override
   int get hashCode =>
-      Object.hashAll(routes) ^ builder.hashCode ^ routePattern.hashCode;
+      Object.hashAll(routes) ^
+      builder.hashCode ^
+      routePattern.hashCode ^
+      key.hashCode ^
+      restorationScopeId.hashCode ^
+      parentNavigatorKey.hashCode;
 }
