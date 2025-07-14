@@ -1,3 +1,7 @@
+## [2.5.5] - 2025-07-14
+
+- :fire: update keys
+
 ## [2.5.4] - 2025-07-08
 
 - :fire: update dependencies

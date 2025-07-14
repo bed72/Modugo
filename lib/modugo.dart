@@ -36,4 +36,4 @@ export 'src/extensions/context_injection_extension.dart';
 export 'src/extensions/context_navigation_extension.dart';
 
 export 'package:go_router/go_router.dart'
-    show GoRouterState, StatefulNavigationShell;
+    show GoRouterState, StatefulNavigationShell, StatefulNavigationShellState;
