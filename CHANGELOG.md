@@ -1,3 +1,7 @@
+## [2.5.6] - 2025-07-14
+
+- :fire: export StatefulNavigationShellState
+
 ## [2.5.5] - 2025-07-14
 
 - :fire: update keys
