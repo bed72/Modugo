@@ -1,3 +1,7 @@
+## [2.5.7] - 2025-07-15
+
+- :fire: remove keys by StatefulShellModuleRoute
+
 ## [2.5.6] - 2025-07-14
 
 - :fire: export StatefulNavigationShellState
