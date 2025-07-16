@@ -11,6 +11,7 @@ import 'package:modugo/src/interfaces/module_interface.dart';
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/models/route_pattern_model.dart';
+import 'package:modugo/src/routes/shell_module_route.dart';
 
 /// A modular route that enables stateful navigation using [StatefulShellRoute].
 ///
@@ -118,10 +119,9 @@ final class StatefulShellModuleRoute implements IModule {
                   return GoRoute(
                     path: r.path,
                     name: r.name,
+                    onExit: r.onExit,
                     builder: r.builder,
                     pageBuilder: r.pageBuilder,
-                    parentNavigatorKey: r.parentNavigatorKey,
-                    onExit: r.onExit,
                     redirect: (context, state) async {
                       for (final guard in route.guards) {
                         final result = await guard.call(context, state);
@@ -138,12 +138,6 @@ final class StatefulShellModuleRoute implements IModule {
                   );
                 }).toList();
 
-            final registeredPaths =
-                updatedRoutes.whereType<GoRoute>().map((r) => r.path).toList();
-            Logger.navigation(
-              '"${route.path}" → registered GoRoutes: $registeredPaths',
-            );
-
             return StatefulShellBranch(routes: updatedRoutes);
           }
 
@@ -154,7 +148,6 @@ final class StatefulShellModuleRoute implements IModule {
                   builder: route.child,
                   path: normalizePath(route.path),
                   name: route.name ?? 'branch_$index',
-                  parentNavigatorKey: route.parentNavigatorKey,
                   pageBuilder:
                       route.pageBuilder != null
                           ? (context, state) =>
@@ -175,6 +168,12 @@ final class StatefulShellModuleRoute implements IModule {
                   },
                 ),
               ],
+            );
+          }
+
+          if (route is ShellModuleRoute) {
+            throw UnsupportedError(
+              'ShellModuleRoute cannot be used inside StatefulShellModuleRoute',
             );
           }
 
