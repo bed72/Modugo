@@ -1,3 +1,7 @@
+## [2.6.0] - 2025-07-17
+
+- Merge pull request #9 from bed72/remove-compose-path
+
 ## [2.5.7] - 2025-07-15
 
 - :fire: remove keys by StatefulShellModuleRoute
