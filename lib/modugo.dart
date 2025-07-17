@@ -7,6 +7,7 @@ export 'src/injector.dart';
 export 'src/transition.dart';
 
 export 'src/notifiers/router_notifier.dart';
+export 'src/controllers/modugo_statck_controller.dart';
 
 export 'src/binds/factory_bind.dart';
 export 'src/binds/singleton_bind.dart';
@@ -30,8 +31,10 @@ export 'src/routes/models/path_token_model.dart';
 export 'src/routes/models/route_pattern_model.dart';
 export 'src/routes/models/parameter_token_model.dart';
 
+export 'src/extensions/match_route_extension.dart';
 export 'src/extensions/context_state_extension.dart';
 export 'src/extensions/context_match_extension.dart';
+export 'src/extensions/external_stack_controller.dart';
 export 'src/extensions/context_injection_extension.dart';
 export 'src/extensions/context_navigation_extension.dart';
 

@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/routes/paths/function.dart';
 
+import 'package:modugo/src/controllers/modugo_statck_controller.dart';
+
 /// Extension on [BuildContext] that provides convenient access to the current [GoRouterState].
 ///
 /// This extension exposes several properties and helpers to work with the
@@ -96,6 +98,45 @@ extension ContextStateExtension on BuildContext {
   /// }
   /// ```
   bool isCurrentRoute(String name) => state.name == name;
+
+  /// Returns `true` if the navigation was initiated via [ModugoStackController].
+  ///
+  /// This checks the `extra` map for the `is_external_stack_control` key,
+  /// accepting both `bool` and string representations (`'true'`).
+  ///
+  /// Example:
+  /// ```dart
+  /// if (state.isFromExternalStack) {
+  ///   // Custom pop logic
+  /// }
+  /// ```
+  bool get isFromExternalStack {
+    final data = state.extra;
+    if (data is Map<String, dynamic>) {
+      final value = data[ModugoStackController.instance.isExternalStackControl];
+      return value is bool ? value : value?.toString().toLowerCase() == 'true';
+    }
+    return false;
+  }
+
+  /// Returns the path from the `extra` map if present, or falls back to [GoRouterState.uri.path].
+  ///
+  /// Useful for understanding the target destination in guards, redirects,
+  /// or any navigation-based logic.
+  ///
+  /// Example:
+  /// ```dart
+  /// final path = state.effectivePath;
+  /// if (path.startsWith('/cart')) { ... }
+  /// ```
+  String get effectivePath {
+    final data = state.extra;
+    if (data is Map<String, dynamic>) {
+      final value = data[ModugoStackController.instance.path];
+      if (value is String) return value;
+    }
+    return uri.path;
+  }
 
   /// Returns `true` if the current matched route is the root (`'/'`).
   bool get isInitialRoute => state.matchedLocation == '/';
