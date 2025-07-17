@@ -43,8 +43,6 @@ import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 /// }
 /// ```
 abstract class Module {
-  late String _modulePath;
-
   /// If true, this module will not have its dependencies automatically disposed.
   ///
   /// Useful for persistent modules like tabs in a bottom navigation bar.
@@ -101,18 +99,13 @@ abstract class Module {
   /// final routes = myModule.configureRoutes(topLevel: true, path: '/app');
   /// ```
   List<RouteBase> configureRoutes({bool topLevel = false, String path = ''}) {
-    _modulePath = path;
-
     if (!_routerManager.isModuleActive(this)) {
       _routerManager.registerBindsAppModule(this);
     }
 
-    final childRoutes = _createChildRoutes(topLevel);
-    final shellRoutes = _createShellRoutes(topLevel, path);
-    final moduleRoutes = _createModuleRoutes(
-      modulePath: path,
-      topLevel: topLevel,
-    );
+    final childRoutes = _createChildRoutes();
+    final shellRoutes = _createShellRoutes(topLevel);
+    final moduleRoutes = _createModuleRoutes(topLevel);
 
     final paths = [
       ...shellRoutes,
@@ -128,7 +121,6 @@ abstract class Module {
   }
 
   GoRoute _createChild({
-    required bool topLevel,
     required String effectivePath,
     required ChildRoute childRoute,
   }) {
@@ -181,28 +173,16 @@ abstract class Module {
     );
   }
 
-  List<GoRoute> _createChildRoutes(bool topLevel) =>
-      routes.whereType<ChildRoute>().map((route) {
-        final composedPath =
-            topLevel
-                ? _normalizePath(
-                  topLevel: topLevel,
-                  path: _composePath(_modulePath, route.path),
-                )
-                : route.path;
+  List<GoRoute> _createChildRoutes() =>
+      routes
+          .whereType<ChildRoute>()
+          .map(
+            (route) =>
+                _createChild(effectivePath: route.path, childRoute: route),
+          )
+          .toList();
 
-        return _createChild(
-          childRoute: route,
-          topLevel: topLevel,
-          effectivePath: composedPath,
-        );
-      }).toList();
-
-  GoRoute _createModule({
-    required String path,
-    required bool topLevel,
-    required ModuleRoute module,
-  }) {
+  GoRoute _createModule({required ModuleRoute module, required bool topLevel}) {
     final childRoute =
         module.module.routes
             .whereType<ChildRoute>()
@@ -212,17 +192,11 @@ abstract class Module {
     if (childRoute != null) _validPath(childRoute.path, 'ModuleRoute');
 
     return GoRoute(
+      path: module.path,
+      routes: module.module.configureRoutes(topLevel: false),
       name: module.name?.isNotEmpty == true ? module.name : null,
       parentNavigatorKey:
           module.parentNavigatorKey ?? childRoute?.parentNavigatorKey,
-      routes: module.module.configureRoutes(topLevel: false, path: module.path),
-      path: _normalizePath(
-        topLevel: topLevel,
-        path: _normalizePath(
-          topLevel: topLevel,
-          path: _composePath(path, module.path + (childRoute?.path ?? '')),
-        ),
-      ),
       builder:
           (context, state) => _buildModuleChild(
             context,
@@ -261,18 +235,13 @@ abstract class Module {
     );
   }
 
-  List<GoRoute> _createModuleRoutes({
-    required bool topLevel,
-    required String modulePath,
-  }) => routes
-      .whereType<ModuleRoute>()
-      .map(
-        (module) =>
-            _createModule(module: module, topLevel: topLevel, path: modulePath),
-      )
-      .toList(growable: false);
+  List<GoRoute> _createModuleRoutes(bool topLevel) =>
+      routes
+          .whereType<ModuleRoute>()
+          .map((module) => _createModule(module: module, topLevel: topLevel))
+          .toList();
 
-  List<RouteBase> _createShellRoutes(bool topLevel, String path) {
+  List<RouteBase> _createShellRoutes(bool topLevel) {
     final shellRoutes = <RouteBase>[];
 
     for (final route in routes) {
@@ -297,15 +266,9 @@ abstract class Module {
                   if (routeOrModule is ChildRoute) {
                     _validPath(routeOrModule.path, 'ShellModuleRoute');
 
-                    final composedPath = _normalizePath(
-                      topLevel: topLevel,
-                      path: _composePath(path, routeOrModule.path),
-                    );
-
                     return _createChild(
-                      topLevel: topLevel,
                       childRoute: routeOrModule,
-                      effectivePath: composedPath,
+                      effectivePath: routeOrModule.path,
                     );
                   }
 
@@ -313,7 +276,6 @@ abstract class Module {
                     return _createModule(
                       topLevel: topLevel,
                       module: routeOrModule,
-                      path: routeOrModule.path,
                     );
                   }
 
@@ -329,6 +291,14 @@ abstract class Module {
             navigatorKey: route.navigatorKey,
             parentNavigatorKey: route.parentNavigatorKey,
             restorationScopeId: route.restorationScopeId,
+            builder:
+                (context, state, child) =>
+                    route.builder!(context, state, child),
+            pageBuilder:
+                route.pageBuilder != null
+                    ? (context, state, child) =>
+                        route.pageBuilder!(context, state, child)
+                    : null,
             redirect: (context, state) async {
               for (final guard in route.guards) {
                 final result = await guard.call(context, state);
@@ -341,24 +311,12 @@ abstract class Module {
 
               return null;
             },
-
-            builder:
-                (context, state, child) =>
-                    route.builder!(context, state, child),
-            pageBuilder:
-                route.pageBuilder != null
-                    ? (context, state, child) =>
-                        route.pageBuilder!(context, state, child)
-                    : null,
           ),
         );
       }
 
       if (route is StatefulShellModuleRoute) {
-        final normalizedPath = _normalizePath(path: path, topLevel: topLevel);
-        shellRoutes.add(
-          route.toRoute(topLevel: topLevel, path: normalizedPath),
-        );
+        shellRoutes.add(route.toRoute(topLevel: topLevel, path: '/'));
       }
     }
 
@@ -367,29 +325,6 @@ abstract class Module {
 
   String _adjustRoute(String route) =>
       (route == '/' || route.startsWith('/:')) ? '/' : route;
-
-  String _normalizePath({required String path, required bool topLevel}) {
-    if (path.trim().isEmpty) return '/';
-
-    if (path.startsWith('/') && !topLevel && !path.startsWith('/:')) {
-      path = path.substring(1);
-    }
-
-    if (!path.endsWith('/')) path = '$path/';
-    path = path.replaceAll(RegExp(r'/+'), '/');
-
-    return path == '/' ? path : path.substring(0, path.length - 1);
-  }
-
-  String _composePath(String base, String sub) {
-    final b = base.trim().replaceAll(RegExp(r'^/+|/+\$'), '');
-    final s = sub.trim().replaceAll(RegExp(r'^/+|/+\$'), '');
-
-    if (b.isEmpty && s.isEmpty) return '/';
-
-    final composed = [b, s].where((p) => p.isNotEmpty).join('/');
-    return '/${composed.replaceAll(RegExp(r'/+'), '/')}';
-  }
 
   void _validPath(String path, String type) {
     try {

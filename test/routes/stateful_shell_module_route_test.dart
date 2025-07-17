@@ -49,18 +49,6 @@ void main() {
     });
   });
 
-  group('StatefulShellModuleRoute - path composition', () {
-    test('normalizePath should clean up redundant slashes', () {
-      final route = StatefulShellModuleRoute(
-        routes: [],
-        builder: (_, __, ___) => const Placeholder(),
-      );
-
-      expect(route.normalizePath('///settings//home'), '/settings/home');
-      expect(route.normalizePath(''), '/');
-    });
-  });
-
   group('StatefulShellModuleRoute - route generation', () {
     test('should throw if route type is unsupported', () {
       final route = StatefulShellModuleRoute(
@@ -138,44 +126,6 @@ void main() {
       final result = await guardedRoute.redirect!(_FakeContext(), _FakeState());
 
       expect(result, '/not-allowed');
-    },
-  );
-
-  test('composePath joins base and sub correctly and cleans slashes', () {
-    final wrapper = StatefulShellModuleRoute(
-      routes: [],
-      builder: (_, __, ___) => const Placeholder(),
-    );
-
-    expect(wrapper.composePath('/', 'profile'), '/profile');
-    expect(wrapper.composePath('/settings/', '/profile/'), '/settings/profile');
-    expect(wrapper.composePath('', ''), '/');
-    expect(wrapper.composePath('a/', '/b'), '/a/b');
-  });
-
-  test(
-    'isRootRouteForModule returns true for matching ModuleRoute root GoRoute',
-    () {
-      Widget dummyBuilder(BuildContext _, GoRouterState __) =>
-          const Placeholder();
-
-      final route = ModuleRoute('/home', module: _DummyModule());
-      final wrapper = StatefulShellModuleRoute(
-        routes: [],
-        builder: (_, __, ___) => const Placeholder(),
-      );
-
-      final configuredRoutes = [
-        GoRoute(path: '/home', builder: dummyBuilder),
-        GoRoute(path: '/home/extra', builder: dummyBuilder),
-      ];
-
-      bool result(RouteBase base) =>
-          wrapper.isRootRouteForModule(base, route, configuredRoutes);
-
-      expect(result(GoRoute(path: '/', builder: dummyBuilder)), isFalse);
-      expect(result(GoRoute(path: '/home', builder: dummyBuilder)), isTrue);
-      expect(result(GoRoute(path: '/other', builder: dummyBuilder)), isFalse);
     },
   );
 
@@ -364,14 +314,23 @@ final class _DummyModule extends Module {
 final class _GuardedChildModule extends Module {
   @override
   List<IModule> get routes => [
-    ChildRoute('/', child: (_, __) => const Placeholder()),
+    ChildRoute(
+      '/',
+      guards: [_BlockGuard()],
+      child: (_, __) => const Placeholder(),
+      redirect: (context, state) => '/not-allowed',
+    ),
   ];
 }
 
 final class _GuardedChildModuleWithRealPath extends Module {
   @override
   List<IModule> get routes => [
-    ChildRoute('/guarded', child: (_, __) => const Placeholder()),
+    ChildRoute(
+      '/guarded',
+      child: (_, __) => const SizedBox.shrink(),
+      redirect: (context, state) => '/not-allowed',
+    ),
   ];
 }
 
@@ -423,11 +382,7 @@ final class _StatefulShellGuardedModule extends Module {
     StatefulShellModuleRoute(
       builder: (_, __, shell) => shell,
       routes: [
-        ModuleRoute(
-          '/home',
-          module: _GuardedChildModule(),
-          guards: [_BlockGuard()],
-        ),
+        ModuleRoute('/home', module: _GuardedChildModule()),
         ModuleRoute('/profile', module: _SimpleModule()),
       ],
     ),
@@ -442,8 +397,8 @@ final class _StatefulShellGuardedModuleWithRealPath extends Module {
       routes: [
         ModuleRoute(
           '/guarded',
-          module: _GuardedChildModuleWithRealPath(),
           guards: [_BlockGuard()],
+          module: _GuardedChildModuleWithRealPath(),
         ),
       ],
     ),

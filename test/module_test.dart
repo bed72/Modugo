@@ -131,7 +131,7 @@ void main() {
       final routes = module.configureRoutes(topLevel: true, path: '/top');
 
       final child = routes.whereType<GoRoute>().first;
-      expect(child.path, '/top/home');
+      expect(child.path, '/home');
     });
 
     test('configureRoutes returns all route types', () {
