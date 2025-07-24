@@ -1,3 +1,7 @@
+## [2.6.1] - 2025-07-24
+
+- :fire: fix DI in builder
+
 ## [2.6.0] - 2025-07-17
 
 - Merge pull request #9 from bed72/remove-compose-path
