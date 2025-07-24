@@ -164,7 +164,11 @@ abstract class Module {
           ),
       pageBuilder:
           childRoute.pageBuilder != null
-              ? (context, state) => childRoute.pageBuilder!(context, state)
+              ? (context, state) => _safePageBuilder(
+                state: state,
+                label: 'child page',
+                build: () => childRoute.pageBuilder!(context, state),
+              )
               : (context, state) => _buildCustomTransitionPage(
                 context,
                 state: state,
@@ -294,11 +298,6 @@ abstract class Module {
             builder:
                 (context, state, child) =>
                     route.builder!(context, state, child),
-            pageBuilder:
-                route.pageBuilder != null
-                    ? (context, state, child) =>
-                        route.pageBuilder!(context, state, child)
-                    : null,
             redirect: (context, state) async {
               for (final guard in route.guards) {
                 final result = await guard.call(context, state);
@@ -311,6 +310,14 @@ abstract class Module {
 
               return null;
             },
+            pageBuilder:
+                route.pageBuilder != null
+                    ? (context, state, child) => _safePageBuilder(
+                      state: state,
+                      label: 'shell page',
+                      build: () => route.pageBuilder!(context, state, child),
+                    )
+                    : null,
           ),
         );
       }
@@ -321,6 +328,21 @@ abstract class Module {
     }
 
     return shellRoutes;
+  }
+
+  T _safePageBuilder<T>({
+    required String label,
+    required GoRouterState state,
+    required T Function() build,
+  }) {
+    try {
+      _register(path: state.uri.toString());
+      return build();
+    } catch (e, s) {
+      _unregister(state.uri.toString());
+      Logger.error('Error building $label for ${state.uri}: $e\n$s');
+      rethrow;
+    }
   }
 
   String _adjustRoute(String route) =>

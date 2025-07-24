@@ -24,11 +24,7 @@ extension ExternalStackControllerExtension on ModugoStackController {
 
     Modugo.routerConfig.go(
       path,
-      extra: {
-        ModugoStackController.instance.path: path,
-        ModugoStackController.instance.isExternalStackControl: true,
-        ...?extra,
-      },
+      extra: {ModugoStackController.instance.path: path, ...?extra},
     );
   }
 
@@ -47,11 +43,7 @@ extension ExternalStackControllerExtension on ModugoStackController {
 
     await Modugo.routerConfig.push(
       path,
-      extra: {
-        ModugoStackController.instance.path: path,
-        ModugoStackController.instance.isExternalStackControl: true,
-        ...?extra,
-      },
+      extra: {ModugoStackController.instance.path: path, ...?extra},
     );
   }
 

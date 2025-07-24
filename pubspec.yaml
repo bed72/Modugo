@@ -1,5 +1,5 @@
 name: modugo
-version: 2.6.0
+version: 2.6.1
 homepage: https://github.com/bed72/Modugo
 repository: https://github.com/bed72/Modugo
 description: Modular Routing and Dependency Injection for Flutter with GoRouter.
@@ -13,7 +13,7 @@ dependencies:
     sdk: flutter
 
   go_router: ^16.0.0
-  talker_logger: ^4.9.2
+  talker_logger: ^4.9.3
 
 dev_dependencies:
   flutter_test:

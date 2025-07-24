@@ -73,28 +73,6 @@ final class ModugoStackController {
   /// ```
   String get path => 'path';
 
-  /// Key used in the `extra` map of navigation calls to indicate that the
-  /// route transition was triggered by the [ModugoStackController].
-  ///
-  /// This can be used in destination pages or middleware to differentiate between
-  /// normal navigation and one controlled by the external backstack.
-  ///
-  /// Example usage:
-  /// ```dart
-  /// Modugo.routerConfig.go(
-  ///   '/profile',
-  ///   extra: {
-  ///     is_external_stack_control: true,
-  ///   },
-  /// );
-  /// ```
-  ///
-  /// Example check:
-  /// ```dart
-  /// final isControlled = GoRouterState.of(context).extra?['is_external_stack_control'] == true;
-  /// ```
-  String get isExternalStackControl => 'is_external_stack_control';
-
   /// Pops the last path from the stack and returns it.
   ///
   /// Returns `null` if the stack is empty.

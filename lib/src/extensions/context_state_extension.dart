@@ -99,26 +99,6 @@ extension ContextStateExtension on BuildContext {
   /// ```
   bool isCurrentRoute(String name) => state.name == name;
 
-  /// Returns `true` if the navigation was initiated via [ModugoStackController].
-  ///
-  /// This checks the `extra` map for the `is_external_stack_control` key,
-  /// accepting both `bool` and string representations (`'true'`).
-  ///
-  /// Example:
-  /// ```dart
-  /// if (state.isFromExternalStack) {
-  ///   // Custom pop logic
-  /// }
-  /// ```
-  bool get isFromExternalStack {
-    final data = state.extra;
-    if (data is Map<String, dynamic>) {
-      final value = data[ModugoStackController.instance.isExternalStackControl];
-      return value is bool ? value : value?.toString().toLowerCase() == 'true';
-    }
-    return false;
-  }
-
   /// Returns the path from the `extra` map if present, or falls back to [GoRouterState.uri.path].
   ///
   /// Useful for understanding the target destination in guards, redirects,
