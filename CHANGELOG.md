@@ -1,3 +1,7 @@
+## [2.6.2] - 2025-07-29
+
+- :fire: fix listener route
+
 ## [2.6.1] - 2025-07-24
 
 - :fire: fix DI in builder
