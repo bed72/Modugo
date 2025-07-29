@@ -180,11 +180,19 @@ final class ModugoConfiguration {
       overridePlatformDefaultLocation: overridePlatformDefaultLocation,
     );
 
+    String? lastNotifiedLocation;
+
     _router?.routerDelegate.addListener(() {
       final config = _router?.routerDelegate.currentConfiguration;
-      final current = config?.last.matchedLocation;
 
-      if (current == null || current.isEmpty) return;
+      if (config == null || config.isEmpty) return;
+
+      final current = config.last.matchedLocation;
+
+      if (current.isEmpty) return;
+      if (current == lastNotifiedLocation) return;
+
+      lastNotifiedLocation = current;
 
       Logger.warn('UPDATE NOTIFIER BY ROUTE $current');
       routeNotifier.update = current;
