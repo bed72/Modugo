@@ -17,7 +17,7 @@ void main() {
       final key = GlobalKey<NavigatorState>();
 
       final route = ModuleRoute(
-        '/produto',
+        path: '/produto',
         name: 'produto-module',
         module: _DummyModule(),
         guards: [_GuardAllow()],
@@ -39,8 +39,8 @@ void main() {
     test('should be equal when path, name and module are equal', () {
       final module = _DummyModule();
 
-      final a = ModuleRoute('/home', name: 'home', module: module);
-      final b = ModuleRoute('/home', name: 'home', module: module);
+      final a = ModuleRoute(path: '/home', name: 'home', module: module);
+      final b = ModuleRoute(path: '/home', name: 'home', module: module);
 
       expect(a, equals(b));
       expect(a.hashCode, equals(b.hashCode));
@@ -49,8 +49,8 @@ void main() {
     test('should not be equal when path differs', () {
       final module = _DummyModule();
 
-      final a = ModuleRoute('/home', name: 'x', module: module);
-      final b = ModuleRoute('/settings', name: 'x', module: module);
+      final a = ModuleRoute(path: '/home', name: 'x', module: module);
+      final b = ModuleRoute(path: '/settings', name: 'x', module: module);
 
       expect(a, isNot(equals(b)));
     });
@@ -58,15 +58,15 @@ void main() {
     test('should not be equal when name differs', () {
       final module = _DummyModule();
 
-      final a = ModuleRoute('/home', name: 'x', module: module);
-      final b = ModuleRoute('/home', name: 'y', module: module);
+      final a = ModuleRoute(path: '/home', name: 'x', module: module);
+      final b = ModuleRoute(path: '/home', name: 'y', module: module);
 
       expect(a, isNot(equals(b)));
     });
 
     test('should not be equal when module differs', () {
-      final a = ModuleRoute('/home', name: 'x', module: _DummyModule());
-      final b = ModuleRoute('/home', name: 'x', module: _DummyModule());
+      final a = ModuleRoute(path: '/home', name: 'x', module: _DummyModule());
+      final b = ModuleRoute(path: '/home', name: 'x', module: _DummyModule());
 
       expect(a, isNot(equals(b)));
     });
@@ -78,8 +78,8 @@ void main() {
       redirectFn(BuildContext context, GoRouterState state) => '/redirected';
 
       final route = ModuleRoute(
-        '/auth',
         name: 'auth',
+        path: '/auth',
         module: module,
         redirect: redirectFn,
       );
@@ -97,7 +97,7 @@ void main() {
     test('should assign fields correctly without optional values', () {
       final module = _DummyModule();
 
-      final route = ModuleRoute('/about', module: module);
+      final route = ModuleRoute(path: '/about', module: module);
 
       expect(route.path, '/about');
       expect(route.name, isNull);
@@ -113,8 +113,8 @@ void main() {
       final module = _DummyModule();
 
       final route = ModuleRoute(
-        '/secure',
         module: module,
+        path: '/secure',
         guards: [guard1, guard2],
       );
 
@@ -126,7 +126,7 @@ void main() {
 
     test('should default to empty guards list when not provided', () {
       final module = _DummyModule();
-      final route = ModuleRoute('/public', module: module);
+      final route = ModuleRoute(path: '/public', module: module);
 
       expect(route.guards, isEmpty);
     });
@@ -135,14 +135,14 @@ void main() {
       final module = _DummyModule();
 
       final a = ModuleRoute(
-        '/settings',
         module: module,
+        path: '/settings',
         guards: [_GuardAllow()],
       );
 
       final b = ModuleRoute(
-        '/settings',
         module: module,
+        path: '/settings',
         guards: [_GuardBlock()],
       );
 
@@ -153,7 +153,7 @@ void main() {
   group('ModuleRoute with RoutePatternModel', () {
     test('matches correct path and extracts parameters', () {
       final route = ModuleRoute(
-        '/product/:id',
+        path: '/product/:id',
         module: _DummyModule(),
         routePattern: RoutePatternModel.from(
           r'^/product/(\d+)$',
@@ -170,7 +170,7 @@ void main() {
 
     test('does not match invalid path', () {
       final route = ModuleRoute(
-        '/product/:id',
+        path: '/product/:id',
         module: _DummyModule(),
         routePattern: RoutePatternModel.from(
           r'^/product/(\d+)$',
@@ -187,8 +187,8 @@ void main() {
 
     test('supports multiple parameters in path', () {
       final route = ModuleRoute(
-        '/order/:orderId/item/:itemId',
         module: _DummyModule(),
+        path: '/order/:orderId/item/:itemId',
         routePattern: RoutePatternModel.from(
           r'^/order/(\d+)/item/(\w+)$',
           paramNames: ['orderId', 'itemId'],
@@ -206,8 +206,8 @@ void main() {
       final module = _DummyModule();
 
       final routeA = ModuleRoute(
-        '/user/:id',
         module: module,
+        path: '/user/:id',
         routePattern: RoutePatternModel.from(
           r'^/user/(\w+)$',
           paramNames: ['id'],
@@ -215,7 +215,7 @@ void main() {
       );
 
       final routeB = ModuleRoute(
-        '/user/:id',
+        path: '/user/:id',
         module: module,
         routePattern: RoutePatternModel.from(
           r'^/user/(\w+)$',
@@ -229,7 +229,7 @@ void main() {
 
     test('== returns false when routePatterns differ', () {
       final routeA = ModuleRoute(
-        '/user/:id',
+        path: '/user/:id',
         module: _DummyModule(),
         routePattern: RoutePatternModel.from(
           r'^/user/(\w+)$',
@@ -238,7 +238,7 @@ void main() {
       );
 
       final routeB = ModuleRoute(
-        '/user/:id',
+        path: '/user/:id',
         module: _DummyModule(),
         routePattern: RoutePatternModel.from(
           r'^/user/(\d+)$',
@@ -254,7 +254,7 @@ void main() {
 final class _DummyModule extends Module {
   @override
   List<IModule> get routes => [
-    ChildRoute('/', child: (_, __) => const Placeholder()),
+    ChildRoute(path: '/', child: (_, _) => const Placeholder()),
   ];
 }
 

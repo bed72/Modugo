@@ -11,11 +11,8 @@ void main() {
     router = GoRouter(
       initialLocation: '/',
       routes: [
-        GoRoute(path: '/', builder: (_, __) => const Text('Home')),
-        GoRoute(
-          path: '/profile/:id',
-          builder: (_, __) => const Text('Profile'),
-        ),
+        GoRoute(path: '/', builder: (_, _) => const Text('Home')),
+        GoRoute(path: '/profile/:id', builder: (_, _) => const Text('Profile')),
       ],
     );
   });

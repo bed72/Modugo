@@ -124,7 +124,7 @@ abstract class Module {
     required String effectivePath,
     required ChildRoute childRoute,
   }) {
-    _validPath(childRoute.path, 'ChildRoute');
+    _validPath(childRoute.path!, 'ChildRoute');
 
     return GoRoute(
       path: effectivePath,
@@ -182,7 +182,7 @@ abstract class Module {
           .whereType<ChildRoute>()
           .map(
             (route) =>
-                _createChild(effectivePath: route.path, childRoute: route),
+                _createChild(effectivePath: route.path!, childRoute: route),
           )
           .toList();
 
@@ -190,13 +190,13 @@ abstract class Module {
     final childRoute =
         module.module.routes
             .whereType<ChildRoute>()
-            .where((route) => _adjustRoute(route.path) == '/')
+            .where((route) => _adjustRoute(route.path!) == '/')
             .firstOrNull;
 
-    if (childRoute != null) _validPath(childRoute.path, 'ModuleRoute');
+    if (childRoute != null) _validPath(childRoute.path!, 'ModuleRoute');
 
     return GoRoute(
-      path: module.path,
+      path: module.path!,
       routes: module.module.configureRoutes(topLevel: false),
       name: module.name?.isNotEmpty == true ? module.name : null,
       parentNavigatorKey:
@@ -268,11 +268,11 @@ abstract class Module {
             route.routes
                 .map((routeOrModule) {
                   if (routeOrModule is ChildRoute) {
-                    _validPath(routeOrModule.path, 'ShellModuleRoute');
+                    _validPath(routeOrModule.path!, 'ShellModuleRoute');
 
                     return _createChild(
                       childRoute: routeOrModule,
-                      effectivePath: routeOrModule.path,
+                      effectivePath: routeOrModule.path!,
                     );
                   }
 

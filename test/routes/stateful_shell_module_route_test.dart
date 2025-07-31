@@ -22,12 +22,12 @@ void main() {
 
       final a = StatefulShellModuleRoute(
         builder: builder,
-        routes: [ModuleRoute('/home', module: sharedModule)],
+        routes: [ModuleRoute(path: '/home', module: sharedModule)],
       );
 
       final b = StatefulShellModuleRoute(
         builder: builder,
-        routes: [ModuleRoute('/home', module: sharedModule)],
+        routes: [ModuleRoute(path: '/home', module: sharedModule)],
       );
 
       expect(a, equals(b));
@@ -36,13 +36,13 @@ void main() {
 
     test('should not be equal if builder changes', () {
       final a = StatefulShellModuleRoute(
-        routes: [ModuleRoute('/home', module: _DummyModule())],
-        builder: (_, __, ___) => const Placeholder(),
+        builder: (_, _, ___) => const Placeholder(),
+        routes: [ModuleRoute(path: '/home', module: _DummyModule())],
       );
 
       final b = StatefulShellModuleRoute(
-        routes: [ModuleRoute('/home', module: _DummyModule())],
-        builder: (_, __, ___) => const Text('Different'),
+        builder: (_, _, ___) => const Text('Different'),
+        routes: [ModuleRoute(path: '/home', module: _DummyModule())],
       );
 
       expect(a, isNot(equals(b)));
@@ -53,7 +53,7 @@ void main() {
     test('should throw if route type is unsupported', () {
       final route = StatefulShellModuleRoute(
         routes: [_UnsupportedRoute()],
-        builder: (_, __, ___) => const Placeholder(),
+        builder: (_, _, ___) => const Placeholder(),
       );
 
       expect(
@@ -130,17 +130,21 @@ void main() {
   );
 
   test('should be equal even if guards differ in ModuleRoute', () {
-    builder(_, __, ___) => const Placeholder();
+    builder(_, _, ___) => const Placeholder();
     final sharedModule = _DummyModule();
 
-    final baseRoute = ModuleRoute('/home', module: sharedModule);
+    final baseRoute = ModuleRoute(path: '/home', module: sharedModule);
 
     final a = StatefulShellModuleRoute(builder: builder, routes: [baseRoute]);
 
     final b = StatefulShellModuleRoute(
       builder: builder,
       routes: [
-        ModuleRoute('/home', module: sharedModule, guards: [_BlockGuard()]),
+        ModuleRoute(
+          path: '/home',
+          module: sharedModule,
+          guards: [_BlockGuard()],
+        ),
       ],
     );
 
@@ -171,8 +175,8 @@ void main() {
   group('StatefulShellModuleRoute with RoutePatternModel', () {
     test('matches correct path and extracts parameters', () {
       final route = StatefulShellModuleRoute(
-        routes: [ModuleRoute('/home', module: _DummyModule())],
-        builder: (_, __, ___) => const Placeholder(),
+        builder: (_, _, ___) => const Placeholder(),
+        routes: [ModuleRoute(path: '/home', module: _DummyModule())],
         routePattern: RoutePatternModel.from(
           r'^/org/(\w+)/tab/home$',
           paramNames: ['orgId'],
@@ -189,7 +193,7 @@ void main() {
     test('returns false when path does not match pattern', () {
       final route = StatefulShellModuleRoute(
         routes: [],
-        builder: (_, __, ___) => const Placeholder(),
+        builder: (_, _, ___) => const Placeholder(),
         routePattern: RoutePatternModel.from(
           r'^/dashboard/(\w+)$',
           paramNames: ['section'],
@@ -204,7 +208,7 @@ void main() {
     });
 
     test('== returns true when routePattern and all fields match', () {
-      builder(_, __, ___) => const Placeholder();
+      builder(_, _, ___) => const Placeholder();
       final pattern = RoutePatternModel.from(r'^/shell$', paramNames: []);
 
       final routeA = StatefulShellModuleRoute(
@@ -225,12 +229,12 @@ void main() {
     test('== returns false when routePatterns differ', () {
       final routeA = StatefulShellModuleRoute(
         routes: [],
-        builder: (_, __, ___) => const Placeholder(),
+        builder: (_, _, ___) => const Placeholder(),
         routePattern: RoutePatternModel.from(r'^/a$', paramNames: []),
       );
       final routeB = StatefulShellModuleRoute(
         routes: [],
-        builder: (_, __, ___) => const Placeholder(),
+        builder: (_, _, ___) => const Placeholder(),
         routePattern: RoutePatternModel.from(r'^/b$', paramNames: []),
       );
 
@@ -241,8 +245,8 @@ void main() {
   group('StatefulShellModuleRoute - navigation key', () {
     test('toRoute generates StatefulShellRoute.indexedStack', () {
       final route = StatefulShellModuleRoute(
-        routes: [ModuleRoute('/', module: _DummyModule())],
-        builder: (_, __, ___) => const Placeholder(),
+        builder: (_, _, ___) => const Placeholder(),
+        routes: [ModuleRoute(path: '/', module: _DummyModule())],
       );
 
       final result = route.toRoute(path: '/', topLevel: true);
@@ -257,10 +261,10 @@ void main() {
         key: key,
         parentNavigatorKey: parentKey,
         restorationScopeId: 'shell-scope',
-        builder: (_, __, ___) => const Placeholder(),
+        builder: (_, _, ___) => const Placeholder(),
         routes: [
-          ModuleRoute('/', module: _DummyModule()),
-          ChildRoute('/profile', child: (_, __) => const Placeholder()),
+          ModuleRoute(path: '/', module: _DummyModule()),
+          ChildRoute(path: '/profile', child: (_, _) => const Placeholder()),
         ],
       );
 
@@ -300,14 +304,14 @@ final class _GuardB implements IGuard {
 final class _SimpleModule extends Module {
   @override
   List<IModule> get routes => [
-    ChildRoute('/', child: (_, __) => const Text('Profile')),
+    ChildRoute(path: '/', child: (_, _) => const Text('Profile')),
   ];
 }
 
 final class _DummyModule extends Module {
   @override
   List<IModule> get routes => [
-    ChildRoute('/home', child: (_, __) => const Placeholder()),
+    ChildRoute(path: '/home', child: (_, _) => const Placeholder()),
   ];
 }
 
@@ -315,9 +319,9 @@ final class _GuardedChildModule extends Module {
   @override
   List<IModule> get routes => [
     ChildRoute(
-      '/',
+      path: '/',
       guards: [_BlockGuard()],
-      child: (_, __) => const Placeholder(),
+      child: (_, _) => const Placeholder(),
       redirect: (context, state) => '/not-allowed',
     ),
   ];
@@ -327,8 +331,8 @@ final class _GuardedChildModuleWithRealPath extends Module {
   @override
   List<IModule> get routes => [
     ChildRoute(
-      '/guarded',
-      child: (_, __) => const SizedBox.shrink(),
+      path: '/guarded',
+      child: (_, _) => const SizedBox.shrink(),
       redirect: (context, state) => '/not-allowed',
     ),
   ];
@@ -338,9 +342,9 @@ final class _ModuleWithGuardedChild extends Module {
   @override
   List<IModule> get routes => [
     ChildRoute(
-      '/',
-      child: (_, __) => const Placeholder(),
+      path: '/',
       guards: [_ChildBlockGuard()],
+      child: (_, _) => const Placeholder(),
     ),
   ];
 }
@@ -349,9 +353,9 @@ final class _ModuleWithMultipleGuards extends Module {
   @override
   List<IModule> get routes => [
     ChildRoute(
-      '/',
-      child: (_, __) => const Placeholder(),
+      path: '/',
       guards: [_GuardA(), _GuardB()],
+      child: (_, _) => const Placeholder(),
     ),
   ];
 }
@@ -360,8 +364,8 @@ final class _StatefulShellWithChildGuardModule extends Module {
   @override
   List<IModule> get routes => [
     StatefulShellModuleRoute(
-      builder: (_, __, shell) => shell,
-      routes: [ModuleRoute('/home', module: _ModuleWithGuardedChild())],
+      builder: (_, _, shell) => shell,
+      routes: [ModuleRoute(path: '/home', module: _ModuleWithGuardedChild())],
     ),
   ];
 }
@@ -370,8 +374,8 @@ final class _StatefulShellWithMultipleGuardsModule extends Module {
   @override
   List<IModule> get routes => [
     StatefulShellModuleRoute(
-      builder: (_, __, shell) => shell,
-      routes: [ModuleRoute('/home', module: _ModuleWithMultipleGuards())],
+      builder: (_, _, shell) => shell,
+      routes: [ModuleRoute(path: '/home', module: _ModuleWithMultipleGuards())],
     ),
   ];
 }
@@ -380,10 +384,10 @@ final class _StatefulShellGuardedModule extends Module {
   @override
   List<IModule> get routes => [
     StatefulShellModuleRoute(
-      builder: (_, __, shell) => shell,
+      builder: (_, _, shell) => shell,
       routes: [
-        ModuleRoute('/home', module: _GuardedChildModule()),
-        ModuleRoute('/profile', module: _SimpleModule()),
+        ModuleRoute(path: '/home', module: _GuardedChildModule()),
+        ModuleRoute(path: '/profile', module: _SimpleModule()),
       ],
     ),
   ];
@@ -393,10 +397,10 @@ final class _StatefulShellGuardedModuleWithRealPath extends Module {
   @override
   List<IModule> get routes => [
     StatefulShellModuleRoute(
-      builder: (_, __, shell) => shell,
+      builder: (_, _, shell) => shell,
       routes: [
         ModuleRoute(
-          '/guarded',
+          path: '/guarded',
           guards: [_BlockGuard()],
           module: _GuardedChildModuleWithRealPath(),
         ),

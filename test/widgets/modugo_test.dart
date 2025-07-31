@@ -53,8 +53,8 @@ void main() {
 final class _DummyModule extends Module {
   @override
   List<IModule> get routes => [
-    ChildRoute('/', child: (_, __) => const Placeholder()),
-    ChildRoute('/details', child: (_, __) => const Placeholder()),
+    ChildRoute(path: '/', child: (_, _) => const Placeholder()),
+    ChildRoute(path: '/details', child: (_, _) => const Placeholder()),
   ];
 }
 
@@ -64,7 +64,11 @@ final class _DummyShellModule extends Module {
     StatefulShellModuleRoute(
       builder: (_, _, shell) => _DummyShellWidget(shell: shell),
       routes: [
-        ModuleRoute('/', name: 'home-module', module: _InnerShellModule()),
+        ModuleRoute(
+          path: '/',
+          name: 'home-module',
+          module: _InnerShellModule(),
+        ),
       ],
     ),
   ];
@@ -74,7 +78,7 @@ final class _InnerShellModule extends Module {
   @override
   List<IModule> get routes => [
     ChildRoute(
-      '/',
+      path: '/',
       name: 'home-route',
       child: (_, _) => _DummyScree('Home'),
       routePattern: RoutePatternModel.from(r'^/(\?(origin=fromSignup)?)?$'),
@@ -82,7 +86,7 @@ final class _InnerShellModule extends Module {
   ];
 }
 
-class _DummyShellWidget extends StatelessWidget {
+final class _DummyShellWidget extends StatelessWidget {
   final StatefulNavigationShell shell;
 
   const _DummyShellWidget({required this.shell});
@@ -93,7 +97,7 @@ class _DummyShellWidget extends StatelessWidget {
   }
 }
 
-class _DummyScree extends StatelessWidget {
+final class _DummyScree extends StatelessWidget {
   final String label;
 
   const _DummyScree(this.label);

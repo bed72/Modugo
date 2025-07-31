@@ -14,19 +14,19 @@ void main() {
     test('should be equal when all compared fields are equal', () {
       final key = GlobalKey<NavigatorState>();
       final a = ChildRoute(
-        '/home',
         name: 'home',
+        path: '/home',
         parentNavigatorKey: key,
         transition: TypeTransition.fade,
-        child: (_, __) => const Placeholder(),
+        child: (_, _) => const Placeholder(),
       );
 
       final b = ChildRoute(
-        '/home',
         name: 'home',
+        path: '/home',
         parentNavigatorKey: key,
         transition: TypeTransition.fade,
-        child: (_, __) => const Placeholder(),
+        child: (_, _) => const Placeholder(),
       );
 
       expect(a, equals(b));
@@ -34,22 +34,28 @@ void main() {
     });
 
     test('should not be equal if path differs', () {
-      final route1 = ChildRoute('/a', child: (_, __) => const Placeholder());
-      final route2 = ChildRoute('/b', child: (_, __) => const Placeholder());
+      final route1 = ChildRoute(
+        path: '/a',
+        child: (_, _) => const Placeholder(),
+      );
+      final route2 = ChildRoute(
+        path: '/b',
+        child: (_, _) => const Placeholder(),
+      );
 
       expect(route1, isNot(equals(route2)));
     });
 
     test('should not be equal if name differs', () {
       final route1 = ChildRoute(
-        '/x',
+        path: '/x',
         name: 'one',
-        child: (_, __) => const Placeholder(),
+        child: (_, _) => const Placeholder(),
       );
       final route2 = ChildRoute(
-        '/x',
+        path: '/x',
         name: 'two',
-        child: (_, __) => const Placeholder(),
+        child: (_, _) => const Placeholder(),
       );
 
       expect(route1, isNot(equals(route2)));
@@ -57,14 +63,14 @@ void main() {
 
     test('should not be equal if transition differs', () {
       final route1 = ChildRoute(
-        '/x',
+        path: '/x',
         transition: TypeTransition.fade,
-        child: (_, __) => const Placeholder(),
+        child: (_, _) => const Placeholder(),
       );
       final route2 = ChildRoute(
-        '/x',
+        path: '/x',
         transition: TypeTransition.slideLeft,
-        child: (_, __) => const Placeholder(),
+        child: (_, _) => const Placeholder(),
       );
 
       expect(route1, isNot(equals(route2)));
@@ -72,14 +78,14 @@ void main() {
 
     test('should not be equal if navigatorKey differs', () {
       final route1 = ChildRoute(
-        '/x',
+        path: '/x',
         parentNavigatorKey: GlobalKey(),
-        child: (_, __) => const Placeholder(),
+        child: (_, _) => const Placeholder(),
       );
       final route2 = ChildRoute(
-        '/x',
+        path: '/x',
         parentNavigatorKey: GlobalKey(),
-        child: (_, __) => const Placeholder(),
+        child: (_, _) => const Placeholder(),
       );
 
       expect(route1, isNot(equals(route2)));
@@ -90,15 +96,15 @@ void main() {
     test('should assign all optional fields correctly', () {
       final key = GlobalKey<NavigatorState>();
       final route = ChildRoute(
-        '/details/:id',
         name: 'details',
-        transition: TypeTransition.fade,
+        path: '/details/:id',
         parentNavigatorKey: key,
+        transition: TypeTransition.fade,
         onExit: (context, state) async => true,
         redirect: (context, state) async => '/login',
         pageBuilder:
             (context, state) => const MaterialPage(child: Text('Page')),
-        child: (_, __) => const Placeholder(),
+        child: (_, _) => const Placeholder(),
       );
 
       expect(route.name, 'details');
@@ -112,7 +118,10 @@ void main() {
     });
 
     test('should handle minimal constructor with only path and child', () {
-      final route = ChildRoute('/home', child: (_, __) => const Placeholder());
+      final route = ChildRoute(
+        path: '/home',
+        child: (_, _) => const Placeholder(),
+      );
 
       expect(route.path, '/home');
       expect(route.name, isNull);
@@ -130,9 +139,9 @@ void main() {
       final guard2 = _GuardBlock();
 
       final route = ChildRoute(
-        '/secure',
+        path: '/secure',
         guards: [guard1, guard2],
-        child: (_, __) => const Placeholder(),
+        child: (_, _) => const Placeholder(),
       );
 
       expect(route.guards, isNotNull);
@@ -142,22 +151,25 @@ void main() {
     });
 
     test('should default to empty guards list when not provided', () {
-      final route = ChildRoute('/open', child: (_, __) => const Placeholder());
+      final route = ChildRoute(
+        path: '/open',
+        child: (_, _) => const Placeholder(),
+      );
 
       expect(route.guards, isEmpty);
     });
 
     test('should not affect equality when guards differ', () {
       final a = ChildRoute(
-        '/route',
+        path: '/route',
         guards: [_GuardAllow()],
-        child: (_, __) => const Placeholder(),
+        child: (_, _) => const Placeholder(),
       );
 
       final b = ChildRoute(
-        '/route',
+        path: '/route',
         guards: [_GuardBlock()],
-        child: (_, __) => const Placeholder(),
+        child: (_, _) => const Placeholder(),
       );
 
       expect(a, equals(b));
@@ -167,12 +179,12 @@ void main() {
   group('ChildRoute with RoutePatternModel', () {
     test('matches correct path and extracts parameter', () {
       final route = ChildRoute(
-        '/product/:id',
+        path: '/product/:id',
         routePattern: RoutePatternModel.from(
           r'^/product/(\d+)$',
           paramNames: ['id'],
         ),
-        child: (_, __) => const Placeholder(),
+        child: (_, _) => const Placeholder(),
       );
 
       final pattern = route.routePattern!;
@@ -184,12 +196,12 @@ void main() {
 
     test('does not match incorrect path', () {
       final route = ChildRoute(
-        '/product/:id',
+        path: '/product/:id',
         routePattern: RoutePatternModel.from(
           r'^/product/(\d+)$',
           paramNames: ['id'],
         ),
-        child: (_, __) => const Placeholder(),
+        child: (_, _) => const Placeholder(),
       );
 
       final pattern = route.routePattern!;
@@ -201,12 +213,12 @@ void main() {
 
     test('supports multiple parameters', () {
       final route = ChildRoute(
-        '/order/:orderId/item/:itemId',
+        path: '/order/:orderId/item/:itemId',
         routePattern: RoutePatternModel.from(
           r'^/order/(\d+)/item/(\w+)$',
           paramNames: ['orderId', 'itemId'],
         ),
-        child: (_, __) => const Placeholder(),
+        child: (_, _) => const Placeholder(),
       );
 
       final pattern = route.routePattern!;
@@ -218,9 +230,9 @@ void main() {
 
     test('matches route with no parameters and returns empty map', () {
       final route = ChildRoute(
-        '/noparams',
+        path: '/noparams',
         routePattern: RoutePatternModel.from(r'^/noparams$'),
-        child: (_, __) => const Placeholder(),
+        child: (_, _) => const Placeholder(),
       );
 
       final pattern = route.routePattern!;

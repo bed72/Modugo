@@ -378,7 +378,7 @@ final class _RootModule extends Module {
   @override
   List<IModule> get routes => [
     ChildRoute(
-      '/profile',
+      path: '/profile',
       name: 'profile-root',
       child: (context, state) => const Placeholder(),
     ),

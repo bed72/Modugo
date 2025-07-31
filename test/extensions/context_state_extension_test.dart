@@ -17,7 +17,7 @@ void main() {
           },
         ),
       ],
-      redirect: (_, __) => null,
+      redirect: (_, _) => null,
     );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));

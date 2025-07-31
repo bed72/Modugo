@@ -109,7 +109,7 @@ final class StatefulShellModuleRoute implements IModule {
                   builder: route.child,
                   redirect: route.redirect,
                   name: route.name ?? 'branch_$index',
-                  path: route.path.isEmpty ? '/' : route.path,
+                  path: route.path!.isEmpty ? '/' : route.path!,
                   pageBuilder:
                       route.pageBuilder != null
                           ? (context, state) =>

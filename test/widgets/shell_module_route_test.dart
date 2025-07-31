@@ -8,9 +8,9 @@ import 'package:modugo/src/routes/shell_module_route.dart';
 void main() {
   testWidgets('ShellModuleRoute builds shell and nested route', (tester) async {
     final homeRoute = ChildRoute(
-      '/home',
       name: 'home',
-      child: (_, __) => const Text('Home View'),
+      path: '/home',
+      child: (_, _) => const Text('Home View'),
     );
 
     final shell = ShellModuleRoute(
@@ -43,7 +43,7 @@ void main() {
     await tester.pumpWidget(MaterialApp.router(routerConfig: goRouter));
     await tester.pumpAndSettle();
 
-    expect(find.text('Shell Wrapper'), findsOneWidget);
     expect(find.text('Home View'), findsOneWidget);
+    expect(find.text('Shell Wrapper'), findsOneWidget);
   });
 }

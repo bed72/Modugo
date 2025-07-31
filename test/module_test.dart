@@ -146,8 +146,8 @@ void main() {
     test('redirects immediately if any guard blocks', () async {
       final module = _SimpleChildModule();
       final guardedRoute = ModuleRoute(
-        '/guarded',
         module: module,
+        path: '/guarded',
         guards: [_GuardAllow(), _GuardBlock('/denied')],
       );
 
@@ -166,10 +166,10 @@ void main() {
       final module = _SimpleChildModule();
 
       final guardedRoute = ModuleRoute(
-        '/guarded',
         module: module,
+        path: '/guarded',
         guards: [_GuardAllow()],
-        redirect: (_, __) => '/fallback',
+        redirect: (_, _) => '/fallback',
       );
 
       final parent = _CustomParentModule([guardedRoute]);
@@ -190,8 +190,8 @@ void main() {
         final parent = _ParentModuleWithModuleRoute(child: module);
 
         final route = ModuleRoute(
-          '/guarded',
           module: module,
+          path: '/guarded',
           guards: [_GuardAllow()],
         );
 
@@ -211,8 +211,8 @@ void main() {
       final parent = _ParentModuleWithModuleRoute(child: module);
 
       final route = ModuleRoute(
-        '/guarded',
         module: module,
+        path: '/guarded',
         guards: [_GuardAllow()],
       );
 
@@ -242,12 +242,12 @@ void main() {
 
     test('matches ChildRoute with routePattern', () {
       final route = ChildRoute(
-        '/user/:id',
+        path: '/user/:id',
         routePattern: RoutePatternModel.from(
           r'^/user/(\d+)$',
           paramNames: ['id'],
         ),
-        child: (_, __) => const Placeholder(),
+        child: (_, _) => const Placeholder(),
       );
 
       final root = _ModuleWith([route]);
@@ -262,8 +262,8 @@ void main() {
     test('matches ModuleRoute with routePattern', () {
       final nested = _ModuleWith([]);
       final route = ModuleRoute(
-        '/profile',
         module: nested,
+        path: '/profile',
         routePattern: RoutePatternModel.from(r'^/profile$', paramNames: []),
       );
 
@@ -278,7 +278,7 @@ void main() {
     test('matches ShellModuleRoute with routePattern', () {
       final shell = ShellModuleRoute(
         routes: [],
-        builder: (_, __, ___) => const Placeholder(),
+        builder: (_, _, ___) => const Placeholder(),
         routePattern: RoutePatternModel.from(r'^/shell$', paramNames: []),
       );
 
@@ -293,7 +293,7 @@ void main() {
     test('matches StatefulShellModuleRoute with routePattern', () {
       final shell = StatefulShellModuleRoute(
         routes: [],
-        builder: (_, __, ___) => const Placeholder(),
+        builder: (_, _, ___) => const Placeholder(),
         routePattern: RoutePatternModel.from(
           r'^/tabs/(home|settings)$',
           paramNames: ['tab'],
@@ -338,7 +338,11 @@ final class _InnerModule extends Module {
 
   @override
   List<IModule> get routes => [
-    ChildRoute('/home', name: 'home', child: (_, __) => const Text('Home')),
+    ChildRoute(
+      name: 'home',
+      path: '/home',
+      child: (_, _) => const Text('Home'),
+    ),
   ];
 }
 
@@ -351,9 +355,9 @@ final class _ModuleWithBranch extends Module {
   @override
   List<IModule> get routes => [
     ChildRoute(
-      'with-branch',
+      path: 'with-branch',
       name: 'with-branch-route',
-      child: (_, __) => const Placeholder(),
+      child: (_, _) => const Placeholder(),
     ),
   ];
 }
@@ -365,7 +369,7 @@ final class _RootModule extends Module {
   @override
   List<IModule> get routes => [
     ChildRoute(
-      '/profile',
+      path: '/profile',
       name: 'profile-root',
       child: (context, state) => const Placeholder(),
     ),
@@ -375,14 +379,18 @@ final class _RootModule extends Module {
 final class _ModuleWithDash extends Module {
   @override
   List<ChildRoute> get routes => [
-    ChildRoute('/', name: 'root', child: (_, __) => const Placeholder()),
+    ChildRoute(path: '/', name: 'root', child: (_, _) => const Placeholder()),
   ];
 }
 
 final class _ModuleWithSettings extends Module {
   @override
   List<IModule> get routes => [
-    ChildRoute('/', name: 'settings', child: (_, __) => const Placeholder()),
+    ChildRoute(
+      path: '/',
+      name: 'settings',
+      child: (_, _) => const Placeholder(),
+    ),
   ];
 }
 
@@ -392,8 +400,8 @@ final class _ModuleWithStatefulShell extends Module {
     StatefulShellModuleRoute(
       builder: (ctx, state, shell) => const Placeholder(),
       routes: [
-        ModuleRoute('/', module: _ModuleWithDash()),
-        ModuleRoute('/settings', module: _ModuleWithSettings()),
+        ModuleRoute(path: '/', module: _ModuleWithDash()),
+        ModuleRoute(path: '/settings', module: _ModuleWithSettings()),
       ],
     ),
   ];
@@ -403,10 +411,10 @@ final class _ModuleWithOnExitFalse extends Module {
   @override
   List<IModule> get routes => [
     ChildRoute(
-      '/some',
+      path: '/some',
       name: 'on-exit-false',
-      child: (_, __) => const Text('Some'),
-      onExit: (_, __) async => false,
+      onExit: (_, _) async => false,
+      child: (_, _) => const Text('Some'),
     ),
   ];
 }
@@ -416,8 +424,8 @@ final class _ModuleWithShell extends Module {
   List<IModule> get routes => [
     ShellModuleRoute(
       binds: [(i) => i.addSingleton<_Service>((_) => _Service())],
-      builder: (_, __, child) => Container(child: child),
-      routes: [ChildRoute('tab1', child: (_, __) => const Placeholder())],
+      builder: (_, _, child) => Container(child: child),
+      routes: [ChildRoute(path: 'tab1', child: (_, _) => const Placeholder())],
     ),
   ];
 }
@@ -425,7 +433,7 @@ final class _ModuleWithShell extends Module {
 final class _ModuleWithNoRootChild extends Module {
   @override
   List<IModule> get routes => [
-    ChildRoute('non-root', child: (_, __) => const Placeholder()),
+    ChildRoute(path: 'non-root', child: (_, _) => const Placeholder()),
   ];
 }
 
@@ -434,7 +442,7 @@ final class _ParentModuleWithModuleRoute extends Module {
   _ParentModuleWithModuleRoute({required this.child});
 
   @override
-  List<IModule> get routes => [ModuleRoute('/child', module: child)];
+  List<IModule> get routes => [ModuleRoute(path: '/child', module: child)];
 }
 
 final class _CustomParentModule extends Module {
@@ -449,7 +457,7 @@ final class _CustomParentModule extends Module {
 final class _SimpleChildModule extends Module {
   @override
   List<IModule> get routes => [
-    ChildRoute('/', child: (_, __) => const Text('Page')),
+    ChildRoute(path: '/', child: (_, _) => const Text('Page')),
   ];
 }
 
@@ -457,9 +465,9 @@ final class _SimpleChildModuleWithRedirect extends Module {
   @override
   List<IModule> get routes => [
     ChildRoute(
-      '/',
-      child: (_, __) => const Text('Page'),
-      redirect: (_, __) => '/child-redirect',
+      path: '/',
+      child: (_, _) => const Text('Page'),
+      redirect: (_, _) => '/child-redirect',
     ),
   ];
 }

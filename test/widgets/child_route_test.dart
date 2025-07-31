@@ -9,17 +9,17 @@ void main() {
     tester,
   ) async {
     final childRoute = ChildRoute(
-      '/home',
       name: 'home',
-      child: (_, __) => const _DummyScreen('Home Page'),
+      path: '/home',
+      child: (_, _) => const _DummyScreen('Home Page'),
     );
 
     final router = GoRouter(
       initialLocation: '/home',
       routes: [
         GoRoute(
-          path: childRoute.path,
           name: childRoute.name,
+          path: childRoute.path!,
           builder: childRoute.child,
         ),
       ],

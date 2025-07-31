@@ -11,20 +11,20 @@ void main() {
         GoRoute(
           path: '/home',
           name: 'home',
-          builder: (_, __) => const _Dummy('home'),
+          builder: (_, _) => const _Dummy('home'),
         ),
         GoRoute(
           path: '/produto/:id',
           name: 'produto',
-          builder: (_, __) => const _Dummy('produto'),
+          builder: (_, _) => const _Dummy('produto'),
         ),
         ShellRoute(
-          builder: (_, __, child) => child,
+          builder: (_, _, child) => child,
           routes: [
             GoRoute(
               path: '/shell/nested',
               name: 'nested',
-              builder: (_, __) => const _Dummy('nested'),
+              builder: (_, _) => const _Dummy('nested'),
             ),
           ],
         ),

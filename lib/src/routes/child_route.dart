@@ -38,7 +38,8 @@ import 'package:modugo/src/routes/models/route_pattern_model.dart';
 @immutable
 final class ChildRoute implements IModule {
   /// The relative path of this route, e.g. `'/'` or `'/product/:id'`.
-  final String path;
+  /// If not passed or null the default value is '/'
+  final String? path;
 
   /// Optional name to support named navigation.
   final String? name;
@@ -88,17 +89,17 @@ final class ChildRoute implements IModule {
   /// Creates a [ChildRoute] with the required [path] and [child] builder.
   ///
   /// Additional behavior like transition, guard, or redirection can be configured via optional parameters.
-  const ChildRoute(
-    this.path, {
+  const ChildRoute({
     required this.child,
     this.name,
     this.onExit,
     this.redirect,
     this.transition,
+    this.path = '/',
     this.pageBuilder,
     this.routePattern,
-    this.parentNavigatorKey,
     this.guards = const [],
+    this.parentNavigatorKey,
   });
 
   @override

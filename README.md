@@ -97,8 +97,8 @@ final class AppModule extends Module {
 
   @override
   List<IModule> get routes => [
-    ModuleRoute('/', module: HomeModule()),
-    ModuleRoute('/profile', module: ProfileModule()),
+    ModuleRoute(path: '/', module: HomeModule()),
+    ModuleRoute(path: '/profile', module: ProfileModule()),
   ];
 }
 ```
@@ -124,7 +124,7 @@ final class HomeModule extends Module {
 
   @override
   List<IModule> get routes => [
-    ChildRoute('/', child: (_, __) => const HomePage()),
+    ChildRoute(path: '/', child: (_, _) => const HomePage()),
   ];
 }
 ```
@@ -171,13 +171,13 @@ Modugo.configure(
 ### `ChildRoute`
 
 ```dart
-ChildRoute('/home', child: (context, state) => const HomePage()),
+ChildRoute(path: '/home', child: (context, state) => const HomePage()),
 ```
 
 ### `ModuleRoute`
 
 ```dart
-ModuleRoute('/profile', module: ProfileModule()),
+ModuleRoute(path: '/profile', module: ProfileModule()),
 ```
 
 ### `ShellModuleRoute`
@@ -196,9 +196,9 @@ final class HomeModule extends Module {
     ShellModuleRoute(
       builder: (context, state, child) => PageWidget(child: child),
       routes: [
-        ChildRoute('/user', child: (_, __) => const UserPage()),
-        ChildRoute('/config', child: (_, __) => const ConfigPage()),
-        ChildRoute('/orders', child: (_, __) => const OrdersPage()),
+        ChildRoute(path: '/user', child: (_, _) => const UserPage()),
+        ChildRoute(path: '/config', child: (_, _) => const ConfigPage()),
+        ChildRoute(path: '/orders', child: (_, _) => const OrdersPage()),
       ],
     ),
   ];
@@ -300,9 +300,9 @@ Modugo supports a powerful matching system using regex-based patterns. This allo
 
 ```dart
 ChildRoute(
-  '/user/:id',
+  path: '/user/:id',
   routePattern: RoutePatternModel.from(r'^/user/(\d+)\$', paramNames: ['id']),
-  child: (_, __) => const UserPage(),
+  child: (_, _) => const UserPage(),
 )
 ```
 
@@ -425,9 +425,9 @@ class AuthGuard implements IGuard {
 
 ```dart
 ChildRoute(
-  '/profile',
-  child: (_, __) => const ProfilePage(),
+  path: '/profile',
   guards: [AuthGuard()],
+  child: (_, _) => const ProfilePage(),
 )
 ```
 
@@ -435,7 +435,7 @@ Or:
 
 ```dart
 ModuleRoute(
-  '/admin',
+  path: '/admin',
   module: AdminModule(),
   guards: [AdminGuard()],
 )
@@ -445,10 +445,10 @@ Guards are also supported inside `ShellModuleRoute` and `StatefulShellModuleRout
 
 ```dart
 StatefulShellModuleRoute(
-  builder: (_, __, shell) => shell,
+  builder: (_, _, shell) => shell,
   routes: [
-    ModuleRoute('/settings', module: SettingsModule(), guards: [SettingsGuard()]),
-    ModuleRoute('/account', module: AccountModule()),
+    ModuleRoute(path: '/account', module: AccountModule()),
+    ModuleRoute(path: '/settings', module: SettingsModule(), guards: [SettingsGuard()]),
   ],
 )
 ```
@@ -484,7 +484,7 @@ final class HomeModule extends Module {
 
   @override
   List<IModule> get routes => [
-    ChildRoute('/home', child: (context, state) => const HomePage()),
+    ChildRoute(path: '/home', child: (context, state) => const HomePage()),
   ];
 }
 ```

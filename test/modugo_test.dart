@@ -93,9 +93,9 @@ final class _InnerModule extends Module {
   @override
   List<IModule> get routes => [
     ChildRoute(
-      '/',
+      path: '/',
       name: 'home',
-      child: (context, __) {
+      child: (context, _) {
         final service = context.read<_Service>();
 
         return Text('value: ${service.value}');

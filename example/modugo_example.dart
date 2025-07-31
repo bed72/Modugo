@@ -40,7 +40,7 @@ final class AppWidget extends StatelessWidget {
 /// This module includes [HomeModule] as its child.
 final class AppModule extends Module {
   @override
-  List<IModule> get routes => [ModuleRoute('/', module: HomeModule())];
+  List<IModule> get routes => [ModuleRoute(path: '/', module: HomeModule())];
 }
 
 /// The home module that handles feature-specific dependencies and routes.
@@ -58,7 +58,7 @@ final class HomeModule extends Module {
   @override
   List<IModule> get routes => [
     ChildRoute(
-      '/',
+      path: '/',
       name: 'home-route',
       child: (context, _) {
         final controller = context.read<HomeController>();

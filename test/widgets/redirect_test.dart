@@ -35,17 +35,17 @@ final class _RedirectingModule extends Module {
   @override
   List<IModule> get routes => [
     ModuleRoute(
-      '/home',
+      path: '/home',
       module: _DummyModule(),
       redirect: (context, state) => '/landing',
     ),
-    ChildRoute('/landing', child: (_, __) => const Text('Landing')),
+    ChildRoute(path: '/landing', child: (_, _) => const Text('Landing')),
   ];
 }
 
 class _DummyModule extends Module {
   @override
   List<IModule> get routes => [
-    ChildRoute('/', child: (_, __) => const Text('Should never reach')),
+    ChildRoute(path: '/', child: (_, _) => const Text('Should never reach')),
   ];
 }

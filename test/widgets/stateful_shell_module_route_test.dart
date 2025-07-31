@@ -32,7 +32,7 @@ void main() {
   ) async {
     final shellRoute = StatefulShellModuleRoute(
       routes: [_UnsupportedRoute()],
-      builder: (_, __, ___) => const Placeholder(),
+      builder: (_, _, ___) => const Placeholder(),
     );
 
     expect(
@@ -48,13 +48,13 @@ void main() {
       initialLocation: '/cart',
       routes: [
         StatefulShellRoute.indexedStack(
-          builder: (_, __, shell) => Scaffold(body: shell),
+          builder: (_, _, shell) => Scaffold(body: shell),
           branches: [
             StatefulShellBranch(
               routes: [
                 GoRoute(
                   path: '/',
-                  builder: (_, __) => const Placeholder(key: Key('home')),
+                  builder: (_, _) => const Placeholder(key: Key('home')),
                 ),
               ],
             ),
@@ -62,7 +62,7 @@ void main() {
               routes: [
                 GoRoute(
                   path: '/cart',
-                  builder: (_, __) => const Placeholder(key: Key('cart')),
+                  builder: (_, _) => const Placeholder(key: Key('cart')),
                 ),
               ],
             ),
@@ -79,10 +79,18 @@ void main() {
 
   testWidgets('navigates between branches correctly', (tester) async {
     final route = StatefulShellModuleRoute(
-      builder: (_, __, shell) => Scaffold(key: const Key('shell'), body: shell),
+      builder: (_, _, shell) => Scaffold(key: const Key('shell'), body: shell),
       routes: [
-        ChildRoute('/', name: 'home', child: (_, __) => const Text('Home')),
-        ChildRoute('/cart', name: 'cart', child: (_, __) => const Text('Cart')),
+        ChildRoute(
+          path: '/',
+          name: 'home',
+          child: (_, _) => const Text('Home'),
+        ),
+        ChildRoute(
+          name: 'cart',
+          path: '/cart',
+          child: (_, _) => const Text('Cart'),
+        ),
       ],
     );
 
@@ -115,20 +123,20 @@ void main() {
           branches: [
             StatefulShellBranch(
               routes: [
-                GoRoute(path: '/', builder: (_, __) => const Text('Home')),
+                GoRoute(path: '/', builder: (_, _) => const Text('Home')),
               ],
             ),
             StatefulShellBranch(
               routes: [
                 GoRoute(
                   path: '/page',
-                  builder: (_, __) => const Text('Inner Page'),
+                  builder: (_, _) => const Text('Inner Page'),
                 ),
               ],
             ),
           ],
           builder:
-              (_, __, shell) => Scaffold(
+              (_, _, shell) => Scaffold(
                 body: Column(
                   children: [const Text('Shell UI'), Expanded(child: shell)],
                 ),
@@ -154,7 +162,7 @@ void main() {
     tester,
   ) async {
     final shellRoute = StatefulShellModuleRoute(
-      builder: (_, __, shell) {
+      builder: (_, _, shell) {
         return Scaffold(
           body: Column(
             children: [const Text('Shell UI'), Expanded(child: shell)],
@@ -162,14 +170,18 @@ void main() {
         );
       },
       routes: [
-        ChildRoute('/', name: 'home', child: (_, __) => const Text('Home')),
-        ModuleRoute('/', module: _ProductModule()),
+        ChildRoute(
+          path: '/',
+          name: 'home',
+          child: (_, _) => const Text('Home'),
+        ),
+        ModuleRoute(path: '/', module: _ProductModule()),
       ],
     );
 
     final router = GoRouter(
       initialLocation: '/',
-      errorBuilder: (_, __) => const Text('ERRO NA ROTA'),
+      errorBuilder: (_, _) => const Text('ERRO NA ROTA'),
       routes: [shellRoute.toRoute(path: '', topLevel: true)],
     );
 
@@ -188,7 +200,7 @@ void main() {
 
   testWidgets('navigate to ModuleRoute route inside shell', (tester) async {
     final shellRoute = StatefulShellModuleRoute(
-      builder: (_, __, shell) {
+      builder: (_, _, shell) {
         return Scaffold(
           body: Column(
             children: [const Text('Shell UI'), Expanded(child: shell)],
@@ -197,17 +209,17 @@ void main() {
       },
       routes: [
         ChildRoute(
-          '/',
+          path: '/',
           name: 'child',
-          child: (_, __) => const Text('Child Branch'),
+          child: (_, _) => const Text('Child Branch'),
         ),
-        ModuleRoute('/', module: _DummyModule()),
+        ModuleRoute(path: '/', module: _DummyModule()),
       ],
     );
 
     final router = GoRouter(
       initialLocation: '/',
-      errorBuilder: (_, __) => const Text('ERRO NA ROTA'),
+      errorBuilder: (_, _) => const Text('ERRO NA ROTA'),
       routes: [shellRoute.toRoute(path: '', topLevel: true)],
     );
 
@@ -231,9 +243,9 @@ final class _DummyModule extends Module {
   @override
   List<IModule> get routes => [
     ChildRoute(
-      '/shell/page',
       name: 'page',
-      child: (_, __) => const Text('Inner Page'),
+      path: '/shell/page',
+      child: (_, _) => const Text('Inner Page'),
     ),
   ];
 }
@@ -242,13 +254,13 @@ final class _ProductModule extends Module {
   @override
   List<IModule> get routes => [
     ChildRoute(
-      '/',
+      path: '/',
       name: 'safe-root-route',
-      child: (_, __) => const SizedBox.shrink(),
+      child: (_, _) => const SizedBox.shrink(),
     ),
     ChildRoute(
-      '/:name/dp/:webcode',
       name: 'produto_details',
+      path: '/:name/dp/:webcode',
       child: (_, state) {
         final name = state.pathParameters['name'];
         final webcode = state.pathParameters['webcode'];
@@ -279,7 +291,7 @@ final class _ShellWidget extends StatelessWidget {
                 routes: [
                   GoRoute(
                     path: '/',
-                    builder: (_, __) => const Placeholder(key: Key('home')),
+                    builder: (_, _) => const Placeholder(key: Key('home')),
                   ),
                 ],
               ),
@@ -287,7 +299,7 @@ final class _ShellWidget extends StatelessWidget {
                 routes: [
                   GoRoute(
                     path: '/cart',
-                    builder: (_, __) => const Placeholder(key: Key('cart')),
+                    builder: (_, _) => const Placeholder(key: Key('cart')),
                   ),
                 ],
               ),

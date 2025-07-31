@@ -40,7 +40,8 @@ import 'package:modugo/src/routes/models/route_pattern_model.dart';
 @immutable
 final class ModuleRoute implements IModule {
   /// The path at which this module is mounted (e.g. `/shop`, `/admin/users`).
-  final String path;
+  /// If not passed or null the default value is '/'
+  final String? path;
 
   /// Optional name for named navigation or route identification.
   final String? name;
@@ -72,11 +73,11 @@ final class ModuleRoute implements IModule {
   redirect;
 
   /// Creates a [ModuleRoute] that links a [path] to a nested [module].
-  const ModuleRoute(
-    this.path, {
+  const ModuleRoute({
     required this.module,
     this.name,
     this.redirect,
+    this.path = '/',
     this.routePattern,
     this.guards = const [],
     this.parentNavigatorKey,
