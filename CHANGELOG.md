@@ -1,3 +1,7 @@
+## [2.7.0] - 2025-07-31
+
+- :fire: fix path in child route and module route
+
 ## [2.6.2] - 2025-07-29
 
 - :fire: fix listener route
