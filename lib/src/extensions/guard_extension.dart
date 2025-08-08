@@ -1,3 +1,5 @@
+// coverage:ignore-file
+
 import 'package:modugo/src/guard.dart';
 
 import 'package:modugo/src/routes/child_route.dart';

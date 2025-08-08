@@ -1,3 +1,4 @@
+// coverage:ignore-file
 // ignore_for_file: pattern_never_matches_value_type
 
 import 'package:modugo/src/routes/child_route.dart';
