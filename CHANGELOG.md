@@ -1,3 +1,7 @@
+## [2.7.3] - 2025-08-08
+
+- Merge pull request #10 from bed72/guards
+
 ## [2.7.2] - 2025-08-08
 
 - chore: release v2.7.1
