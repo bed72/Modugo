@@ -1,3 +1,7 @@
+## [2.7.2] - 2025-08-08
+
+- chore: release v2.7.1
+
 ## [2.7.1] - 2025-08-07
 
 - :fire: fix routes and imports
