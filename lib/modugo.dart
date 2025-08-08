@@ -1,3 +1,4 @@
+export 'src/guard.dart';
 export 'src/logger.dart';
 export 'src/modugo.dart';
 export 'src/module.dart';
