@@ -238,9 +238,9 @@ LF:2
 LH:2
 end_of_record
 SF:lib/src/manager.dart
-DA:26,33
-DA:31,11
-DA:37,22
+DA:26,36
+DA:31,12
+DA:37,24
 DA:44,1
 DA:45,1
 DA:51,2
@@ -384,7 +384,7 @@ LF:12
 LH:9
 end_of_record
 SF:lib/src/routes/child_route.dart
-DA:92,11
+DA:92,12
 DA:105,2
 DA:108,1
 DA:109,3

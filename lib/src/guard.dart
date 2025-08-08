@@ -25,11 +25,8 @@ import 'package:modugo/src/interfaces/module_interface.dart';
 /// [parentGuards]: The list of guards to inject.
 ///
 /// Returns the same route type instance with the [guards] injected.
-IModule _injectGuards(IModule route, List<IGuard> guards) => switch (route
-    .runtimeType) {
-  ChildRoute _ => (route as ChildRoute).withInjectedGuards(guards),
-  _ => route,
-};
+IModule _injectGuards(IModule route, List<IGuard> guards) =>
+    route is ChildRoute ? route.withInjectedGuards(guards) : route;
 
 /// Injects a list of guards into each route module in the given list.
 ///
