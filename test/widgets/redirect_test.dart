@@ -33,7 +33,7 @@ final class _App extends StatelessWidget {
 
 final class _RedirectingModule extends Module {
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ModuleRoute(
       path: '/home',
       module: _DummyModule(),
@@ -45,7 +45,7 @@ final class _RedirectingModule extends Module {
 
 class _DummyModule extends Module {
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ChildRoute(path: '/', child: (_, _) => const Text('Should never reach')),
   ];
 }

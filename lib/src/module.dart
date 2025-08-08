@@ -55,14 +55,14 @@ abstract class Module {
   /// Allows modular composition by importing submodules.
   ///
   /// Defaults to an empty list.
-  List<Module> get imports => const [];
+  List<Module> imports() => const [];
 
   /// List of navigation routes this module exposes.
   ///
   /// Routes can be [ChildRoute], [ModuleRoute], [ShellModuleRoute], etc.
   ///
   /// Defaults to an empty list.
-  List<IModule> get routes => const [];
+  List<IModule> routes() => const [];
 
   /// Registers all dependency injection bindings for this module.
   ///
@@ -178,7 +178,7 @@ abstract class Module {
   }
 
   List<GoRoute> _createChildRoutes() =>
-      routes
+      routes()
           .whereType<ChildRoute>()
           .map(
             (route) =>
@@ -188,7 +188,8 @@ abstract class Module {
 
   GoRoute _createModule({required ModuleRoute module, required bool topLevel}) {
     final childRoute =
-        module.module.routes
+        module.module
+            .routes()
             .whereType<ChildRoute>()
             .where((route) => _adjustRoute(route.path!) == '/')
             .firstOrNull;
@@ -240,7 +241,7 @@ abstract class Module {
   }
 
   List<GoRoute> _createModuleRoutes(bool topLevel) =>
-      routes
+      routes()
           .whereType<ModuleRoute>()
           .map((module) => _createModule(module: module, topLevel: topLevel))
           .toList();
@@ -248,7 +249,7 @@ abstract class Module {
   List<RouteBase> _createShellRoutes(bool topLevel) {
     final shellRoutes = <RouteBase>[];
 
-    for (final route in routes) {
+    for (final route in routes()) {
       if (route is ShellModuleRoute) {
         if (route.binds.isNotEmpty) {
           for (final bind in route.binds) {

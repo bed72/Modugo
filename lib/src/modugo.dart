@@ -105,7 +105,7 @@ final class ModugoConfiguration {
     final allModules = _collectModules(Modugo.manager.rootModule);
 
     for (final module in allModules) {
-      for (final route in module.routes) {
+      for (final route in module.routes()) {
         final match = _matchRouteRecursive(route, location);
         if (match != null) return match;
       }
@@ -217,7 +217,7 @@ final class ModugoConfiguration {
     }
 
     final childRoutes = switch (route) {
-      ModuleRoute r => r.module.routes,
+      ModuleRoute r => r.module.routes(),
       ShellModuleRoute r => r.routes,
       StatefulShellModuleRoute r => r.routes,
       _ => null,
@@ -238,7 +238,7 @@ final class ModugoConfiguration {
     final buffer = <Module>[];
     void visit(Module mod) {
       buffer.add(mod);
-      for (final imported in mod.imports) {
+      for (final imported in mod.imports()) {
         visit(imported);
       }
     }

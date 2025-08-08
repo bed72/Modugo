@@ -253,7 +253,7 @@ void main() {
 
 final class _DummyModule extends Module {
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ChildRoute(path: '/', child: (_, _) => const Placeholder()),
   ];
 }

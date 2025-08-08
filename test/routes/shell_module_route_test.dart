@@ -400,12 +400,12 @@ final class _DummyModuleRoute implements IModule {}
 
 final class _DummyModule extends Module {
   @override
-  List<IModule> get routes => [];
+  List<IModule> routes() => [];
 }
 
 final class _ShellGuardedModule extends Module {
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ShellModuleRoute(
       guards: [_BlockingGuard()],
       builder: (_, _, child) => child,

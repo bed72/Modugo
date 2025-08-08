@@ -10,8 +10,8 @@
 /// then use `flutter run example/modugo_example.dart`.
 library;
 
-import 'package:flutter/material.dart';
 import 'package:modugo/modugo.dart';
+import 'package:flutter/material.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,7 +40,7 @@ final class AppWidget extends StatelessWidget {
 /// This module includes [HomeModule] as its child.
 final class AppModule extends Module {
   @override
-  List<IModule> get routes => [ModuleRoute(path: '/', module: HomeModule())];
+  List<IModule> routes() => [ModuleRoute(path: '/', module: HomeModule())];
 }
 
 /// The home module that handles feature-specific dependencies and routes.
@@ -56,7 +56,7 @@ final class HomeModule extends Module {
   }
 
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ChildRoute(
       path: '/',
       name: 'home-route',

@@ -23,7 +23,7 @@ final class _Service {}
 
 final class _MainModule extends Module {
   @override
-  List<Module> get imports => [_ImportedModule()];
+  List<Module> imports() => [_ImportedModule()];
 
   @override
   void binds(IInjector i) {

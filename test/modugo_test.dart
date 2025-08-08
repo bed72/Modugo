@@ -91,7 +91,7 @@ final class _InnerModule extends Module {
   }
 
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ChildRoute(
       path: '/',
       name: 'home',

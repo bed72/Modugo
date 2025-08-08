@@ -96,7 +96,7 @@ final class AppModule extends Module {
   }
 
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ModuleRoute(path: '/', module: HomeModule()),
     ModuleRoute(path: '/profile', module: ProfileModule()),
   ];
@@ -123,7 +123,7 @@ final class HomeModule extends Module {
   }
 
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ChildRoute(path: '/', child: (_, _) => const HomePage()),
   ];
 }
@@ -192,7 +192,7 @@ Use `ShellModuleRoute` when you want to create a navigation window **inside a sp
 ```dart
 final class HomeModule extends Module {
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ShellModuleRoute(
       builder: (context, state, child) => PageWidget(child: child),
       routes: [
@@ -361,7 +361,7 @@ Modugo.routeNotifier.addListener(() {
   final location = Modugo.routeNotifier.value;
 
   if (location == '/home') {
-    refreshHomeWidgets();
+    action();
   }
 });
 ```
@@ -483,7 +483,7 @@ final class HomeModule extends Module {
   }
 
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ChildRoute(path: '/home', child: (context, state) => const HomePage()),
   ];
 }

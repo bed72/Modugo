@@ -303,21 +303,21 @@ final class _GuardB implements IGuard {
 
 final class _SimpleModule extends Module {
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ChildRoute(path: '/', child: (_, _) => const Text('Profile')),
   ];
 }
 
 final class _DummyModule extends Module {
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ChildRoute(path: '/home', child: (_, _) => const Placeholder()),
   ];
 }
 
 final class _GuardedChildModule extends Module {
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ChildRoute(
       path: '/',
       guards: [_BlockGuard()],
@@ -329,7 +329,7 @@ final class _GuardedChildModule extends Module {
 
 final class _GuardedChildModuleWithRealPath extends Module {
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ChildRoute(
       path: '/guarded',
       child: (_, _) => const SizedBox.shrink(),
@@ -340,7 +340,7 @@ final class _GuardedChildModuleWithRealPath extends Module {
 
 final class _ModuleWithGuardedChild extends Module {
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ChildRoute(
       path: '/',
       guards: [_ChildBlockGuard()],
@@ -351,7 +351,7 @@ final class _ModuleWithGuardedChild extends Module {
 
 final class _ModuleWithMultipleGuards extends Module {
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ChildRoute(
       path: '/',
       guards: [_GuardA(), _GuardB()],
@@ -362,7 +362,7 @@ final class _ModuleWithMultipleGuards extends Module {
 
 final class _StatefulShellWithChildGuardModule extends Module {
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     StatefulShellModuleRoute(
       builder: (_, _, shell) => shell,
       routes: [ModuleRoute(path: '/home', module: _ModuleWithGuardedChild())],
@@ -372,7 +372,7 @@ final class _StatefulShellWithChildGuardModule extends Module {
 
 final class _StatefulShellWithMultipleGuardsModule extends Module {
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     StatefulShellModuleRoute(
       builder: (_, _, shell) => shell,
       routes: [ModuleRoute(path: '/home', module: _ModuleWithMultipleGuards())],
@@ -382,7 +382,7 @@ final class _StatefulShellWithMultipleGuardsModule extends Module {
 
 final class _StatefulShellGuardedModule extends Module {
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     StatefulShellModuleRoute(
       builder: (_, _, shell) => shell,
       routes: [
@@ -395,7 +395,7 @@ final class _StatefulShellGuardedModule extends Module {
 
 final class _StatefulShellGuardedModuleWithRealPath extends Module {
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     StatefulShellModuleRoute(
       builder: (_, _, shell) => shell,
       routes: [

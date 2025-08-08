@@ -241,7 +241,7 @@ final class _UnsupportedRoute implements IModule {}
 
 final class _DummyModule extends Module {
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ChildRoute(
       name: 'page',
       path: '/shell/page',
@@ -252,7 +252,7 @@ final class _DummyModule extends Module {
 
 final class _ProductModule extends Module {
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ChildRoute(
       path: '/',
       name: 'safe-root-route',

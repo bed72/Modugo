@@ -195,8 +195,8 @@ void main() {
           guards: [_GuardAllow()],
         );
 
-        parent.routes.clear();
-        parent.routes.add(route);
+        parent.routes().clear();
+        parent.routes().add(route);
 
         final routes = parent.configureRoutes(topLevel: true);
         final goRoute = routes.whereType<GoRoute>().first;
@@ -216,8 +216,8 @@ void main() {
         guards: [_GuardAllow()],
       );
 
-      parent.routes.clear();
-      parent.routes.add(route);
+      parent.routes().clear();
+      parent.routes().add(route);
 
       final routes = parent.configureRoutes(topLevel: true);
       final goRoute = routes.whereType<GoRoute>().first;
@@ -319,7 +319,7 @@ final class _Service {
 
 final class _EmptyModule extends Module {
   @override
-  List<IModule> get routes => [];
+  List<IModule> routes() => [];
 }
 
 final class _ModuleWith extends Module {
@@ -327,7 +327,7 @@ final class _ModuleWith extends Module {
   _ModuleWith(this._routes);
 
   @override
-  List<IModule> get routes => _routes;
+  List<IModule> routes() => _routes;
 }
 
 final class _InnerModule extends Module {
@@ -337,7 +337,7 @@ final class _InnerModule extends Module {
   }
 
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ChildRoute(
       name: 'home',
       path: '/home',
@@ -353,7 +353,7 @@ final class _ModuleWithBranch extends Module {
   }
 
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ChildRoute(
       path: 'with-branch',
       name: 'with-branch-route',
@@ -364,10 +364,10 @@ final class _ModuleWithBranch extends Module {
 
 final class _RootModule extends Module {
   @override
-  List<Module> get imports => [_InnerModule()];
+  List<Module> imports() => [_InnerModule()];
 
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ChildRoute(
       path: '/profile',
       name: 'profile-root',
@@ -378,14 +378,14 @@ final class _RootModule extends Module {
 
 final class _ModuleWithDash extends Module {
   @override
-  List<ChildRoute> get routes => [
+  List<ChildRoute> routes() => [
     ChildRoute(path: '/', name: 'root', child: (_, _) => const Placeholder()),
   ];
 }
 
 final class _ModuleWithSettings extends Module {
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ChildRoute(
       path: '/',
       name: 'settings',
@@ -396,7 +396,7 @@ final class _ModuleWithSettings extends Module {
 
 final class _ModuleWithStatefulShell extends Module {
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     StatefulShellModuleRoute(
       builder: (ctx, state, shell) => const Placeholder(),
       routes: [
@@ -409,7 +409,7 @@ final class _ModuleWithStatefulShell extends Module {
 
 final class _ModuleWithOnExitFalse extends Module {
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ChildRoute(
       path: '/some',
       name: 'on-exit-false',
@@ -421,7 +421,7 @@ final class _ModuleWithOnExitFalse extends Module {
 
 final class _ModuleWithShell extends Module {
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ShellModuleRoute(
       binds: [(i) => i.addSingleton<_Service>((_) => _Service())],
       builder: (_, _, child) => Container(child: child),
@@ -432,7 +432,7 @@ final class _ModuleWithShell extends Module {
 
 final class _ModuleWithNoRootChild extends Module {
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ChildRoute(path: 'non-root', child: (_, _) => const Placeholder()),
   ];
 }
@@ -442,7 +442,7 @@ final class _ParentModuleWithModuleRoute extends Module {
   _ParentModuleWithModuleRoute({required this.child});
 
   @override
-  List<IModule> get routes => [ModuleRoute(path: '/child', module: child)];
+  List<IModule> routes() => [ModuleRoute(path: '/child', module: child)];
 }
 
 final class _CustomParentModule extends Module {
@@ -451,19 +451,19 @@ final class _CustomParentModule extends Module {
   _CustomParentModule(this.customRoutes);
 
   @override
-  List<IModule> get routes => customRoutes;
+  List<IModule> routes() => customRoutes;
 }
 
 final class _SimpleChildModule extends Module {
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ChildRoute(path: '/', child: (_, _) => const Text('Page')),
   ];
 }
 
 final class _SimpleChildModuleWithRedirect extends Module {
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ChildRoute(
       path: '/',
       child: (_, _) => const Text('Page'),

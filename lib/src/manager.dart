@@ -203,7 +203,7 @@ final class Manager implements IManager {
       typesForModule.add(type);
     }
 
-    for (final imported in module.imports) {
+    for (final imported in module.imports()) {
       final beforeImport = Injector().registeredTypes;
       imported.binds(Injector());
       final afterImport = Injector().registeredTypes;

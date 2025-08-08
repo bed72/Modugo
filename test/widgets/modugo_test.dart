@@ -52,7 +52,7 @@ void main() {
 
 final class _DummyModule extends Module {
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ChildRoute(path: '/', child: (_, _) => const Placeholder()),
     ChildRoute(path: '/details', child: (_, _) => const Placeholder()),
   ];
@@ -60,7 +60,7 @@ final class _DummyModule extends Module {
 
 final class _DummyShellModule extends Module {
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     StatefulShellModuleRoute(
       builder: (_, _, shell) => _DummyShellWidget(shell: shell),
       routes: [
@@ -76,7 +76,7 @@ final class _DummyShellModule extends Module {
 
 final class _InnerShellModule extends Module {
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ChildRoute(
       path: '/',
       name: 'home-route',

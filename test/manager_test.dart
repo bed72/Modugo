@@ -28,7 +28,7 @@ void main() {
   setUpAll(() async {
     manager = Manager();
     rootModule = _RootModule();
-    innerModule = rootModule.imports.first as _InnerModule;
+    innerModule = rootModule.imports().first as _InnerModule;
 
     await startModugoFake(module: rootModule);
   });
@@ -329,7 +329,7 @@ final class _EmptyModule extends Module {}
 
 final class _ImportAnotherModule extends Module {
   @override
-  List<Module> get imports => [_InnerModule()];
+  List<Module> imports() => [_InnerModule()];
 }
 
 final class _InnerModule extends Module {
@@ -373,10 +373,10 @@ final class _CyclicModule extends Module {
 
 final class _RootModule extends Module {
   @override
-  List<Module> get imports => [_InnerModule()];
+  List<Module> imports() => [_InnerModule()];
 
   @override
-  List<IModule> get routes => [
+  List<IModule> routes() => [
     ChildRoute(
       path: '/profile',
       name: 'profile-root',
