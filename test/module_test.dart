@@ -143,32 +143,12 @@ void main() {
   });
 
   group('ModuleRoute - guards and redirect precedence', () {
-    test('redirects immediately if any guard blocks', () async {
-      final module = _SimpleChildModule();
-      final guardedRoute = ModuleRoute(
-        module: module,
-        path: '/guarded',
-        guards: [_GuardAllow(), _GuardBlock('/denied')],
-      );
-
-      final parent = _CustomParentModule([guardedRoute]);
-
-      final routes = parent.configureRoutes(topLevel: true);
-      final goRoute = routes.whereType<GoRoute>().firstWhere(
-        (r) => r.path == '/guarded',
-      );
-
-      final result = await goRoute.redirect!(BuildContextFake(), StateFake());
-      expect(result, '/denied');
-    });
-
-    test('falls back to ModuleRoute.redirect if all guards allow', () async {
+    test('falls back to ModuleRoute.redirect if all redirect', () async {
       final module = _SimpleChildModule();
 
       final guardedRoute = ModuleRoute(
         module: module,
         path: '/guarded',
-        guards: [_GuardAllow()],
         redirect: (_, _) => '/fallback',
       );
 
@@ -184,16 +164,12 @@ void main() {
     });
 
     test(
-      'uses ChildRoute.redirect only if guards and module.redirect allow',
+      'uses ChildRoute.redirect only if redirect and module.redirect allow',
       () async {
         final module = _SimpleChildModuleWithRedirect();
         final parent = _ParentModuleWithModuleRoute(child: module);
 
-        final route = ModuleRoute(
-          module: module,
-          path: '/guarded',
-          guards: [_GuardAllow()],
-        );
+        final route = ModuleRoute(module: module, path: '/guarded');
 
         parent.routes().clear();
         parent.routes().add(route);
@@ -210,11 +186,7 @@ void main() {
       final module = _SimpleChildModule();
       final parent = _ParentModuleWithModuleRoute(child: module);
 
-      final route = ModuleRoute(
-        module: module,
-        path: '/guarded',
-        guards: [_GuardAllow()],
-      );
+      final route = ModuleRoute(module: module, path: '/guarded');
 
       parent.routes().clear();
       parent.routes().add(route);
@@ -470,17 +442,4 @@ final class _SimpleChildModuleWithRedirect extends Module {
       redirect: (_, _) => '/child-redirect',
     ),
   ];
-}
-
-final class _GuardAllow implements IGuard {
-  @override
-  Future<String?> call(BuildContext context, GoRouterState state) async => null;
-}
-
-final class _GuardBlock implements IGuard {
-  final String path;
-  _GuardBlock(this.path);
-
-  @override
-  Future<String?> call(BuildContext context, GoRouterState state) async => path;
 }

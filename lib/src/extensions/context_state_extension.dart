@@ -4,8 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/routes/paths/function.dart';
 
-import 'package:modugo/src/controllers/modugo_statck_controller.dart';
-
 /// Extension on [BuildContext] that provides convenient access to the current [GoRouterState].
 ///
 /// This extension exposes several properties and helpers to work with the
@@ -112,7 +110,7 @@ extension ContextStateExtension on BuildContext {
   String get effectivePath {
     final data = state.extra;
     if (data is Map<String, dynamic>) {
-      final value = data[ModugoStackController.instance.path];
+      final value = data['path'];
       if (value is String) return value;
     }
     return uri.path;

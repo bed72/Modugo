@@ -139,13 +139,7 @@ void main() {
 
     final b = StatefulShellModuleRoute(
       builder: builder,
-      routes: [
-        ModuleRoute(
-          path: '/home',
-          module: sharedModule,
-          guards: [_BlockGuard()],
-        ),
-      ],
+      routes: [ModuleRoute(path: '/home', module: sharedModule)],
     );
 
     expect(a, equals(b));
@@ -401,7 +395,6 @@ final class _StatefulShellGuardedModuleWithRealPath extends Module {
       routes: [
         ModuleRoute(
           path: '/guarded',
-          guards: [_BlockGuard()],
           module: _GuardedChildModuleWithRealPath(),
         ),
       ],
