@@ -1,3 +1,7 @@
+## [2.7.1] - 2025-08-07
+
+- :fire: fix routes and imports
+
 ## [2.7.0] - 2025-07-31
 
 - :fire: fix path in child route and module route
