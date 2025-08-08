@@ -20,7 +20,7 @@ final class GuardModel extends Module {
   @override
   List<IModule> routes() {
     final baseRoutes = _baseModule.routes();
-    return injectGuardsIntoRoutes(baseRoutes, _parentGuards);
+    return propagateGuards(routes: baseRoutes, guards: _parentGuards);
   }
 
   @override

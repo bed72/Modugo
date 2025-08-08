@@ -28,8 +28,6 @@ import 'package:modugo/src/interfaces/module_interface.dart';
 IModule _injectGuards(IModule route, List<IGuard> guards) => switch (route
     .runtimeType) {
   ChildRoute _ => (route as ChildRoute).withInjectedGuards(guards),
-  ModuleRoute _ => (route as ModuleRoute).withInjectedGuards(guards),
-  ShellModuleRoute _ => (route as ShellModuleRoute).withInjectedGuards(guards),
   _ => route,
 };
 
@@ -42,7 +40,7 @@ IModule _injectGuards(IModule route, List<IGuard> guards) => switch (route
 /// [parentGuards]: The list of guards to inject into each route.
 ///
 /// Returns a new list of route modules with guards injected.
-List<IModule> injectGuardsIntoRoutes(
-  List<IModule> routes,
-  List<IGuard> guards,
-) => routes.map((route) => _injectGuards(route, guards)).toList();
+List<IModule> propagateGuards({
+  required List<IGuard> guards,
+  required List<IModule> routes,
+}) => routes.map((route) => _injectGuards(route, guards)).toList();

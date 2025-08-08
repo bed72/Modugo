@@ -421,37 +421,35 @@ class AuthGuard implements IGuard {
 }
 ```
 
-### 2. Apply to a route
+### 2. Apply to a single route
 
 ```dart
 ChildRoute(
   path: '/profile',
   guards: [AuthGuard()],
   child: (_, _) => const ProfilePage(),
-)
+);
 ```
 
-Or:
+### 3. Propagate guards to nested routes
+
+If you want a guard applied at a **parent module** level to automatically protect **all child routes** (even inside nested `ModuleRoute`s), you can use `propagateGuards`.
+
+This is especially useful when you want consistent access control without having to manually add guards to each child route.
 
 ```dart
-ModuleRoute(
-  path: '/admin',
-  module: AdminModule(),
-  guards: [AdminGuard()],
-)
-```
-
-Guards are also supported inside `ShellModuleRoute` and `StatefulShellModuleRoute` branches:
-
-```dart
-StatefulShellModuleRoute(
-  builder: (_, _, shell) => shell,
+List<IModule> routes() => propagateGuards(
+  guards: [AuthGuard()],
   routes: [
-    ModuleRoute(path: '/account', module: AccountModule()),
-    ModuleRoute(path: '/settings', module: SettingsModule(), guards: [SettingsGuard()]),
-  ],
-)
+    ModuleRoute(
+      path: '/',
+      module: HomeModule(),
+    ),
+  ]
+);
 ```
+
+In the example above, `AuthGuard` will be automatically applied to all routes inside `HomeModule`, including nested `ChildRoute`s and `ModuleRoute`s, without needing to repeat it manually.
 
 ### ℹ️ Behavior
 

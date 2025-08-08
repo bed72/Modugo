@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/injector.dart';
 
-import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
 
-import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/routes/models/route_pattern_model.dart';
@@ -232,101 +229,6 @@ void main() {
     expect(base, equals(altered));
   });
 
-  group('ShellModuleRoute - guards', () {
-    test('should assign guards correctly', () {
-      final guardA = _FakeGuardAllow();
-      final guardB = _FakeGuardBlock('/forbidden');
-
-      final route = ShellModuleRoute(
-        routes: [_DummyModuleRoute()],
-        builder: (_, _, ___) => const Placeholder(),
-        guards: [guardA, guardB],
-      );
-
-      expect(route.guards.length, 2);
-      expect(route.guards.first, guardA);
-      expect(route.guards.last, guardB);
-    });
-
-    test('should default to empty guards list when not provided', () {
-      final route = ShellModuleRoute(
-        routes: [_DummyModuleRoute()],
-        builder: (_, _, ___) => const Placeholder(),
-      );
-
-      expect(route.guards, isEmpty);
-    });
-
-    test('should allow equality even if guards differ', () {
-      final dummy = _DummyModuleRoute();
-
-      final base = ShellModuleRoute(
-        routes: [dummy],
-        builder: (_, _, ___) => const Placeholder(),
-        guards: [_FakeGuardAllow()],
-      );
-
-      final other = ShellModuleRoute(
-        routes: [dummy],
-        builder: (_, _, ___) => const Placeholder(),
-        guards: [_FakeGuardBlock('/denied')],
-      );
-
-      expect(base, equals(other));
-    });
-
-    test('ShellModuleRoute should redirect if any guard blocks', () async {
-      final shellRoute = ShellModuleRoute(
-        routes: [_DummyModuleRoute()],
-        builder: (_, _, ___) => const Placeholder(),
-        guards: [_BlockingGuard()],
-      );
-
-      final redirectFn =
-          (ShellRoute(
-            routes: [
-              GoRoute(
-                path: '/placeholder',
-                builder: (_, _) => const Placeholder(),
-              ),
-            ],
-            builder: (context, state, child) => const Placeholder(),
-            redirect: (context, state) async {
-              for (final guard in shellRoute.guards) {
-                final result = await guard.call(context, state);
-                if (result != null) return result;
-              }
-
-              if (shellRoute.redirect != null) {
-                return await shellRoute.redirect!(context, state);
-              }
-
-              return null;
-            },
-          ).redirect)!;
-
-      final result = await redirectFn(_FakeContext(), _FakeState());
-
-      expect(result, '/blocked');
-    });
-
-    test(
-      'ShellModuleRoute redirect is triggered via guard when building real routes',
-      () async {
-        final module = _ShellGuardedModule();
-
-        final routes = module.configureRoutes(topLevel: true);
-
-        final shellRoute = routes.whereType<ShellRoute>().first;
-
-        final redirectFn = shellRoute.redirect!;
-        final result = await redirectFn(_FakeContext(), _FakeState());
-
-        expect(result, '/blocked');
-      },
-    );
-  });
-
   group('ShellModuleRoute with RoutePatternModel', () {
     test('matches correct path and extracts parameters', () {
       final route = ShellModuleRoute(
@@ -401,57 +303,4 @@ final class _DummyModuleRoute implements IModule {}
 final class _DummyModule extends Module {
   @override
   List<IModule> routes() => [];
-}
-
-final class _ShellGuardedModule extends Module {
-  @override
-  List<IModule> routes() => [
-    ShellModuleRoute(
-      guards: [_BlockingGuard()],
-      builder: (_, _, child) => child,
-      routes: [
-        ChildRoute(path: '/inside', child: (_, _) => const Placeholder()),
-      ],
-    ),
-  ];
-}
-
-final class _BlockingGuard implements IGuard {
-  @override
-  Future<String?> call(BuildContext context, GoRouterState state) async =>
-      '/blocked';
-}
-
-final class _FakeGuardAllow implements IGuard {
-  @override
-  Future<String?> call(BuildContext context, GoRouterState state) async => null;
-}
-
-final class _FakeGuardBlock implements IGuard {
-  final String redirectPath;
-  _FakeGuardBlock(this.redirectPath);
-
-  @override
-  Future<String?> call(BuildContext context, GoRouterState state) async =>
-      redirectPath;
-}
-
-final class _FakeContext extends BuildContext {
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
-final class _FakeState extends GoRouterState {
-  _FakeState()
-    : super(
-        RouteConfiguration(
-          ValueNotifier(RoutingConfig(routes: [])),
-          navigatorKey: GlobalKey<NavigatorState>(),
-        ),
-        fullPath: '/',
-        uri: Uri.parse('/'),
-        matchedLocation: '/',
-        pathParameters: const {},
-        pageKey: const ValueKey('fake'),
-      );
 }

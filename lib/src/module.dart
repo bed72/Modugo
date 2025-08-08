@@ -210,11 +210,6 @@ abstract class Module {
             route: childRoute,
           ),
       redirect: (context, state) async {
-        for (final guard in module.guards) {
-          final result = await guard.call(context, state);
-          if (result != null) return result;
-        }
-
         if (module.redirect != null) {
           final result = module.redirect!(context, state);
           if (result != null) return result;
@@ -300,11 +295,6 @@ abstract class Module {
                 (context, state, child) =>
                     route.builder!(context, state, child),
             redirect: (context, state) async {
-              for (final guard in route.guards) {
-                final result = await guard.call(context, state);
-                if (result != null) return result;
-              }
-
               if (route.redirect != null) {
                 return await route.redirect!(context, state);
               }

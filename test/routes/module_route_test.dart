@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/module.dart';
 
-import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
 
 import 'package:modugo/src/routes/child_route.dart';
@@ -20,14 +19,12 @@ void main() {
         path: '/produto',
         name: 'produto-module',
         module: _DummyModule(),
-        guards: [_GuardAllow()],
         parentNavigatorKey: key,
         redirect: (context, state) async => '/redirected',
         routePattern: RoutePatternModel.from(r'^/produto$'),
       );
 
       expect(route.path, '/produto');
-      expect(route.guards, isNotEmpty);
       expect(route.name, 'produto-module');
       expect(route.parentNavigatorKey, key);
       expect(route.module, isA<_DummyModule>());
@@ -103,50 +100,6 @@ void main() {
       expect(route.name, isNull);
       expect(route.module, module);
       expect(route.redirect, isNull);
-    });
-  });
-
-  group('ModuleRoute - guards', () {
-    test('should assign guards list correctly', () {
-      final guard1 = _GuardAllow();
-      final guard2 = _GuardBlock();
-      final module = _DummyModule();
-
-      final route = ModuleRoute(
-        module: module,
-        path: '/secure',
-        guards: [guard1, guard2],
-      );
-
-      expect(route.guards, isNotNull);
-      expect(route.guards.length, 2);
-      expect(route.guards.first, isA<_GuardAllow>());
-      expect(route.guards.last, isA<_GuardBlock>());
-    });
-
-    test('should default to empty guards list when not provided', () {
-      final module = _DummyModule();
-      final route = ModuleRoute(path: '/public', module: module);
-
-      expect(route.guards, isEmpty);
-    });
-
-    test('should not affect equality when guards differ', () {
-      final module = _DummyModule();
-
-      final a = ModuleRoute(
-        module: module,
-        path: '/settings',
-        guards: [_GuardAllow()],
-      );
-
-      final b = ModuleRoute(
-        module: module,
-        path: '/settings',
-        guards: [_GuardBlock()],
-      );
-
-      expect(a, equals(b));
     });
   });
 
@@ -261,17 +214,6 @@ final class _DummyModule extends Module {
 final class _FakeBuildContext extends BuildContext {
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
-final class _GuardAllow implements IGuard {
-  @override
-  Future<String?> call(BuildContext context, GoRouterState state) async => null;
-}
-
-final class _GuardBlock implements IGuard {
-  @override
-  Future<String?> call(BuildContext context, GoRouterState state) async =>
-      '/blocked';
 }
 
 final class _FakeGoRouterState extends GoRouterState {

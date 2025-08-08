@@ -1,11 +1,6 @@
 // coverage:ignore-file
 
-import 'package:modugo/src/guard.dart';
-
 import 'package:modugo/src/routes/child_route.dart';
-import 'package:modugo/src/routes/module_route.dart';
-import 'package:modugo/src/routes/models/guard_model.dart';
-import 'package:modugo/src/routes/shell_module_route.dart';
 
 import 'package:modugo/src/interfaces/guard_interface.dart';
 
@@ -38,64 +33,4 @@ extension ChildRouteExtensions on ChildRoute {
     guards: [...parentGuards, ...guards],
     parentNavigatorKey: parentNavigatorKey,
   );
-}
-
-/// Extension for [ModuleRoute] to support injecting parent guards recursively.
-///
-/// This extension creates a new [ModuleRoute] with an internal wrapped module
-/// that applies the [parentGuards] plus the module's own guards recursively
-/// to all nested routes within the module. This ensures that guards set at the
-/// parent module level affect all child routes within the nested module.
-///
-/// Example:
-/// ```dart
-/// final guardedModuleRoute = moduleRoute.withInjectedGuards([authGuard]);
-/// ```
-extension ModuleRouteExtensions on ModuleRoute {
-  /// Returns a new [ModuleRoute] with guards injected recursively into its nested module.
-  ///
-  /// - [parentGuards]: The list of guards inherited from the parent route or module.
-  ///
-  /// Returns a copy of this route where the nested [module] is wrapped
-  /// to propagate guards to all nested routes.
-  ModuleRoute withInjectedGuards(List<IGuard> parentGuards) => ModuleRoute(
-    path: path,
-    name: name,
-    guards: [],
-    redirect: redirect,
-    routePattern: routePattern,
-    parentNavigatorKey: parentNavigatorKey,
-    module: GuardModel(module, [...parentGuards, ...guards]),
-  );
-}
-
-/// Extension for [ShellModuleRoute] to support injecting parent guards recursively.
-///
-/// This extension creates a new [ShellModuleRoute] where the parent guards are
-/// injected into all child routes recursively. It keeps all other properties
-/// unchanged.
-///
-/// Example:
-/// ```dart
-/// final guardedShellRoute = shellRoute.withInjectedGuards([authGuard]);
-/// ```
-extension ShellModuleRouteExtensions on ShellModuleRoute {
-  /// Returns a new [ShellModuleRoute] with parent guards injected recursively into all nested routes.
-  ///
-  /// - [parentGuards]: The list of guards inherited from the parent route or module.
-  ///
-  /// Returns a copy of this route where all nested routes have the guards injected.
-  ShellModuleRoute withInjectedGuards(List<IGuard> parentGuards) =>
-      ShellModuleRoute(
-        guards: [],
-        binds: binds,
-        builder: builder,
-        redirect: redirect,
-        observers: observers,
-        pageBuilder: pageBuilder,
-        navigatorKey: navigatorKey,
-        parentNavigatorKey: parentNavigatorKey,
-        restorationScopeId: restorationScopeId,
-        routes: injectGuardsIntoRoutes(routes, parentGuards),
-      );
 }

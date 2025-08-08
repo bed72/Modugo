@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/module.dart';
 
-import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
 
 import 'package:modugo/src/routes/models/route_pattern_model.dart';
@@ -51,11 +50,6 @@ final class ModuleRoute implements IModule {
   /// This module will provide its own routes and bindings.
   final Module module;
 
-  /// Optional list of guards that control access to this module.
-  ///
-  /// Each guard can redirect to another path or allow access.
-  final List<IGuard> guards;
-
   /// Optional route matching pattern using regex and parameter names.
   ///
   /// This allows the module to be matched via a regular expression
@@ -79,7 +73,6 @@ final class ModuleRoute implements IModule {
     this.redirect,
     this.path = '/',
     this.routePattern,
-    this.guards = const [],
     this.parentNavigatorKey,
   });
 
