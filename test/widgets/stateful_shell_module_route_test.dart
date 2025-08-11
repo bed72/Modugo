@@ -32,7 +32,7 @@ void main() {
   ) async {
     final shellRoute = StatefulShellModuleRoute(
       routes: [_UnsupportedRoute()],
-      builder: (_, _, ___) => const Placeholder(),
+      builder: (_, _, _) => const Placeholder(),
     );
 
     expect(

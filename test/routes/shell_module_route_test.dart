@@ -23,7 +23,7 @@ void main() {
         observers: observers,
         parentNavigatorKey: key,
         restorationScopeId: 'scope',
-        builder: (_, _, ___) => const Placeholder(),
+        builder: (_, _, _) => const Placeholder(),
       );
 
       final b = ShellModuleRoute(
@@ -32,7 +32,7 @@ void main() {
         observers: observers,
         parentNavigatorKey: key,
         restorationScopeId: 'scope',
-        builder: (_, _, ___) => const Placeholder(),
+        builder: (_, _, _) => const Placeholder(),
       );
 
       expect(a, equals(b));
@@ -42,12 +42,12 @@ void main() {
     test('should not be equal when routes differ', () {
       final a = ShellModuleRoute(
         routes: [_DummyModuleRoute()],
-        builder: (_, _, ___) => const Placeholder(),
+        builder: (_, _, _) => const Placeholder(),
       );
 
       final b = ShellModuleRoute(
         routes: [_DummyModuleRoute(), _DummyModuleRoute()],
-        builder: (_, _, ___) => const Placeholder(),
+        builder: (_, _, _) => const Placeholder(),
       );
 
       expect(a, isNot(equals(b)));
@@ -57,13 +57,13 @@ void main() {
       final a = ShellModuleRoute(
         routes: [_DummyModuleRoute()],
         observers: [NavigatorObserver()],
-        builder: (_, _, ___) => const Placeholder(),
+        builder: (_, _, _) => const Placeholder(),
       );
 
       final b = ShellModuleRoute(
         routes: [_DummyModuleRoute()],
         observers: [NavigatorObserver()],
-        builder: (_, _, ___) => const Placeholder(),
+        builder: (_, _, _) => const Placeholder(),
       );
 
       expect(a, isNot(equals(b)));
@@ -92,13 +92,13 @@ void main() {
       final a = ShellModuleRoute(
         navigatorKey: GlobalKey(),
         routes: [_DummyModuleRoute()],
-        builder: (_, _, ___) => const Placeholder(),
+        builder: (_, _, _) => const Placeholder(),
       );
 
       final b = ShellModuleRoute(
         navigatorKey: GlobalKey(),
         routes: [_DummyModuleRoute()],
-        builder: (_, _, ___) => const Placeholder(),
+        builder: (_, _, _) => const Placeholder(),
       );
 
       expect(a, isNot(equals(b)));
@@ -108,13 +108,13 @@ void main() {
       final a = ShellModuleRoute(
         restorationScopeId: 'scope1',
         routes: [_DummyModuleRoute()],
-        builder: (_, _, ___) => const Placeholder(),
+        builder: (_, _, _) => const Placeholder(),
       );
 
       final b = ShellModuleRoute(
         restorationScopeId: 'scope2',
         routes: [_DummyModuleRoute()],
-        builder: (_, _, ___) => const Placeholder(),
+        builder: (_, _, _) => const Placeholder(),
       );
 
       expect(a, isNot(equals(b)));
@@ -124,13 +124,13 @@ void main() {
       final a = ShellModuleRoute(
         routes: [_DummyModuleRoute()],
         parentNavigatorKey: GlobalKey(),
-        builder: (_, _, ___) => const Placeholder(),
+        builder: (_, _, _) => const Placeholder(),
       );
 
       final b = ShellModuleRoute(
         routes: [_DummyModuleRoute()],
         parentNavigatorKey: GlobalKey(),
-        builder: (_, _, ___) => const Placeholder(),
+        builder: (_, _, _) => const Placeholder(),
       );
 
       expect(a, isNot(equals(b)));
@@ -150,7 +150,7 @@ void main() {
         routes: [_DummyModuleRoute()],
         restorationScopeId: 'restore-1',
         redirect: (_, _) async => '/redirect',
-        builder: (_, _, ___) => const Placeholder(),
+        builder: (_, _, _) => const Placeholder(),
         binds: [(i) => i.addFactory<int>((_) => 123)],
         pageBuilder: (_, _, child) => MaterialPage(child: child),
       );
@@ -168,7 +168,7 @@ void main() {
     test('should handle minimal constructor input', () {
       final route = ShellModuleRoute(
         routes: [_DummyModuleRoute()],
-        builder: (_, _, ___) => const Placeholder(),
+        builder: (_, _, _) => const Placeholder(),
       );
 
       expect(route.binds, isEmpty);
@@ -184,7 +184,7 @@ void main() {
   test('should execute bind and register in Injector', () {
     final route = ShellModuleRoute(
       routes: [_DummyModuleRoute()],
-      builder: (_, _, ___) => const Placeholder(),
+      builder: (_, _, _) => const Placeholder(),
       binds: [(i) => i.addSingleton<String>((_) => 'test-string')],
     );
 
@@ -197,7 +197,7 @@ void main() {
   test('should register multiple binds with distinct types', () {
     final route = ShellModuleRoute(
       routes: [_DummyModuleRoute()],
-      builder: (_, _, ___) => const Placeholder(),
+      builder: (_, _, _) => const Placeholder(),
       binds: [
         (i) => i.addSingleton<String>((_) => 'value'),
         (i) => i.addFactory<int>((_) => 42),
@@ -217,12 +217,12 @@ void main() {
 
     final base = ShellModuleRoute(
       routes: [dummyRoute],
-      builder: (_, _, ___) => const Placeholder(),
+      builder: (_, _, _) => const Placeholder(),
     );
 
     final altered = ShellModuleRoute(
       routes: [dummyRoute],
-      builder: (_, _, ___) => const Placeholder(),
+      builder: (_, _, _) => const Placeholder(),
       binds: [(i) => i.addFactory((_) => 'irrelevant')],
     );
 
@@ -232,7 +232,7 @@ void main() {
   group('ShellModuleRoute with RoutePatternModel', () {
     test('matches correct path and extracts parameters', () {
       final route = ShellModuleRoute(
-        builder: (_, _, ___) => const Placeholder(),
+        builder: (_, _, _) => const Placeholder(),
         routes: [ModuleRoute(path: '/home', module: _DummyModule())],
         routePattern: RoutePatternModel.from(
           r'^/org/(\w+)/home$',
@@ -250,7 +250,7 @@ void main() {
     test('returns false when path does not match pattern', () {
       final route = ShellModuleRoute(
         routes: [],
-        builder: (_, _, ___) => const Placeholder(),
+        builder: (_, _, _) => const Placeholder(),
         routePattern: RoutePatternModel.from(
           r'^/dashboard/(\w+)$',
           paramNames: ['section'],
@@ -268,12 +268,12 @@ void main() {
       final pattern = RoutePatternModel.from(r'^/shell$', paramNames: []);
       final routeA = ShellModuleRoute(
         routes: [],
-        builder: (_, _, ___) => const Placeholder(),
+        builder: (_, _, _) => const Placeholder(),
         routePattern: pattern,
       );
       final routeB = ShellModuleRoute(
         routes: [],
-        builder: (_, _, ___) => const Placeholder(),
+        builder: (_, _, _) => const Placeholder(),
         routePattern: pattern,
       );
 
@@ -284,12 +284,12 @@ void main() {
     test('== returns false when routePatterns differ', () {
       final routeA = ShellModuleRoute(
         routes: [],
-        builder: (_, _, ___) => const Placeholder(),
+        builder: (_, _, _) => const Placeholder(),
         routePattern: RoutePatternModel.from(r'^/a$', paramNames: []),
       );
       final routeB = ShellModuleRoute(
         routes: [],
-        builder: (_, _, ___) => const Placeholder(),
+        builder: (_, _, _) => const Placeholder(),
         routePattern: RoutePatternModel.from(r'^/b$', paramNames: []),
       );
 

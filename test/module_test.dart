@@ -250,7 +250,7 @@ void main() {
     test('matches ShellModuleRoute with routePattern', () {
       final shell = ShellModuleRoute(
         routes: [],
-        builder: (_, _, ___) => const Placeholder(),
+        builder: (_, _, _) => const Placeholder(),
         routePattern: RoutePatternModel.from(r'^/shell$', paramNames: []),
       );
 
@@ -265,7 +265,7 @@ void main() {
     test('matches StatefulShellModuleRoute with routePattern', () {
       final shell = StatefulShellModuleRoute(
         routes: [],
-        builder: (_, _, ___) => const Placeholder(),
+        builder: (_, _, _) => const Placeholder(),
         routePattern: RoutePatternModel.from(
           r'^/tabs/(home|settings)$',
           paramNames: ['tab'],
