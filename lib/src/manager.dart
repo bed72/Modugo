@@ -15,6 +15,8 @@ final class Manager implements IManager {
   Timer? _timer;
   Module? _module;
 
+  final _injector = Injector();
+
   final Map<Type, int> _bindReferences = {};
   final Map<Module, Set<Type>> _moduleTypes = {};
   final Map<Module, List<RouteAccessModel>> _activeRoutes = {};
@@ -193,9 +195,9 @@ final class Manager implements IManager {
   void _registerBinds(Module module) {
     final typesForModule = <Type>{};
 
-    final before = Injector().registeredTypes;
-    module.binds(Injector());
-    final after = Injector().registeredTypes;
+    final before = _injector.registeredTypes;
+    module.binds(_injector);
+    final after = _injector.registeredTypes;
 
     final newTypes = after.difference(before);
     for (final type in newTypes) {
@@ -204,9 +206,9 @@ final class Manager implements IManager {
     }
 
     for (final imported in module.imports()) {
-      final beforeImport = Injector().registeredTypes;
-      imported.binds(Injector());
-      final afterImport = Injector().registeredTypes;
+      final beforeImport = _injector.registeredTypes;
+      imported.binds(_injector);
+      final afterImport = _injector.registeredTypes;
 
       final importedTypes = afterImport.difference(beforeImport);
       for (final type in importedTypes) {
@@ -227,7 +229,7 @@ final class Manager implements IManager {
       _bindReferences[type] = (_bindReferences[type] ?? 1) - 1;
       if (_bindReferences[type] == 0) {
         _bindReferences.remove(type);
-        Injector().disposeByType(type);
+        _injector.disposeByType(type);
       }
     }
   }

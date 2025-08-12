@@ -177,10 +177,10 @@ final class ModugoConfiguration {
       errorBuilder: errorBuilder,
       initialExtra: initialExtra,
       requestFocus: requestFocus,
-      navigatorKey: modularNavigatorKey,
       redirectLimit: redirectLimit,
       routerNeglect: routerNeglect,
       initialLocation: initialRoute,
+      navigatorKey: modularNavigatorKey,
       errorPageBuilder: errorPageBuilder,
       refreshListenable: refreshListenable,
       restorationScopeId: restorationScopeId,
@@ -244,9 +244,10 @@ final class ModugoConfiguration {
   /// Recursively flattens all modules starting from [root].
   static List<Module> _collectModules(Module root) {
     final buffer = <Module>[];
-    void visit(Module mod) {
-      buffer.add(mod);
-      for (final imported in mod.imports()) {
+
+    void visit(Module module) {
+      buffer.add(module);
+      for (final imported in module.imports()) {
         visit(imported);
       }
     }
