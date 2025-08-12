@@ -1,6 +1,6 @@
 // coverage:ignore-file
 
-import 'package:modugo/src/binding_key.dart';
+import 'package:modugo/src/routes/models/binding_key_model.dart';
 
 /// Interface that defines the core contract for a dependency injector.
 ///
@@ -81,7 +81,7 @@ abstract interface class IInjector {
   /// Returns a set of all registered binding keys.
   ///
   /// This is useful for debugging or introspection of key-based bindings.
-  Set<BindingKey> get registeredKeys;
+  Set<BindingKeyModel> get registeredKeys;
 
   /// Clears all registered dependencies and disposes any disposable ones.
   ///
@@ -98,8 +98,8 @@ abstract interface class IInjector {
   /// Useful for cases where the type is not known at compile time.
   void disposeByType(Type type);
 
-  /// Disposes the instance registered with a specific [BindingKey].
+  /// Disposes the instance registered with a specific [BindingKeyModel].
   ///
   /// Useful for disposing key-specific bindings.
-  void disposeByKey(BindingKey key);
+  void disposeByKey(BindingKeyModel key);
 }

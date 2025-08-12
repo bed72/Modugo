@@ -4,30 +4,35 @@ import 'package:flutter/material.dart';
 
 import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/modugo.dart';
-import 'package:modugo/src/interfaces/injector_interface.dart';
-import 'package:modugo/src/interfaces/bind_interface.dart';
 
-/// A bind that creates a **single instance** of a dependency,
+import 'package:modugo/src/interfaces/bind_interface.dart';
+import 'package:modugo/src/interfaces/injector_interface.dart';
+
+/// Internal class representing a lazy singleton binding in the [Injector].
+///
+/// This binding creates a **single instance** of a dependency,
 /// but **only when it's first requested** (lazy instantiation).
 ///
-/// This is useful for optimizing performance and memory usage,
-/// especially for services that may not always be needed.
+/// Use cases:
+/// - Optimize performance and memory by delaying creation until needed.
+/// - Share a single instance across the app.
 ///
-/// Example:
+/// Example usage within the [Injector]:
 /// ```dart
-/// Bind.lazySingleton((i) => AuthService());
+/// injector.addLazySingleton((i) => AuthService());
 /// ```
 ///
-/// In this example, the `AuthService` will only be created when
-/// `Injector.get<AuthService>()` is called for the first time.
+/// The `AuthService` will only be instantiated upon the first call to
+/// `Modugo.get<AuthService>()`.
 ///
-/// The instance is **cached** and **shared** across the app.
+/// The created instance is cached and returned on subsequent calls.
 ///
-/// Additionally, the `dispose` method attempts to automatically
-/// clean up common Flutter types such as:
-/// - [Sink] → calls `close()`
-/// - [ChangeNotifier] → calls `dispose()`
-/// - [StreamController] → calls `close()`
+/// Additionally, the `dispose` method attempts to clean up common Flutter types:
+/// - If the instance is a [Sink], calls `close()`
+/// - If it's a [ChangeNotifier], calls `dispose()`
+/// - If it's a [StreamController], calls `close()`
+///
+/// Disposal errors are logged when [Modugo.debugLogDiagnostics] is enabled.
 final class LazySingletonBind<T> implements IBind<T> {
   T? _instance;
   final T Function(IInjector i) _builder;
@@ -50,7 +55,7 @@ final class LazySingletonBind<T> implements IBind<T> {
   void dispose() {
     final instance = _instance;
     if (instance == null) return;
-    
+
     try {
       // Handle common Flutter/Dart disposable types
       if (instance is Sink) {
@@ -64,9 +69,9 @@ final class LazySingletonBind<T> implements IBind<T> {
         _tryCallDispose(instance);
       }
       _instance = null;
-    } catch (e, stack) {
+    } catch (exception, stack) {
       Logger.injection(
-        'Error disposing instance of type ${instance.runtimeType}: $e',
+        'Error disposing instance of type ${instance.runtimeType}: $exception',
       );
       Logger.error('$stack');
     }
@@ -80,9 +85,13 @@ final class LazySingletonBind<T> implements IBind<T> {
       if (disposeMethod != null && disposeMethod is Function) {
         disposeMethod();
       }
-    } catch (e) {
+    } catch (exception) {
       // If dispose method doesn't exist or fails, ignore silently
       // This allows objects without dispose method to be cleaned up normally
+
+      Logger.injection(
+        'Error disposing instance of type ${instance.runtimeType}: $exception',
+      );
     }
   }
 }

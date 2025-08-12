@@ -14,14 +14,14 @@ void main() {
   group('GuardModel', () {
     test('injects guards into base module routes', () {
       final baseRoutes = [
-        ChildRoute(path: '/test1', child: (_, __) => Placeholder()),
-        ChildRoute(path: '/test2', child: (_, __) => Placeholder()),
+        ChildRoute(path: '/test1', child: (_, _) => Placeholder()),
+        ChildRoute(path: '/test2', child: (_, _) => Placeholder()),
       ];
 
       final mockModule = _ModuleMock(mockRoutes: baseRoutes);
       final guards = [_GuardMock('g1'), _GuardMock('g2')];
 
-      final guardModel = GuardModel(mockModule, guards);
+      final guardModel = GuardModel(guards: guards, module: mockModule);
 
       final guardedRoutes = guardModel.routes();
 
@@ -32,14 +32,17 @@ void main() {
       final mockImports = [_ModuleMock()];
 
       final baseModuleWithImports = _ImportMock(mockImports);
-      final guardModelWithImports = GuardModel(baseModuleWithImports, []);
+      final guardModelWithImports = GuardModel(
+        guards: [],
+        module: baseModuleWithImports,
+      );
 
       expect(guardModelWithImports.imports(), mockImports);
     });
 
     test('delegates persistent to base module', () {
       final mockModule = _ModuleMock(persistentValue: true);
-      final guardModel = GuardModel(mockModule, []);
+      final guardModel = GuardModel(guards: [], module: mockModule);
 
       expect(guardModel.persistent, isTrue);
     });

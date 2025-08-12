@@ -1,9 +1,11 @@
 import 'package:modugo/src/binds/factory_bind.dart';
 import 'package:modugo/src/binds/singleton_bind.dart';
 import 'package:modugo/src/binds/lazy_singleton_bind.dart';
+
 import 'package:modugo/src/interfaces/bind_interface.dart';
 import 'package:modugo/src/interfaces/injector_interface.dart';
-import 'package:modugo/src/binding_key.dart';
+
+import 'package:modugo/src/routes/models/binding_key_model.dart';
 
 /// A singleton dependency injector that manages the registration,
 /// retrieval, and disposal of services and objects within Modugo.
@@ -34,20 +36,21 @@ final class Injector implements IInjector {
   /// Returns the singleton instance of the [Injector].
   factory Injector() => _instance;
 
-  /// Internal registry that maps a [BindingKey] to its corresponding [IBind].
-  final Map<BindingKey, IBind<Object?>> _bindings = {};
+  /// Internal registry that maps a [BindingKeyModel] to its corresponding [IBind].
+  final Map<BindingKeyModel, IBind<Object?>> _bindings = {};
 
   /// Returns the set of all types currently registered in the injector.
   @override
-  Set<Type> get registeredTypes => _bindings.keys.map((key) => key.type).toSet();
+  Set<Type> get registeredTypes =>
+      _bindings.keys.map((key) => key.type).toSet();
 
   /// Returns the set of all binding keys currently registered in the injector.
   @override
-  Set<BindingKey> get registeredKeys => _bindings.keys.toSet();
+  Set<BindingKeyModel> get registeredKeys => _bindings.keys.toSet();
 
-  /// Creates a [BindingKey] for type [T] with optional key string.
-  BindingKey<T> _createKey<T>({String? key}) {
-    return BindingKey.fromString<T>(key);
+  /// Creates a [BindingKeyModel] for type [T] with optional key string.
+  BindingKeyModel<T> _createKey<T>({String? key}) {
+    return BindingKeyModel.fromString<T>(key);
   }
 
   /// Registers a factory bind for type [T], creating a new instance on every access.
@@ -96,16 +99,17 @@ final class Injector implements IInjector {
   @override
   void disposeByType(Type type) {
     // Find all bindings with this type and dispose them
-    final keysToRemove = _bindings.keys.where((key) => key.type == type).toList();
+    final keysToRemove =
+        _bindings.keys.where((key) => key.type == type).toList();
     for (final key in keysToRemove) {
       final bind = _bindings.remove(key);
       bind?.dispose();
     }
   }
 
-  /// Disposes and unregisters the bind with the specific [BindingKey].
+  /// Disposes and unregisters the bind with the specific [BindingKeyModel].
   @override
-  void disposeByKey(BindingKey key) {
+  void disposeByKey(BindingKeyModel key) {
     final bind = _bindings.remove(key);
     bind?.dispose();
   }
