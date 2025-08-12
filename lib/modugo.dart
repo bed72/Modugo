@@ -25,6 +25,7 @@ export 'src/routes/match_route.dart';
 export 'src/routes/module_route.dart';
 export 'src/routes/compiler_route.dart';
 export 'src/routes/shell_module_route.dart';
+export 'src/routes/models/binding_key_model.dart';
 export 'src/routes/stateful_shell_module_route.dart';
 
 export 'src/routes/models/route_model.dart';

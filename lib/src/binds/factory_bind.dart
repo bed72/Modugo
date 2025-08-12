@@ -1,33 +1,37 @@
-import 'package:modugo/src/injector.dart';
+import 'package:modugo/src/interfaces/injector_interface.dart';
 
 import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/interfaces/bind_interface.dart';
 
-/// A bind that creates a **new instance** of a dependency **every time** it is requested.
+/// Internal class representing a factory binding in the [Injector].
 ///
-/// This is useful when you want **stateless**, **disposable** objects
-/// or objects that should not be shared across different parts of the app.
+/// This binding creates a **new instance** of a dependency **every time** it is requested.
 ///
-/// Example:
+/// Use cases:
+/// - Stateless objects
+/// - Disposable objects
+/// - Objects that must not be shared globally
+///
+/// Example usage within the [Injector]:
 /// ```dart
-/// Bind.factory((i) => LoginController());
+/// injector.addFactory((i) => LoginController());
 /// ```
 ///
-/// In this case, every time `Injector.get<LoginController>()` is called,
-/// a **new instance** of `LoginController` will be created.
+/// Each call to `Modugo.get<LoginController>()` will create a **new instance**
+/// via this factory.
 ///
-/// This class is used internally when registering a `Bind.factory(...)`.
+/// This class is used internally by the [Injector] when registering factory binds.
 final class FactoryBind<T> implements IBind<T> {
   /// The function responsible for building a new instance of [T].
-  final T Function(Injector i) _builder;
+  final T Function(IInjector i) _builder;
 
   /// Creates a new [FactoryBind] using the provided [_builder] function.
   FactoryBind(this._builder);
 
   /// Returns a **new instance** of [T] every time this method is called.
   @override
-  T get(Injector i) => _builder(i);
+  T get(IInjector i) => _builder(i);
 
   /// No disposal logic is needed for factory binds,
   /// but logs a message if [Modugo.debugLogDiagnostics] is enabled.

@@ -9,6 +9,7 @@ import 'package:modugo/src/extensions/guard_extension.dart';
 
 import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 /// Injects a list of guards into a given route module.
 ///
@@ -20,13 +21,23 @@ import 'package:modugo/src/interfaces/module_interface.dart';
 /// - [ChildRoute]
 /// - [ModuleRoute]
 /// - [ShellModuleRoute]
+/// - [StatefulShellModuleRoute]
 ///
 /// [route]: The route module into which guards will be injected.
 /// [parentGuards]: The list of guards to inject.
 ///
 /// Returns the same route type instance with the [guards] injected.
-IModule _injectGuards(IModule route, List<IGuard> guards) =>
-    route is ChildRoute ? route.withInjectedGuards(guards) : route;
+IModule _injectGuards(IModule route, List<IGuard> guards) {
+  if (route is ChildRoute) return route.withInjectedGuards(guards);
+  if (route is ModuleRoute) return route.withInjectedGuards(guards);
+  if (route is ShellModuleRoute) return route.withInjectedGuards(guards);
+  if (route is StatefulShellModuleRoute) {
+    return route.withInjectedGuards(guards);
+  }
+
+  return route;
+}
+// route is ChildRoute ? route.withInjectedGuards(guards) : route;
 
 /// Injects a list of guards into each route module in the given list.
 ///

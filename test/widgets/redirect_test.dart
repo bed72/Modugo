@@ -43,7 +43,7 @@ final class _RedirectingModule extends Module {
   ];
 }
 
-class _DummyModule extends Module {
+final class _DummyModule extends Module {
   @override
   List<IModule> routes() => [
     ChildRoute(path: '/', child: (_, _) => const Text('Should never reach')),

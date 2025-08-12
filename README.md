@@ -512,11 +512,11 @@ In the example above, `AuthGuard` will be automatically applied to all routes in
 
 ### Supported Types
 
-- `addSingleton<T>((i) => ...)`
-- `addLazySingleton<T>((i) => ...)`
-- `addFactory<T>((i) => ...)`
+- `addSingleton<T>((i) => ...)` - Creates instance immediately and reuses it
+- `addLazySingleton<T>((i) => ...)` - Creates instance on first access and reuses it
+- `addFactory<T>((i) => ...)` - Creates new instance every time
 
-### Example
+### Basic Example
 
 ```dart
 final class HomeModule extends Module {
@@ -535,9 +535,54 @@ final class HomeModule extends Module {
 }
 ```
 
+### 🔑 Multiple Instances with Keys
+
+Sometimes you need multiple instances of the same type. Modugo supports this with **keyed bindings**:
+
+```dart
+final class DatabaseModule extends Module {
+  @override
+  void binds(IInjector i) {
+    i
+      ..addSingleton<Database>((i) => Database.primary(), key: 'primary')
+      ..addSingleton<Database>((i) => Database.cache(), key: 'cache')
+      ..addLazySingleton<ApiClient>((i) => ApiClient.main(), key: 'main')
+      ..addLazySingleton<ApiClient>((i) => ApiClient.analytics(), key: 'analytics');
+  }
+}
+```
+
+#### Accessing keyed dependencies:
+
+```dart
+// Get specific database instances
+final primaryDb = Modugo.get<Database>(key: 'primary');
+final cacheDb = Modugo.get<Database>(key: 'cache');
+
+// Get specific API clients
+final mainApi = injector.get<ApiClient>(key: 'main');
+final analyticsApi = injector.get<ApiClient>(key: 'analytics');
+```
+
+#### Via context extension:
+
+```dart
+// Get keyed dependencies using context
+final primaryDb = context.read<Database>(key: 'primary');
+final mainApi = context.read<ApiClient>(key: 'main');
+```
+
+✅ **Use cases for keyed bindings:**
+- Multiple database connections (primary, cache, analytics)
+- Different API clients (main, backup, testing)
+- Environment-specific configurations (dev, staging, prod)
+- Feature-specific services (auth, payments, notifications)
+
 ---
 
 ## 🔍 Accessing Dependencies
+
+### Basic Access
 
 ```dart
 final controller = Modugo.get<HomeController>();
@@ -547,6 +592,22 @@ Or via context extension:
 
 ```dart
 final controller = context.read<HomeController>();
+```
+
+### Keyed Dependencies
+
+```dart
+// Direct access with keys
+final primaryDb = Modugo.get<Database>(key: 'primary');
+final cacheDb = Modugo.get<Database>(key: 'cache');
+```
+
+Or via context extension:
+
+```dart
+// Context extension with keys
+final primaryDb = context.read<Database>(key: 'primary');
+final cacheDb = context.read<Database>(key: 'cache');
 ```
 
 ---

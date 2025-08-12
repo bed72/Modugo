@@ -1,5 +1,7 @@
 // coverage:ignore-file
 
+import 'package:modugo/src/routes/models/binding_key_model.dart';
+
 /// Interface that defines the core contract for a dependency injector.
 ///
 /// This interface powers Modugo's dependency system, allowing types to be:
@@ -21,73 +23,83 @@
 /// final controller = injector.get<AuthController>();
 /// ```
 abstract interface class IInjector {
-  /// Registers a dependency as a **factory**.
+  /// Registers a dependency as a **factory** with a specific key.
   ///
   /// A new instance is created every time [get] is called.
   ///
   /// Example:
   /// ```dart
-  /// injector.addFactory((i) => MyController());
+  /// injector.addFactory<MyController>((i) => MyController(), key: 'login');
   /// ```
-  IInjector addFactory<T>(T Function(IInjector i) builder);
+  IInjector addFactory<T>(T Function(IInjector i) builder, {String? key});
 
-  /// Registers a dependency as a **singleton**.
+  /// Registers a dependency as a **singleton** with a specific key.
   ///
   /// The instance is created immediately and reused across the app.
   ///
   /// Example:
   /// ```dart
-  /// injector.addSingleton((i) => AppConfig());
+  /// injector.addSingleton<AppConfig>((i) => AppConfig(), key: 'prod');
   /// ```
-  IInjector addSingleton<T>(T Function(IInjector i) builder);
+  IInjector addSingleton<T>(T Function(IInjector i) builder, {String? key});
 
-  /// Registers a dependency as a **lazy singleton**.
+  /// Registers a dependency as a **lazy singleton** with a specific key.
   ///
   /// The instance is created only once on first access.
   ///
   /// Example:
   /// ```dart
-  /// injector.addLazySingleton((i) => AnalyticsService());
+  /// injector.addLazySingleton<AnalyticsService>((i) => AnalyticsService(), key: 'firebase');
   /// ```
-  IInjector addLazySingleton<T>(T Function(IInjector i) builder);
+  IInjector addLazySingleton<T>(T Function(IInjector i) builder, {String? key});
 
-  /// Retrieves an instance of type [T] from the injector.
+  /// Retrieves an instance of type [T] from the injector using a specific key.
   ///
-  /// Throws if [T] has not been registered.
+  /// Throws if the key has not been registered.
   ///
   /// Example:
   /// ```dart
-  /// final auth = injector.get<AuthService>();
+  /// final auth = injector.get<AuthService>(key: 'oauth');
   /// ```
-  T get<T>();
+  T get<T>({String? key});
 
-  /// Returns `true` if a dependency of type [T] is already registered.
+  /// Returns `true` if a dependency with the given key is already registered.
   ///
   /// Example:
   /// ```dart
-  /// if (!injector.isRegistered<AuthService>()) {
-  ///   injector.addSingleton((i) => AuthService());
+  /// if (!injector.isRegistered<AuthService>(key: 'oauth')) {
+  ///   injector.addSingleton<AuthService>((i) => AuthService(), key: 'oauth');
   /// }
   /// ```
-  bool isRegistered<T>();
+  bool isRegistered<T>({String? key});
 
   /// Returns a set of all registered types.
   ///
   /// This is useful for debugging or introspection.
   Set<Type> get registeredTypes;
 
+  /// Returns a set of all registered binding keys.
+  ///
+  /// This is useful for debugging or introspection of key-based bindings.
+  Set<BindingKeyModel> get registeredKeys;
+
   /// Clears all registered dependencies and disposes any disposable ones.
   ///
   /// After this call, the injector is empty.
   void clearAll();
 
-  /// Disposes the instance of the given type [T], if it exists.
+  /// Disposes the instance of the given type [T] with optional key, if it exists.
   ///
   /// Has no effect if the instance was never created or is not disposable.
-  void dispose<T>();
+  void dispose<T>({String? key});
 
   /// Disposes the instance registered under a raw [Type].
   ///
   /// Useful for cases where the type is not known at compile time.
   void disposeByType(Type type);
+
+  /// Disposes the instance registered with a specific [BindingKeyModel].
+  ///
+  /// Useful for disposing key-specific bindings.
+  void disposeByKey(BindingKeyModel key);
 }
