@@ -13,6 +13,7 @@ import 'package:modugo/src/injector.dart';
 ///   @override
 ///   Widget build(BuildContext context) {
 ///     final controller = context.read<HomeController>();
+///     final primaryDb = context.read<Database>(key: 'primary');
 ///     return Scaffold(...);
 ///   }
 /// }
@@ -21,8 +22,12 @@ import 'package:modugo/src/injector.dart';
 /// This is equivalent to:
 /// ```dart
 /// final controller = Injector().get<HomeController>();
+/// final primaryDb = Injector().get<Database>(key: 'primary');
 /// ```
 extension ContextInjectionExtension on BuildContext {
   /// Retrieves a registered dependency of type [T] from the [Injector].
-  T read<T>() => Injector().get<T>();
+  /// 
+  /// Optionally specify a [key] to retrieve a specific instance when multiple
+  /// instances of the same type are registered.
+  T read<T>({String? key}) => Injector().get<T>(key: key);
 }

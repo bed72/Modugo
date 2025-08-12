@@ -5,6 +5,7 @@ export 'src/module.dart';
 export 'src/dispose.dart';
 export 'src/manager.dart';
 export 'src/injector.dart';
+export 'src/binding_key.dart';
 export 'src/transition.dart';
 
 export 'src/notifiers/router_notifier.dart';
