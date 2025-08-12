@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,7 +11,7 @@ import 'fakes/fakes.dart';
 void main() {
   setUp(() async {
     Injector().clearAll();
-    final manager = Manager();
+    final manager = InjectorManager();
     manager.module = null;
     manager.bindReferences.clear();
   });
@@ -44,7 +46,7 @@ void main() {
       await startModugoFake(module: module);
       module.configureRoutes(topLevel: true, path: '/home');
 
-      expect(() => Injector().get<_Service>(), returnsNormally);
+      expect(() => Modugo.get<_Service>(), returnsNormally);
     });
 
     test('creates ModuleRoute using / as default child', () async {
@@ -106,7 +108,7 @@ void main() {
       );
       expect(result, isFalse);
 
-      final manager = Manager();
+      final manager = InjectorManager();
       expect(manager.isModuleActive(module), isTrue);
     });
 
@@ -114,7 +116,7 @@ void main() {
       final module = _ModuleWithBranch();
       await startModugoFake(module: module);
 
-      final manager = Manager();
+      final manager = InjectorManager();
       manager.registerBindsIfNeeded(module);
       manager.registerRoute('/with-branch', module, branch: 'branch-a');
 
@@ -212,7 +214,7 @@ void main() {
       expect(result, isNull);
     });
 
-    test('matches ChildRoute with routePattern', () {
+    test('matches ChildRoute with routePattern', () async {
       final route = ChildRoute(
         path: '/user/:id',
         routePattern: RoutePatternModel.from(
@@ -225,13 +227,13 @@ void main() {
       final root = _ModuleWith([route]);
       Modugo.manager.module = root;
 
-      final result = Modugo.matchRoute('/user/42');
+      final result = await Modugo.matchRoute('/user/42');
       expect(result, isNotNull);
       expect(result!.params['id'], '42');
       expect(result.route, equals(route));
     });
 
-    test('matches ModuleRoute with routePattern', () {
+    test('matches ModuleRoute with routePattern', () async {
       final nested = _ModuleWith([]);
       final route = ModuleRoute(
         module: nested,
@@ -242,12 +244,12 @@ void main() {
       final root = _ModuleWith([route]);
       Modugo.manager.module = root;
 
-      final result = Modugo.matchRoute('/profile');
+      final result = await Modugo.matchRoute('/profile');
       expect(result, isNotNull);
       expect(result!.route, equals(route));
     });
 
-    test('matches ShellModuleRoute with routePattern', () {
+    test('matches ShellModuleRoute with routePattern', () async {
       final shell = ShellModuleRoute(
         routes: [],
         builder: (_, _, _) => const Placeholder(),
@@ -257,12 +259,12 @@ void main() {
       final root = _ModuleWith([shell]);
       Modugo.manager.module = root;
 
-      final result = Modugo.matchRoute('/shell');
+      final result = await Modugo.matchRoute('/shell');
       expect(result, isNotNull);
       expect(result!.route, equals(shell));
     });
 
-    test('matches StatefulShellModuleRoute with routePattern', () {
+    test('matches StatefulShellModuleRoute with routePattern', () async {
       final shell = StatefulShellModuleRoute(
         routes: [],
         builder: (_, _, _) => const Placeholder(),
@@ -275,7 +277,7 @@ void main() {
       final root = _ModuleWith([shell]);
       Modugo.manager.module = root;
 
-      final result = Modugo.matchRoute('/tabs/home');
+      final result = await Modugo.matchRoute('/tabs/home');
       expect(result, isNotNull);
       expect(result!.params['tab'], 'home');
       expect(result.route, equals(shell));
@@ -304,7 +306,7 @@ final class _ModuleWith extends Module {
 
 final class _InnerModule extends Module {
   @override
-  void binds(IInjector i) {
+  FutureOr<void> binds(IInjector i) {
     i.addFactory<_Service>((_) => _Service());
   }
 

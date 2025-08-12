@@ -4,29 +4,30 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/dispose.dart';
-import 'package:modugo/src/manager.dart';
 import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/routes/child_route.dart';
-import 'package:modugo/src/interfaces/module_interface.dart';
-import 'package:modugo/src/interfaces/manager_interface.dart';
-import 'package:modugo/src/interfaces/injector_interface.dart';
+import 'package:modugo/src/managers/injector_manager.dart';
 
-import 'fakes/fakes.dart';
+import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/interfaces/injector_interface.dart';
+import 'package:modugo/src/interfaces/injector_manager_interface.dart';
+
+import '../fakes/fakes.dart';
 
 void main() {
-  late final IManager manager;
+  late final IInjectorManager manager;
   late final _RootModule rootModule;
   late final _InnerModule innerModule;
 
   setUp(() {
-    final manager = Manager();
+    final manager = InjectorManager();
     manager.bindReferences.clear();
     manager.module = null;
     Injector().clearAll();
   });
 
   setUpAll(() async {
-    manager = Manager();
+    manager = InjectorManager();
     rootModule = _RootModule();
     innerModule = rootModule.imports().first as _InnerModule;
 
@@ -71,7 +72,7 @@ void main() {
 
   group('Bind reference tracking', () {
     test('bind reference count should decrease correctly', () async {
-      final manager = Manager();
+      final manager = InjectorManager();
 
       final rootModule = _EmptyModule();
       final innerModule = _InnerModule();
@@ -102,7 +103,7 @@ void main() {
     });
 
     test('manual unregisterBinds removes exclusive bind', () async {
-      final manager = Manager();
+      final manager = InjectorManager();
       final rootModule = _EmptyModule();
       final innerModule = _InnerModule();
 
@@ -175,7 +176,7 @@ void main() {
       'unregisterRoute removes RouteAccessModel and disposes when empty',
       () async {
         final module = _ImportAnotherModule();
-        final manager = Manager();
+        final manager = InjectorManager();
 
         manager.registerBindsIfNeeded(module);
         manager.registerRoute('/to-remove', module, branch: 'main');
@@ -191,7 +192,7 @@ void main() {
 
     test('unregisterRoute does not dispose if other branches remain', () async {
       final module = _ImportAnotherModule();
-      final manager = Manager();
+      final manager = InjectorManager();
 
       manager.registerBindsIfNeeded(module);
       manager.registerRoute('/cart', module, branch: 'a');
@@ -212,7 +213,7 @@ void main() {
       'calling unregisterRoute with no matching RouteAccessModel does nothing',
       () {
         final module = _ImportAnotherModule();
-        final manager = Manager();
+        final manager = InjectorManager();
 
         manager.registerBindsIfNeeded(module);
         manager.registerRoute('/match', module, branch: 'x');
@@ -228,7 +229,7 @@ void main() {
   });
 
   test('module getter and setter work as expected', () {
-    final manager = Manager();
+    final manager = InjectorManager();
     final module = _RootModule();
 
     manager.module = module;
@@ -238,7 +239,7 @@ void main() {
   test(
     'shared bind across modules is not disposed until all are inactive',
     () async {
-      final manager = Manager();
+      final manager = InjectorManager();
       final sharedModule = _InnerModule();
 
       final moduleA = _ImportAnotherModule();
@@ -294,7 +295,7 @@ void main() {
 
   group('Manager.rootModule', () {
     test('returns the module after being set', () {
-      final manager = Manager();
+      final manager = InjectorManager();
       final module = _EmptyModule();
 
       manager.module = module;
@@ -303,7 +304,7 @@ void main() {
     });
 
     test('throws if accessed before being set', () {
-      final manager = Manager();
+      final manager = InjectorManager();
       manager.module = null;
 
       expect(() => manager.rootModule, throwsStateError);

@@ -15,10 +15,10 @@ void main() {
   group('Modugo.matchRoute recursive lookup', () {
     test(
       'should match route "/" recursively inside StatefulShellModuleRoute > ModuleRoute > ChildRoute',
-      () {
+      () async {
         Modugo.configure(module: _DummyShellModule(), initialRoute: '/');
 
-        final match = Modugo.matchRoute('/');
+        final match = await Modugo.matchRoute('/');
         expect(match, isNotNull);
         expect(match!.route, isA<ChildRoute>());
       },

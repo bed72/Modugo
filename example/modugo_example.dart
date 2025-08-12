@@ -10,6 +10,8 @@
 /// then use `flutter run example/modugo_example.dart`.
 library;
 
+import 'dart:async';
+
 import 'package:modugo/modugo.dart';
 import 'package:flutter/material.dart';
 
@@ -46,7 +48,7 @@ final class AppModule extends Module {
 /// The home module that handles feature-specific dependencies and routes.
 final class HomeModule extends Module {
   @override
-  void binds(IInjector i) {
+  FutureOr<void> binds(IInjector i) {
     i
       ..addLazySingleton<ModugoRepository>((_) => ModugoRepositoryImpl())
       ..addSingleton<HomeController>(

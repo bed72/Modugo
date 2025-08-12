@@ -3,22 +3,15 @@ export 'src/logger.dart';
 export 'src/modugo.dart';
 export 'src/module.dart';
 export 'src/dispose.dart';
-export 'src/manager.dart';
 export 'src/injector.dart';
 export 'src/transition.dart';
-export 'src/event.dart';
 
 export 'src/notifiers/router_notifier.dart';
+export 'src/managers/injector_manager.dart';
 
 export 'src/binds/factory_bind.dart';
 export 'src/binds/singleton_bind.dart';
 export 'src/binds/lazy_singleton_bind.dart';
-
-export 'src/interfaces/bind_interface.dart';
-export 'src/interfaces/guard_interface.dart';
-export 'src/interfaces/module_interface.dart';
-export 'src/interfaces/manager_interface.dart';
-export 'src/interfaces/injector_interface.dart';
 
 export 'src/routes/child_route.dart';
 export 'src/routes/match_route.dart';
@@ -32,6 +25,12 @@ export 'src/routes/models/route_model.dart';
 export 'src/routes/models/path_token_model.dart';
 export 'src/routes/models/route_pattern_model.dart';
 export 'src/routes/models/parameter_token_model.dart';
+
+export 'src/interfaces/bind_interface.dart';
+export 'src/interfaces/guard_interface.dart';
+export 'src/interfaces/module_interface.dart';
+export 'src/interfaces/injector_interface.dart';
+export 'src/interfaces/injector_manager_interface.dart';
 
 export 'src/extensions/match_route_extension.dart';
 export 'src/extensions/context_state_extension.dart';

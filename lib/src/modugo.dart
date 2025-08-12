@@ -7,10 +7,10 @@ import 'package:go_router/go_router.dart';
 import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/dispose.dart';
-import 'package:modugo/src/manager.dart';
 import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/transition.dart';
 
+import 'package:modugo/src/managers/injector_manager.dart';
 import 'package:modugo/src/notifiers/router_notifier.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
 
@@ -75,7 +75,7 @@ final class ModugoConfiguration {
   static GoRouter? _router;
 
   /// Global manager instance for handling modules and route lifecycle.
-  static final manager = Manager();
+  static final manager = InjectorManager();
 
   /// A global [RouteNotifier] that emits the current location path when navigation occurs.
   ///
@@ -107,10 +107,10 @@ final class ModugoConfiguration {
   ///
   /// Returns a [MatchRoute] containing the matched route and extracted parameters,
   /// or `null` if no match is found.
-  static MatchRoute? matchRoute(String location) {
-    final allModules = _collectModules(Modugo.manager.rootModule);
+  static FutureOr<MatchRoute?> matchRoute(String location) async {
+    final modules = await _collectModules(Modugo.manager.rootModule);
 
-    for (final module in allModules) {
+    for (final module in modules) {
       for (final route in module.routes()) {
         final match = _matchRouteRecursive(route, location);
         if (match != null) return match;
@@ -242,16 +242,20 @@ final class ModugoConfiguration {
   }
 
   /// Recursively flattens all modules starting from [root].
-  static List<Module> _collectModules(Module root) {
+  static FutureOr<List<Module>> _collectModules(Module root) async {
     final buffer = <Module>[];
-    void visit(Module mod) {
-      buffer.add(mod);
-      for (final imported in mod.imports()) {
+
+    FutureOr<void> visit(Module module) async {
+      buffer.add(module);
+      final modules = await module.imports();
+
+      for (final imported in modules) {
         visit(imported);
       }
     }
 
-    visit(root);
+    await visit(root);
+
     return buffer;
   }
 }

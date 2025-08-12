@@ -1,40 +1,48 @@
 import 'dart:async';
 
 import 'package:modugo/modugo.dart';
+import 'package:flutter/material.dart';
+
+import 'package:modugo/src/managers/queue_manager.dart';
 import 'package:modugo/src/routes/models/route_access_model.dart';
 
 /// Internal class responsible for managing the lifecycle of modules and their binds.
 ///
-/// The [Manager] tracks:
+/// The [InjectorManager] tracks:
 /// - which modules are currently active
 /// - when and how binds should be registered or disposed
 /// - route-to-module associations for cleanup
 ///
 /// It is automatically used by [ModugoConfiguration], and should not be instantiated manually.
-final class Manager implements IManager {
+final class InjectorManager implements IInjectorManager {
   Timer? _timer;
   Module? _module;
 
+  final injector = Injector();
+
+  final QueueManager _queueManager = QueueManager.instance;
+
   final Map<Type, int> _bindReferences = {};
+  final Set<Module> _registeringModules = {};
   final Map<Module, Set<Type>> _moduleTypes = {};
   final Map<Module, List<RouteAccessModel>> _activeRoutes = {};
 
   /// A private static instance used to implement the singleton pattern.
   ///
-  /// This ensures that only one instance of [Manager] exists throughout
+  /// This ensures that only one instance of [InjectorManager] exists throughout
   /// the application's lifecycle.
-  static final Manager _instance = Manager._();
+  static final InjectorManager _instance = InjectorManager._();
 
   /// Private named constructor used internally to create the singleton instance.
   ///
-  /// Prevents external instantiation of the [Manager] class.
-  Manager._();
+  /// Prevents external instantiation of the [InjectorManager] class.
+  InjectorManager._();
 
-  /// Factory constructor that returns the singleton instance of [Manager].
+  /// Factory constructor that returns the singleton instance of [InjectorManager].
   ///
-  /// This provides global access to the single [Manager] instance,
+  /// This provides global access to the single [InjectorManager] instance,
   /// ensuring consistent state and behavior across the app.
-  factory Manager() => _instance;
+  factory InjectorManager() => _instance;
 
   /// Returns the currently active root [Module] registered via [Modugo.configure].
   ///
@@ -97,12 +105,16 @@ final class Manager implements IManager {
   /// If the module has already been assigned, it does nothing.
   ///
   /// It also delegates to [registerBindsIfNeeded] to ensure binds are properly registered.
+  ///
+  /// The registration is enqueued to avoid concurrent bind registration issues.
   @override
-  void registerBindsAppModule(Module module) {
+  Future<void> registerBindsAppModule(Module module) async {
     if (_module != null) return;
 
-    _module = module;
-    registerBindsIfNeeded(module);
+    await _queueManager.enqueue(() async {
+      _module = module;
+      await registerBindsIfNeeded(module);
+    });
   }
 
   /// Registers binds for the given [module] only if it is not already active.
@@ -114,14 +126,26 @@ final class Manager implements IManager {
   /// If the module is already active, it is skipped to avoid duplicate bindings.
   ///
   /// Logs the module registration if [Modugo.debugLogDiagnostics] is enabled.
+  ///
+  /// The registration is enqueued to guarantee sequential execution.
   @override
-  void registerBindsIfNeeded(Module module) {
-    if (_activeRoutes.containsKey(module)) return;
+  Future<void> registerBindsIfNeeded(Module module) async {
+    if (_activeRoutes.containsKey(module) ||
+        _registeringModules.contains(module)) {
+      return;
+    }
 
-    _registerBinds(module);
+    _registeringModules.add(module);
     _activeRoutes[module] = [];
 
-    Logger.module('${module.runtimeType} UP');
+    await _queueManager.enqueue(() async {
+      try {
+        await _registerBinds(module);
+        Logger.module('${module.runtimeType} UP');
+      } finally {
+        _registeringModules.remove(module);
+      }
+    });
   }
 
   /// Registers a route [path] as active for the given [module].
@@ -154,7 +178,9 @@ final class Manager implements IManager {
 
     _timer?.cancel();
     _timer = Timer(Duration(milliseconds: disposeMilisenconds), () {
-      if (_activeRoutes[module]?.isEmpty ?? true) unregisterBinds(module);
+      if (_activeRoutes[module]?.isEmpty ?? true) {
+        unregisterBinds(module);
+      }
       _timer?.cancel();
     });
   }
@@ -168,49 +194,63 @@ final class Manager implements IManager {
   /// - all registered bind types from the module are reference-decremented and disposed if unused
   ///
   /// If [Modugo.debugLogDiagnostics] is enabled, the unregistration is logged.
+  ///
+  /// The unregistration is enqueued to ensure sequential and safe disposal.
   @override
-  void unregisterBinds(Module module) {
+  Future<void> unregisterBinds(Module module) async {
     if (_module == module) return;
     if (_activeRoutes[module]?.isNotEmpty ?? false) return;
 
-    if (module.persistent) {
-      Logger.module('${module.runtimeType} PERSISTENT');
+    await _queueManager.enqueue(() async {
+      if (module.persistent) {
+        Logger.module('${module.runtimeType} PERSISTENT');
+        return;
+      }
 
-      return;
-    }
+      Logger.module('${module.runtimeType} DOWN');
 
-    Logger.module('${module.runtimeType} DOWN');
+      final types = _moduleTypes.remove(module) ?? {};
 
-    final types = _moduleTypes.remove(module) ?? {};
+      for (final type in types) {
+        decrementBindReference(type);
+      }
 
-    for (final type in types) {
-      _decrementBindReference(type);
-    }
-
-    _activeRoutes.remove(module);
+      _activeRoutes.remove(module);
+    });
   }
 
-  void _registerBinds(Module module) {
+  /// Registers binds from the given [module] and its imported modules.
+  ///
+  /// This method tracks which bind types belong to the module for
+  /// future reference counting and disposal.
+  ///
+  /// This method is synchronous and expects the binds method in modules to be synchronous.
+  Future<void> _registerBinds(Module module) async {
     final typesForModule = <Type>{};
 
-    final before = Injector().registeredTypes;
-    module.binds(Injector());
-    final after = Injector().registeredTypes;
+    final before = injector.registeredTypes;
+
+    // Await binds que pode ser Future ou void
+    await Future.value(module.binds(injector));
+
+    final after = injector.registeredTypes;
 
     final newTypes = after.difference(before);
     for (final type in newTypes) {
-      _incrementBindReference(type);
+      incrementBindReference(type);
       typesForModule.add(type);
     }
 
-    for (final imported in module.imports()) {
-      final beforeImport = Injector().registeredTypes;
-      imported.binds(Injector());
-      final afterImport = Injector().registeredTypes;
+    final importedModules = await Future.value(module.imports());
+
+    for (final imported in importedModules) {
+      final beforeImport = injector.registeredTypes;
+      await Future.value(imported.binds(injector));
+      final afterImport = injector.registeredTypes;
 
       final importedTypes = afterImport.difference(beforeImport);
       for (final type in importedTypes) {
-        _incrementBindReference(type);
+        incrementBindReference(type);
         typesForModule.add(type);
       }
     }
@@ -218,16 +258,18 @@ final class Manager implements IManager {
     _moduleTypes[module] = typesForModule;
   }
 
-  void _incrementBindReference(Type type) {
+  @visibleForTesting
+  void incrementBindReference(Type type) {
     _bindReferences[type] = (_bindReferences[type] ?? 0) + 1;
   }
 
-  void _decrementBindReference(Type type) {
+  @visibleForTesting
+  void decrementBindReference(Type type) {
     if (_bindReferences.containsKey(type)) {
       _bindReferences[type] = (_bindReferences[type] ?? 1) - 1;
       if (_bindReferences[type] == 0) {
         _bindReferences.remove(type);
-        Injector().disposeByType(type);
+        injector.disposeByType(type);
       }
     }
   }

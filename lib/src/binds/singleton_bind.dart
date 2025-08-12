@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:modugo/src/logger.dart';
-import 'package:modugo/src/modugo.dart';
 
 import 'package:modugo/src/interfaces/bind_interface.dart';
 import 'package:modugo/src/interfaces/injector_interface.dart';
@@ -13,53 +12,77 @@ import 'package:modugo/src/interfaces/injector_interface.dart';
 /// This binding creates and stores a **single instance** of a dependency
 /// as soon as it is first requested, and keeps it in memory until disposal.
 ///
-/// Unlike [LazySingletonBind], this does not intentionally delay instantiation;
-/// the instance is created on the first access and cached.
+/// The builder can be asynchronous, allowing initialization
+/// that requires awaiting (e.g., async setup, I/O operations).
 ///
-/// Typical usage within the [Injector]:
+/// The created instance is cached and returned on subsequent calls.
+///
+/// Example usage:
 /// ```dart
-/// injector.addSingleton((i) => AppConfig());
+/// injector.addSingleton<MyService>((injector) async {
+///   final service = MyService();
+///   await service.init();
+///   return service;
+/// });
 /// ```
 ///
-/// The instance will be created on the first call to `Bind.get<AppConfig>()`
-/// and shared thereafter.
+/// The `get` method returns a [Future<T>] to always await the
+/// creation or retrieval of the instance.
 ///
-/// The `dispose` method attempts to clean up common Flutter types:
+/// The `dispose` method attempts to clean up the instance if it
+/// supports common Flutter/Dart disposal patterns:
 /// - If the instance is a [Sink], calls `close()`
 /// - If it's a [ChangeNotifier], calls `dispose()`
 /// - If it's a [StreamController], calls `close()`
+/// - Otherwise, tries to call a `dispose()` method if present.
 ///
-/// Any disposal errors are logged when [Modugo.debugLogDiagnostics] is enabled.
+/// Disposal errors are logged using [Logger].
 final class SingletonBind<T> implements IBind<T> {
-  T? _instance;
+  /// Cached future of the singleton instance to handle async initialization.
+  Future<T>? _instanceFuture;
 
-  final T Function(IInjector i) _builder;
+  /// Resolved instance after the future completes.
+  T? _resolvedInstance;
 
-  /// Creates a [SingletonBind] with the provided factory function.
+  /// The builder function that creates the instance.
+  /// Can return [T] or [Future<T>].
+  final FutureOr<T> Function(IInjector i) _builder;
+
+  /// Creates a [SingletonBind] with the given asynchronous builder.
   SingletonBind(this._builder);
 
-  /// Returns the cached singleton instance of [T].
+  /// Returns the singleton instance asynchronously.
   ///
-  /// If the instance does not exist yet, it is created via [_builder]
-  /// and cached for subsequent calls.
+  /// If the instance was not yet created, it invokes the builder,
+  /// caches the [Future], and awaits its completion.
+  /// Subsequent calls await the cached [Future].
   @override
-  T get(IInjector i) => _instance ??= _builder(i);
+  FutureOr<T> get(IInjector i) async {
+    if (_instanceFuture == null) {
+      final result = _builder(i);
+      _instanceFuture = result is Future<T> ? result : Future.value(result);
+      _resolvedInstance = await _instanceFuture!;
+    }
 
-  /// Disposes of the stored instance, if any.
+    return _instanceFuture!;
+  }
+
+  /// Disposes the singleton instance if it exists.
   ///
-  /// If the instance implements [Sink], [ChangeNotifier], [StreamController],
-  /// or has a `dispose()` method, appropriate cleanup is attempted.
+  /// Calls appropriate disposal methods based on the instance type:
+  /// - [Sink.close()]
+  /// - [ChangeNotifier.dispose()]
+  /// - [StreamController.close()]
+  /// - Calls `dispose()` if present on the instance.
   ///
-  /// Errors during disposal are logged for debugging.
-  /// Disposes the stored instance if present,
-  /// invoking the appropriate cleanup methods if implemented.
+  /// Clears the cached instance and future.
+  /// Logs any disposal errors.
   @override
-  void dispose() {
-    final instance = _instance;
+  void dispose() async {
+    final instance = _resolvedInstance;
     if (instance == null) return;
 
     try {
-      // Handle common Flutter/Dart disposable types
       if (instance is Sink) {
         instance.close();
       } else if (instance is ChangeNotifier) {
@@ -69,27 +92,26 @@ final class SingletonBind<T> implements IBind<T> {
       } else {
         _tryCallDispose(instance);
       }
-      _instance = null;
-    } catch (e, stack) {
+      _instanceFuture = null;
+      _resolvedInstance = null;
+    } catch (exception, stack) {
       Logger.injection(
-        'Error disposing instance of type ${instance.runtimeType}: $e',
+        'Error disposing instance of type ${instance.runtimeType}: $exception',
       );
       Logger.error('$stack');
     }
   }
 
-  /// Attempts to call dispose() method on the instance using reflection.
+  /// Attempts to invoke a `dispose()` method on the instance if it exists.
+  ///
+  /// Silently ignores errors if the method is not present or fails.
   void _tryCallDispose(dynamic instance) {
     try {
-      // Try to access dispose method dynamically
       final disposeMethod = instance.dispose;
       if (disposeMethod != null && disposeMethod is Function) {
         disposeMethod();
       }
     } catch (exception) {
-      // If dispose method doesn't exist or fails, ignore silently
-      // This allows objects without dispose method to be cleaned up normally
-
       Logger.injection(
         'Error disposing instance of type ${instance.runtimeType}: $exception',
       );

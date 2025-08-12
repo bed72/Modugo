@@ -6,14 +6,14 @@ import 'package:modugo/src/routes/models/route_access_model.dart';
 /// Interface that defines the contract for managing module lifecycles and route bindings
 /// within the Modugo system.
 ///
-/// The [IManager] is responsible for:
+/// The [IInjectorManager] is responsible for:
 /// - tracking the current active [Module]
 /// - managing reference counts of registered [Bind]s
 /// - handling registration and disposal of route/module associations
 ///
 /// Typically used internally by Modugo to orchestrate route-aware
 /// dependency injection and cleanup.
-abstract interface class IManager {
+abstract interface class IInjectorManager {
   /// The currently active [Module], typically the root application module.
   Module? get module;
 

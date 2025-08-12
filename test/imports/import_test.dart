@@ -2,7 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/module.dart';
-import 'package:modugo/src/manager.dart';
+
+import 'package:modugo/src/managers/injector_manager.dart';
 
 import 'package:modugo/src/interfaces/injector_interface.dart';
 
@@ -10,7 +11,7 @@ void main() {
   test('should register binds from imported modules', () {
     final module = _MainModule();
 
-    Manager().registerBindsAppModule(module);
+    InjectorManager().registerBindsAppModule(module);
 
     expect(Modugo.get<_Shared>(), isA<_Shared>());
     expect(Modugo.get<_Service>(), isA<_Service>());

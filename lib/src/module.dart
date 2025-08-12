@@ -7,15 +7,17 @@ import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/modugo.dart';
-import 'package:modugo/src/manager.dart';
 import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/transition.dart';
+import 'package:modugo/src/managers/injector_manager.dart';
+
+import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/interfaces/injector_interface.dart';
+
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/compiler_route.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
-import 'package:modugo/src/interfaces/module_interface.dart';
-import 'package:modugo/src/interfaces/injector_interface.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 /// Abstract base class representing a modular feature or logical section of the app.
@@ -43,19 +45,14 @@ import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 /// }
 /// ```
 abstract class Module {
+  final _routerManager = InjectorManager();
+
   /// If true, this module will not have its dependencies automatically disposed.
   ///
   /// Useful for persistent modules like tabs in a bottom navigation bar.
   ///
   /// Defaults to false.
   bool get persistent => false;
-
-  /// List of imported modules that this module depends on.
-  ///
-  /// Allows modular composition by importing submodules.
-  ///
-  /// Defaults to an empty list.
-  List<Module> imports() => const [];
 
   /// List of navigation routes this module exposes.
   ///
@@ -77,15 +74,21 @@ abstract class Module {
   ///     ..addLazySingleton<B>(() => B());
   /// }
   /// ```
-  void binds(IInjector i) {}
+  FutureOr<void> binds(IInjector i) {}
 
-  /// Initializes the module state.
-  void initState(Injector i) {}
+  /// List of imported modules that this module depends on.
+  ///
+  /// Allows modular composition by importing submodules.
+  ///
+  /// Defaults to an empty list.
+  FutureOr<List<Module>> imports() => const [];
 
-  /// Disposes the module state.
-  void dispose() {}
-
-  final _routerManager = Manager();
+  /// Called before routes are configured.
+  /// Registers binds and awaits async resolution.
+  Future<void> ensureInitialized() async {
+    await binds(_routerManager.injector);
+    await _routerManager.injector.ensureInitialized();
+  }
 
   /// Configures and returns the list of [RouteBase]s defined by this module.
   ///
@@ -387,6 +390,7 @@ abstract class Module {
       module: module.module,
       path: state.uri.toString(),
     );
+
     return route?.child(context, state) ?? Container();
   }
 
@@ -418,13 +422,11 @@ abstract class Module {
 
   void _register({required String path, Module? module, String? branch}) {
     _routerManager.registerBindsIfNeeded(module ?? this);
-    initState(Injector());
     if (path == '/') return;
     _routerManager.registerRoute(path, module ?? this, branch: branch);
   }
 
   void _unregister(String path, {Module? module, String? branch}) {
-    dispose();
     _routerManager.unregisterRoute(path, module ?? this, branch: branch);
   }
 }

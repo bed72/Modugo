@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:modugo/src/guard.dart';
 import 'package:modugo/src/module.dart';
 
@@ -23,10 +25,10 @@ final class GuardModel extends Module {
   bool get persistent => _module.persistent;
 
   @override
-  List<Module> imports() => _module.imports();
+  FutureOr<List<Module>> imports() => _module.imports();
 
   @override
-  void binds(IInjector i) => _module.binds(i);
+  FutureOr<void> binds(IInjector i) => _module.binds(i);
 
   @override
   List<IModule> routes() =>

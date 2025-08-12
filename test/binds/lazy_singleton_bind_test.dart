@@ -13,9 +13,9 @@ void main() {
     bind = LazySingletonBind<_Disposable>((_) => _Disposable());
   });
 
-  test('get() returns same instance across calls', () {
-    final first = bind.get(Injector());
-    final second = bind.get(Injector());
+  test('get() returns same instance across calls', () async {
+    final first = await bind.get(Injector());
+    final second = await bind.get(Injector());
 
     expect(identical(first, second), isTrue);
   });
@@ -29,8 +29,8 @@ void main() {
     expect(identical(original, recreated), isFalse);
   });
 
-  test('dispose() calls dispose() on ChangeNotifier', () {
-    final instance = bind.get(Injector());
+  test('dispose() calls dispose() on ChangeNotifier', () async {
+    final instance = await bind.get(Injector());
 
     expect(instance.disposed, isFalse);
 
@@ -39,11 +39,11 @@ void main() {
     expect(instance.disposed, isTrue);
   });
 
-  test('dispose() closes a StreamController', () {
+  test('dispose() closes a StreamController', () async {
     final bind = LazySingletonBind<StreamController<String>>(
       (_) => StreamController<String>(),
     );
-    final controller = bind.get(Injector());
+    final controller = await bind.get(Injector());
 
     expect(controller.isClosed, isFalse);
 
@@ -52,11 +52,11 @@ void main() {
     expect(controller.isClosed, isTrue);
   });
 
-  test('dispose() closes a Sink', () {
+  test('dispose() closes a Sink', () async {
     final sink = _Sink();
     final bind = LazySingletonBind((_) => sink);
 
-    final instance = bind.get(Injector());
+    final instance = await bind.get(Injector());
     expect(instance.closed, isFalse);
 
     bind.dispose();
