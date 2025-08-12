@@ -35,12 +35,13 @@ final class SingletonBind<T> implements IBind<T> {
 
   final T Function(IInjector i) _builder;
 
-  /// Creates a [SingletonBind] with the given factory function.
+  /// Creates a [SingletonBind] with the provided factory function.
   SingletonBind(this._builder);
 
   /// Returns the cached singleton instance of [T].
   ///
-  /// If the instance does not exist yet, it is created and stored.
+  /// If the instance does not exist yet, it is created via [_builder]
+  /// and cached for subsequent calls.
   @override
   T get(IInjector i) => _instance ??= _builder(i);
 
@@ -50,6 +51,8 @@ final class SingletonBind<T> implements IBind<T> {
   /// or has a `dispose()` method, appropriate cleanup is attempted.
   ///
   /// Errors during disposal are logged for debugging.
+  /// Disposes the stored instance if present,
+  /// invoking the appropriate cleanup methods if implemented.
   @override
   void dispose() {
     final instance = _instance;

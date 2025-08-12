@@ -37,11 +37,11 @@ final class LazySingletonBind<T> implements IBind<T> {
   T? _instance;
   final T Function(IInjector i) _builder;
 
-  /// Creates a [LazySingletonBind] using the provided factory function.
+  /// Creates a [LazySingletonBind] with the provided factory function.
   LazySingletonBind(this._builder);
 
-  /// Returns the cached instance of [T] if available,
-  /// otherwise builds and caches it.
+  /// Returns the cached instance of [T] if it exists,
+  /// otherwise builds it via [_builder] and caches it.
   @override
   T get(IInjector i) => _instance ??= _builder(i);
 
@@ -51,6 +51,8 @@ final class LazySingletonBind<T> implements IBind<T> {
   /// or has a `dispose()` method, the appropriate dispose or close method is called.
   ///
   /// Logs any disposal error when [Modugo.debugLogDiagnostics] is enabled.
+  /// Disposes the cached instance if present,
+  /// calling the appropriate cleanup method if applicable.
   @override
   void dispose() {
     final instance = _instance;

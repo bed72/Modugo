@@ -26,17 +26,17 @@ final class FactoryBind<T> implements IBind<T> {
   /// The function responsible for building a new instance of [T].
   final T Function(IInjector i) _builder;
 
-  /// Creates a new [FactoryBind] using the provided [_builder] function.
+  /// Constructs a factory bind using the given builder function.
   FactoryBind(this._builder);
 
-  /// Returns a **new instance** of [T] every time this method is called.
+  /// Returns a **new instance** of [T] every time this is called.
   @override
   T get(IInjector i) => _builder(i);
 
-  /// No disposal logic is needed for factory binds,
-  /// but logs a message if [Modugo.debugLogDiagnostics] is enabled.
+  /// Factory binds generally do not require disposal.
+  /// Logs a message if [Modugo.debugLogDiagnostics] is enabled.
   @override
   void dispose() {
-    Logger.injection('dispose() called, but no action taken.');
+    Logger.injection('dispose() called on FactoryBind, no action taken.');
   }
 }
