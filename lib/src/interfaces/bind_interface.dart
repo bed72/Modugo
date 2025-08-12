@@ -1,6 +1,6 @@
 // coverage:ignore-file
 
-import 'package:modugo/src/injector.dart';
+import 'package:modugo/src/interfaces/injector_interface.dart';
 
 /// Interface that defines the contract for all types of binds used in the Modugo dependency system.
 ///
@@ -31,7 +31,7 @@ import 'package:modugo/src/injector.dart';
 /// ```
 abstract interface class IBind<T> {
   /// Returns the instance of [T], possibly creating or reusing it.
-  T get(Injector injector);
+  T get(IInjector injector);
 
   /// Cleans up any held resources.
   ///

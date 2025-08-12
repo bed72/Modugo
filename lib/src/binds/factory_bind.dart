@@ -1,4 +1,4 @@
-import 'package:modugo/src/injector.dart';
+import 'package:modugo/src/interfaces/injector_interface.dart';
 
 import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/modugo.dart';
@@ -20,14 +20,14 @@ import 'package:modugo/src/interfaces/bind_interface.dart';
 /// This class is used internally when registering a `Bind.factory(...)`.
 final class FactoryBind<T> implements IBind<T> {
   /// The function responsible for building a new instance of [T].
-  final T Function(Injector i) _builder;
+  final T Function(IInjector i) _builder;
 
   /// Creates a new [FactoryBind] using the provided [_builder] function.
   FactoryBind(this._builder);
 
   /// Returns a **new instance** of [T] every time this method is called.
   @override
-  T get(Injector i) => _builder(i);
+  T get(IInjector i) => _builder(i);
 
   /// No disposal logic is needed for factory binds,
   /// but logs a message if [Modugo.debugLogDiagnostics] is enabled.
