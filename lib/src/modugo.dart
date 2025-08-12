@@ -26,6 +26,12 @@ import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 /// This allows writing `Modugo.configure(...)` instead of the full class name.
 typedef Modugo = ModugoConfiguration;
 
+/// Global key for the main [Navigator] used by Modugo.
+/// This key is used to access the navigator state globally,
+/// allowing for imperative navigation and other operations
+/// without needing to pass the context
+late GlobalKey<NavigatorState> modularNavigatorKey;
+
 /// The central configuration class for the Modugo routing and dependency system.
 ///
 /// This class is responsible for:
@@ -160,6 +166,8 @@ final class ModugoConfiguration {
     final routes = module.configureRoutes(topLevel: true);
     setDisposeMiliseconds(delayDisposeMilliseconds);
 
+    modularNavigatorKey = navigatorKey ?? GlobalKey<NavigatorState>();
+
     _router = GoRouter(
       routes: routes,
       redirect: redirect,
@@ -169,7 +177,7 @@ final class ModugoConfiguration {
       errorBuilder: errorBuilder,
       initialExtra: initialExtra,
       requestFocus: requestFocus,
-      navigatorKey: navigatorKey,
+      navigatorKey: modularNavigatorKey,
       redirectLimit: redirectLimit,
       routerNeglect: routerNeglect,
       initialLocation: initialRoute,
