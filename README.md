@@ -22,6 +22,9 @@ The main difference is that Modugo provides full control and decoupling of **aut
 - Support for **persistent modules** that are never disposed
 - Built-in support for **Route Guards**
 - Built-in support for **Regex-based Route Matching**
+- **Event System** with global and module-scoped event handling
+- **EventModule** for organized event-driven architecture
+- **Custom EventBus** support for scoped communication
 
 ---
 
@@ -42,9 +45,15 @@ dependencies:
     /home
       home_page.dart
       home_module.dart
+      home_events.dart          # Event definitions
     /profile
       profile_page.dart
-      profile_module.dart
+      profile_module.dart       # or profile_event_module.dart
+    /chat
+      chat_page.dart
+      chat_event_module.dart    # EventModule example
+  /events
+    global_events.dart          # Global event definitions
   app_module.dart
   app_widget.dart
 main.dart
@@ -99,8 +108,47 @@ final class AppModule extends Module {
   List<IModule> routes() => [
     ModuleRoute(path: '/', module: HomeModule()),
     ModuleRoute(path: '/profile', module: ProfileModule()),
+    ModuleRoute(path: '/chat', module: ChatEventModule()), // EventModule example
   ];
 }
+```
+
+### Simple EventModule Example
+
+```dart
+// Define your events
+class ShowToastEvent {
+  final String message;
+  const ShowToastEvent(this.message);
+}
+
+// EventModule handles events automatically
+final class ChatEventModule extends EventModule {
+  @override
+  void binds(IInjector i) {
+    i.addSingleton<ChatController>((_) => ChatController());
+  }
+
+  @override
+  List<IModule> routes() => [
+    ChildRoute(path: '/chat', child: (_, _) => const ChatPage()),
+  ];
+
+  @override
+  void listen() {
+    // Listen to events within this module scope
+    on<ShowToastEvent>((event, context) {
+      if (context != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(event.message)),
+        );
+      }
+    });
+  }
+}
+
+// Fire events from anywhere
+// ModularEvent.fire(ShowToastEvent('New message received!'));
 ```
 
 ---

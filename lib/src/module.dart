@@ -79,6 +79,12 @@ abstract class Module {
   /// ```
   void binds(IInjector i) {}
 
+  /// Initializes the module state.
+  void initState(Injector i) {}
+
+  /// Disposes the module state.
+  void dispose() {}
+
   final _routerManager = Manager();
 
   /// Configures and returns the list of [RouteBase]s defined by this module.
@@ -412,11 +418,13 @@ abstract class Module {
 
   void _register({required String path, Module? module, String? branch}) {
     _routerManager.registerBindsIfNeeded(module ?? this);
+    initState(Injector());
     if (path == '/') return;
     _routerManager.registerRoute(path, module ?? this, branch: branch);
   }
 
   void _unregister(String path, {Module? module, String? branch}) {
+    dispose();
     _routerManager.unregisterRoute(path, module ?? this, branch: branch);
   }
 }
