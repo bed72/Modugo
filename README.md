@@ -113,30 +113,37 @@ final class AppModule extends Module {
 }
 ```
 
-### Simple EventModule Example
+### Simple EventModule Example (with Route Integration)
+
+This example shows how to use an `EventModule` to manage events **and** define a route for your feature/module in a Modugo application.
 
 ```dart
-// Define your events
+// 1️⃣ Define an event
 class ShowToastEvent {
   final String message;
   const ShowToastEvent(this.message);
 }
 
-// EventModule handles events automatically
+// 2️⃣ Create your module
 final class ChatEventModule extends EventModule {
   @override
   void binds(IInjector i) {
+    // Register dependencies
     i.addSingleton<ChatController>((_) => ChatController());
   }
 
   @override
   List<IModule> routes() => [
-    ChildRoute(path: '/chat', child: (_, _) => const ChatPage()),
+    // Define the route for the Chat page
+    ChildRoute(
+      path: '/chat',
+      child: (_, __) => const ChatPage(),
+    ),
   ];
 
   @override
   void listen() {
-    // Listen to events within this module scope
+    // Listen to ShowToastEvent within the scope of this module
     on<ShowToastEvent>((event, context) {
       if (context != null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -147,9 +154,17 @@ final class ChatEventModule extends EventModule {
   }
 }
 
-// Fire events from anywhere
-// ModularEvent.fire(ShowToastEvent('New message received!'));
+// 3️⃣ Trigger the event from anywhere in the app:
+// ModugoEventModule.fire(ShowToastEvent('New message received!'));
 ```
+
+**How it works:**
+
+1. **Event definition** – Create a simple class to represent your event.
+2. **Module setup** – Use `binds` to register your dependencies.
+3. **Route definition** – Use `routes()` to map paths to widgets.
+4. **Event listening** – Use `listen()` to react to fired events.
+5. **Firing events** – Call `ModugoEventModule.fire(...)` from anywhere in the app.
 
 ---
 
@@ -573,6 +588,7 @@ final mainApi = context.read<ApiClient>(key: 'main');
 ```
 
 ✅ **Use cases for keyed bindings:**
+
 - Multiple database connections (primary, cache, analytics)
 - Different API clients (main, backup, testing)
 - Environment-specific configurations (dev, staging, prod)

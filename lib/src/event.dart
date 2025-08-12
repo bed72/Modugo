@@ -1,8 +1,13 @@
+// ignore_for_file: unintended_html_in_doc_comment
+
 import 'dart:async';
-import 'dart:developer';
-import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
-import 'package:modugo/modugo.dart';
+import 'package:event_bus/event_bus.dart';
+
+import 'package:modugo/src/logger.dart';
+import 'package:modugo/src/modugo.dart';
+import 'package:modugo/src/module.dart';
+import 'package:modugo/src/injector.dart';
 
 /// Stores all event subscriptions organized by EventBus and event type.
 ///
@@ -21,14 +26,14 @@ final EventBus _eventBus = EventBus();
 /// Global access to the modular event system.
 ///
 /// This provides a convenient way to fire events from anywhere in your application
-/// without needing to access the ModularEvent singleton directly.
+/// without needing to access the ModugoEventModule singleton directly.
 ///
 /// Example:
 /// ```dart
 /// // Fire an event
-/// modularEvent.fire(ShowNotificationEvent(message: 'Hello World!'));
+/// modugoEvent.fire(ShowNotificationEvent(message: 'Hello World!'));
 /// ```
-// EventBus get modularEvent => _eventBus;
+// EventBus get modugoEvent => _eventBus;
 
 /// Gets the current Navigator context from the modular navigator key.
 ///
@@ -36,8 +41,6 @@ final EventBus _eventBus = EventBus();
 /// navigation state. Can be null in web applications during page refreshes
 /// or redirects before the widget tree is fully mounted.
 BuildContext? get _navigatorContext => modularNavigatorKey.currentContext;
-
-bool get _debugLog => Modugo.debugLogDiagnostics;
 
 bool get _autoDisposeEvents => Modugo.debugLogDiagnostics;
 
@@ -50,7 +53,7 @@ bool get _autoDisposeEvents => Modugo.debugLogDiagnostics;
 /// Usage example:
 /// ```dart
 /// // Register a listener
-/// ModularEvent.instance.on<LogoutEvent>((event, context) {
+/// ModugoEventModule.instance.on<LogoutEvent>((event, context) {
 ///   // logout logic
 ///   if (context != null) {
 ///     context.go('/login');
@@ -58,19 +61,19 @@ bool get _autoDisposeEvents => Modugo.debugLogDiagnostics;
 /// });
 ///
 /// // Fire an event
-/// ModularEvent.fire(LogoutEvent());
+/// ModugoEventModule.fire(LogoutEvent());
 /// ```
-class ModularEvent {
-  static ModularEvent? _instance;
+final class ModugoEventModule {
+  static ModugoEventModule? _instance;
 
   /// Private constructor to implement the Singleton pattern.
-  ModularEvent._();
+  ModugoEventModule._();
 
-  /// Singleton instance of ModularEvent.
+  /// Singleton instance of ModugoEventModule.
   ///
   /// Ensures that only one instance is created and reused
   /// throughout the application.
-  static ModularEvent get instance => _instance ??= ModularEvent._();
+  static ModugoEventModule get instance => _instance ??= ModugoEventModule._();
 
   /// Removes a specific listener for an event type.
   ///
@@ -82,7 +85,7 @@ class ModularEvent {
   ///
   /// Example:
   /// ```dart
-  /// ModularEvent.instance.dispose<MyEvent>();
+  /// ModugoEventModule.instance.dispose<MyEvent>();
   /// ```
   void dispose<T>({EventBus? eventBus}) {
     eventBus ??= _eventBus;
@@ -111,7 +114,7 @@ class ModularEvent {
   /// **Best Practices:**
   /// Always check if the context is not null before using it for navigation or widget operations:
   /// ```dart
-  /// ModularEvent.instance.on<MyEvent>((event, context) {
+  /// ModugoEventModule.instance.on<MyEvent>((event, context) {
   ///   if (context != null) {
   ///     // Safe to use context for navigation
   ///     context.go('/some-route');
@@ -128,7 +131,7 @@ class ModularEvent {
   ///
   /// Example:
   /// ```dart
-  /// ModularEvent.instance.on<ShowSnackBarEvent>((event, context) {
+  /// ModugoEventModule.instance.on<ShowSnackBarEvent>((event, context) {
   ///   if (context != null) {
   ///     ScaffoldMessenger.of(context).showSnackBar(
   ///       SnackBar(content: Text(event.message))
@@ -136,18 +139,33 @@ class ModularEvent {
   ///   }
   /// });
   /// ```
-  void on<T>(void Function(T event, BuildContext? context) callback, {EventBus? eventBus, bool broadcast = true}) {
+  void on<T>(
+    void Function(T event, BuildContext? context) callback, {
+    EventBus? eventBus,
+    bool broadcast = true,
+  }) {
     eventBus ??= _eventBus;
     _eventSubscriptions[eventBus.hashCode]?[T]?.cancel();
     if (broadcast) {
-      _eventSubscriptions[eventBus.hashCode]![T] = eventBus.on<T>().asBroadcastStream().listen((event) {
-        if (_debugLog) log('🎭 Event received: ${event.runtimeType}', name: 'EVENT GO_ROUTER_MODULAR');
-        return callback(event, _navigatorContext);
-      });
+      _eventSubscriptions[eventBus.hashCode]![T] = eventBus
+          .on<T>()
+          .asBroadcastStream()
+          .listen((event) {
+            Logger.information(
+              'Event received: ${event.runtimeType}',
+              tag: 'EVENT',
+            );
+            return callback(event, _navigatorContext);
+          });
     }
     if (broadcast == false) {
-      _eventSubscriptions[eventBus.hashCode]![T] = eventBus.on<T>().listen((event) {
-        if (_debugLog) log('🎭 Event received: ${event.runtimeType}', name: 'EVENT GO_ROUTER_MODULAR');
+      _eventSubscriptions[eventBus.hashCode]![T] = eventBus.on<T>().listen((
+        event,
+      ) {
+        Logger.information(
+          'Event received: ${event.runtimeType}',
+          tag: 'EVENT',
+        );
         return callback(event, _navigatorContext);
       });
     }
@@ -165,14 +183,14 @@ class ModularEvent {
   /// Example:
   /// ```dart
   /// // Fire an event
-  /// ModularEvent.fire(ShowSnackBarEvent(message: 'Hello World!'));
+  /// ModugoEventModule.fire(ShowSnackBarEvent(message: 'Hello World!'));
   ///
   /// // With custom EventBus
-  /// ModularEvent.fire(MyEvent(), eventBus: customEventBus);
+  /// ModugoEventModule.fire(MyEvent(), eventBus: customEventBus);
   /// ```
   static void fire<T>(T event, {EventBus? eventBus}) {
     eventBus ??= _eventBus;
-    if (_debugLog) log('🔥 Event fired: ${event.runtimeType}', name: 'EVENT GO_ROUTER_MODULAR');
+    Logger.information('Event fired: ${event.runtimeType}', tag: 'EVENT');
     eventBus.fire(event);
   }
 }
@@ -310,7 +328,11 @@ abstract class EventModule extends Module {
   ///   // Logic that should persist
   /// }, autoDispose: false);
   /// ```
-  void on<T>(void Function(T event, BuildContext? context) callback, {bool? autoDispose, bool broadcast = true}) {
+  void on<T>(
+    void Function(T event, BuildContext? context) callback, {
+    bool? autoDispose,
+    bool broadcast = true,
+  }) {
     final eventBusId = _internalEventBus.hashCode + runtimeType.hashCode;
 
     _eventSubscriptions[eventBusId] ??= {};
@@ -319,15 +341,26 @@ abstract class EventModule extends Module {
     _eventSubscriptions[eventBusId]?[T]?.cancel();
 
     if (broadcast) {
-      _eventSubscriptions[eventBusId]![T] = _internalEventBus.on<T>().asBroadcastStream().listen((event) {
-        if (_debugLog) log('🎭 Event received: ${event.runtimeType}', name: 'EVENT GO_ROUTER_MODULAR');
-        return callback(event, _navigatorContext);
-      });
+      _eventSubscriptions[eventBusId]![T] = _internalEventBus
+          .on<T>()
+          .asBroadcastStream()
+          .listen((event) {
+            Logger.information(
+              'Event received: ${event.runtimeType}',
+              tag: 'EVENT',
+            );
+            return callback(event, _navigatorContext);
+          });
     }
 
     if (broadcast == false) {
-      _eventSubscriptions[eventBusId]![T] = _internalEventBus.on<T>().listen((event) {
-        if (_debugLog) log('🎭 Event received: ${event.runtimeType}', name: 'EVENT GO_ROUTER_MODULAR');
+      _eventSubscriptions[eventBusId]![T] = _internalEventBus.on<T>().listen((
+        event,
+      ) {
+        Logger.information(
+          'Event received: ${event.runtimeType}',
+          tag: 'EVENT',
+        );
         return callback(event, _navigatorContext);
       });
     }

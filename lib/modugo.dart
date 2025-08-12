@@ -2,11 +2,11 @@ export 'src/guard.dart';
 export 'src/logger.dart';
 export 'src/modugo.dart';
 export 'src/module.dart';
-export 'src/event_module.dart';
 export 'src/dispose.dart';
 export 'src/manager.dart';
 export 'src/injector.dart';
 export 'src/transition.dart';
+export 'src/event.dart';
 
 export 'src/notifiers/router_notifier.dart';
 
