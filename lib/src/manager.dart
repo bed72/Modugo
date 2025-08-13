@@ -90,6 +90,7 @@ final class Manager implements IManager {
   /// in `StatefulShellModuleRoute`.
   @override
   void registerRoute(String path, Module module, {String? branch}) {
+    module.binds();
     _activeRoutes.putIfAbsent(module, () => []);
     _activeRoutes[module]?.add(RouteAccessModel(path, branch));
   }
