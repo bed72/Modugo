@@ -42,7 +42,7 @@ import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 /// }
 /// ```
 abstract class Module {
-  GetIt get i => GetIt.instance;
+  GetIt get i => GetIt.instance();
 
   /// Disposes the module state.
   void dispose() {}
