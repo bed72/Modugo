@@ -20,7 +20,7 @@ final class GuardModel extends Module {
       _module = module;
 
   @override
-  void binds(GetIt i) => _module.binds(i);
+  void binds() => _module.binds();
 
   @override
   bool get persistent => _module.persistent;

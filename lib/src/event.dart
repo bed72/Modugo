@@ -369,9 +369,10 @@ abstract class EventModule extends Module {
   }
 
   @override
-  void initState(GetIt i) {
+  void initState() {
     listen();
-    super.initState(i);
+
+    super.initState();
   }
 
   @override

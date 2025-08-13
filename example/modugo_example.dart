@@ -46,7 +46,7 @@ final class AppModule extends Module {
 /// The home module that handles feature-specific dependencies and routes.
 final class HomeModule extends Module {
   @override
-  void binds(GetIt i) {
+  void binds() {
     i
       ..registerSingleton<ModugoRepository>(ModugoRepositoryImpl())
       ..registerLazySingleton<HomeController>(

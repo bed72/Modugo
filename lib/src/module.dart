@@ -42,6 +42,11 @@ import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 /// }
 /// ```
 abstract class Module {
+  GetIt get i => GetIt.instance;
+
+  /// Disposes the module state.
+  void dispose() {}
+
   /// If true, this module will not have its dependencies automatically disposed.
   ///
   /// Useful for persistent modules like tabs in a bottom navigation bar.
@@ -76,13 +81,10 @@ abstract class Module {
   ///     ..addLazySingleton<B>(() => B());
   /// }
   /// ```
-  void binds(GetIt i) {}
+  void binds() {}
 
   /// Initializes the module state.
-  void initState(GetIt i) {}
-
-  /// Disposes the module state.
-  void dispose() {}
+  void initState() {}
 
   final _routerManager = Manager();
 

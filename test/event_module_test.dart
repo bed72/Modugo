@@ -1,4 +1,3 @@
-import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,8 +9,6 @@ import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
 
 void main() {
-  final injector = GetIt.I;
-
   setUpAll(() {
     TestWidgetsFlutterBinding.ensureInitialized();
     modularNavigatorKey = GlobalKey<NavigatorState>();
@@ -54,7 +51,7 @@ void main() {
         expect(eventModule.receivedValues.isEmpty, isTrue);
         expect(eventModule.receivedMessages.isEmpty, isTrue);
 
-        eventModule.initState(injector);
+        eventModule.initState();
 
         ModugoEventModule.fire(const _EventMock('Init test'));
         ModugoEventModule.fire(const _AnotherEventMock(123));
@@ -71,7 +68,7 @@ void main() {
         final customEventBus = EventBus();
         final customEventModule = _EventModule(eventBus: customEventBus);
 
-        customEventModule.initState(injector);
+        customEventModule.initState();
 
         ModugoEventModule.fire(const _EventMock('Default bus'));
         await Future.delayed(const Duration(milliseconds: 100));
@@ -91,7 +88,7 @@ void main() {
 
     group('Event Listening', () {
       test('should receive events through on() method', () async {
-        eventModule.initState(injector);
+        eventModule.initState();
 
         const event3 = _AnotherEventMock(100);
         const event1 = _EventMock('Message 1');
@@ -111,7 +108,7 @@ void main() {
       });
 
       test('should handle multiple events of same type', () async {
-        eventModule.initState(injector);
+        eventModule.initState();
 
         for (int i = 0; i < 5; i++) {
           ModugoEventModule.fire(_EventMock('Message $i'));
@@ -128,7 +125,7 @@ void main() {
 
     group('Auto Dispose', () {
       test('should dispose correctly when module is disposed', () async {
-        eventModule.initState(injector);
+        eventModule.initState();
 
         ModugoEventModule.fire(const _EventMock('Before dispose'));
         await Future.delayed(const Duration(milliseconds: 100));
@@ -141,7 +138,7 @@ void main() {
       test('should not dispose listeners when autoDispose is false', () async {
         final noAutoDisposeModule = _EventModuleNoAutoDispose();
 
-        noAutoDisposeModule.initState(injector);
+        noAutoDisposeModule.initState();
 
         ModugoEventModule.fire(const _EventMock('Before dispose'));
         await Future.delayed(const Duration(milliseconds: 100));
@@ -182,8 +179,8 @@ void main() {
       final module1 = _EventModule();
       final module2 = _EventModule();
 
-      module1.initState(injector);
-      module2.initState(injector);
+      module1.initState();
+      module2.initState();
 
       const testEvent = _EventMock('Shared event');
       ModugoEventModule.fire(testEvent);
@@ -210,7 +207,7 @@ void main() {
     test('should create and dispose EventModule without errors', () async {
       final eventModule = _EventModule();
 
-      expect(() => eventModule.initState(injector), returnsNormally);
+      expect(() => eventModule.initState(), returnsNormally);
 
       expect(
         () => ModugoEventModule.fire(const _EventMock('Test message')),
@@ -229,8 +226,8 @@ void main() {
       final module1 = _EventModule(eventBus: customEventBus1);
       final module2 = _EventModule(eventBus: customEventBus2);
 
-      module1.initState(injector);
-      module2.initState(injector);
+      module1.initState();
+      module2.initState();
 
       ModugoEventModule.fire(
         const _EventMock('Bus 1 event'),
@@ -261,7 +258,7 @@ void main() {
       final customEventBus = EventBus();
       final eventModule = _EventModule(eventBus: customEventBus);
 
-      expect(() => eventModule.initState(injector), returnsNormally);
+      expect(() => eventModule.initState(), returnsNormally);
       expect(
         () => ModugoEventModule.fire(
           const _EventMock('Test'),

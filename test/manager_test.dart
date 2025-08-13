@@ -178,7 +178,7 @@ final class _ImportAnotherModule extends Module {
 
 final class _InnerModule extends Module {
   @override
-  void binds(GetIt i) {
+  void binds() {
     i.registerFactory<_Service>(() => _Service());
   }
 }

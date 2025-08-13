@@ -1,4 +1,3 @@
-import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 
 import 'package:go_router/go_router.dart';
@@ -86,7 +85,7 @@ final class _Service {
 
 final class _InnerModule extends Module {
   @override
-  void binds(GetIt i) {
+  void binds() {
     i.registerSingleton<_Service>(_Service());
   }
 

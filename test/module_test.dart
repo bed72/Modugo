@@ -1,4 +1,3 @@
-import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -52,7 +51,7 @@ void main() {
       await startModugoFake(module: module);
       module.configureRoutes(topLevel: true, path: '/home');
 
-      expect(() => GetIt.I.get<_Service>(), returnsNormally);
+      expect(() => module.i.get<_Service>(), returnsNormally);
     });
 
     test('creates ModuleRoute using / as default child', () async {
@@ -71,7 +70,7 @@ void main() {
       await startModugoFake(module: module);
       final routes = module.configureRoutes(topLevel: true);
 
-      expect(() => GetIt.I.get<_Service>(), returnsNormally);
+      expect(() => module.i.get<_Service>(), returnsNormally);
       expect(routes.whereType<ShellRoute>().isNotEmpty, isTrue);
     });
 
@@ -311,8 +310,8 @@ final class _ModuleWith extends Module {
 
 final class _InnerModule extends Module {
   @override
-  void binds(GetIt i) {
-    i.registerFactory<_Service>(() => _Service());
+  void binds() {
+    i.registerFactory<_Service>(_Service.new);
   }
 
   @override
@@ -327,7 +326,7 @@ final class _InnerModule extends Module {
 
 final class _ModuleWithBranch extends Module {
   @override
-  void binds(GetIt i) {
+  void binds() {
     i.registerSingleton<_Service>(_Service());
   }
 
