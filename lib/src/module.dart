@@ -42,7 +42,7 @@ import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 /// }
 /// ```
 abstract class Module {
-  GetIt get i => GetIt.instance();
+  GetIt get i => GetIt.instance;
 
   /// Disposes the module state.
   void dispose() {}
@@ -87,6 +87,10 @@ abstract class Module {
   void initState() {}
 
   final _routerManager = Manager();
+
+  Module() {
+    binds();
+  }
 
   /// Configures and returns the list of [RouteBase]s defined by this module.
   ///
@@ -370,7 +374,6 @@ abstract class Module {
       module: module.module,
       path: state.uri.toString(),
     );
-
     return route?.child(context, state) ?? Placeholder();
   }
 
@@ -401,7 +404,7 @@ abstract class Module {
   }
 
   void _register({required String path, Module? module, String? branch}) {
-    module?.binds();
+    if (path == '/') return;
 
     _routerManager.registerRoute(path, module ?? this, branch: branch);
   }
