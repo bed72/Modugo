@@ -370,7 +370,8 @@ abstract class Module {
       module: module.module,
       path: state.uri.toString(),
     );
-    return route?.child(context, state) ?? Container();
+
+    return route?.child(context, state) ?? Placeholder();
   }
 
   FutureOr<bool> _handleRouteExit(
@@ -400,7 +401,7 @@ abstract class Module {
   }
 
   void _register({required String path, Module? module, String? branch}) {
-    if (path == '/') return;
+    module?.binds();
 
     _routerManager.registerRoute(path, module ?? this, branch: branch);
   }

@@ -1,4 +1,3 @@
-import 'package:get_it/get_it.dart';
 import 'package:modugo/src/guard.dart';
 import 'package:modugo/src/module.dart';
 
