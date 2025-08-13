@@ -1,8 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/routes/paths/regexp.dart';
-import 'package:modugo/src/routes/models/path_token_model.dart';
-import 'package:modugo/src/routes/models/parameter_token_model.dart';
+
+import 'package:modugo/src/models/path_token_model.dart';
+import 'package:modugo/src/models/parameter_token_model.dart';
 
 void main() {
   group('pathToRegExp', () {

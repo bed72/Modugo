@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/transition.dart';
-import 'package:modugo/src/routes/models/route_model.dart';
+import 'package:modugo/src/models/route_model.dart';
 
 void main() {
   group('RouteModuleModel - equality and hashCode', () {

@@ -1,11 +1,11 @@
+import 'package:modugo/src/models/binding_key_model.dart';
+
 import 'package:modugo/src/binds/factory_bind.dart';
 import 'package:modugo/src/binds/singleton_bind.dart';
 import 'package:modugo/src/binds/lazy_singleton_bind.dart';
 
 import 'package:modugo/src/interfaces/bind_interface.dart';
 import 'package:modugo/src/interfaces/injector_interface.dart';
-
-import 'package:modugo/src/routes/models/binding_key_model.dart';
 
 /// A singleton dependency injector that manages the registration,
 /// retrieval, and disposal of services and objects within Modugo.

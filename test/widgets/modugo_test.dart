@@ -5,9 +5,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/module.dart';
 
-import 'package:modugo/src/routes/child_route.dart';
+import 'package:modugo/src/models/route_pattern_model.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
-import 'package:modugo/src/routes/models/route_pattern_model.dart';
+
+import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 

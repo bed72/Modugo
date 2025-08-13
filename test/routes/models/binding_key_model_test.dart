@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/injector.dart';
 
-import 'package:modugo/src/routes/models/binding_key_model.dart';
+import 'package:modugo/src/models/binding_key_model.dart';
 
 void main() {
   setUp(() => Injector().clearAll());

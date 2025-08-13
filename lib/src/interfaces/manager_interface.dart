@@ -1,7 +1,8 @@
 // coverage:ignore-file
 
 import 'package:modugo/src/module.dart';
-import 'package:modugo/src/routes/models/route_access_model.dart';
+
+import 'package:modugo/src/models/route_access_model.dart';
 
 /// Interface that defines the contract for managing module lifecycles and route bindings
 /// within the Modugo system.

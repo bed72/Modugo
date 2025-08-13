@@ -6,10 +6,10 @@ import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/transition.dart';
 
+import 'package:modugo/src/models/route_pattern_model.dart';
+
 import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
-
-import 'package:modugo/src/routes/models/route_pattern_model.dart';
 
 /// A route that represents a direct child page within a [Module].
 ///

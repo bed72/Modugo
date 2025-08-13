@@ -2,8 +2,8 @@ import 'package:modugo/src/routes/paths/escape.dart';
 
 import 'package:modugo/src/interfaces/token_interface.dart';
 
-import 'package:modugo/src/routes/models/path_token_model.dart';
-import 'package:modugo/src/routes/models/parameter_token_model.dart';
+import 'package:modugo/src/models/path_token_model.dart';
+import 'package:modugo/src/models/parameter_token_model.dart';
 
 /// The default regular expression pattern used to match dynamic path parameters.
 ///

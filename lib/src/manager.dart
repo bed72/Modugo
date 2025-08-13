@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:modugo/modugo.dart';
-import 'package:modugo/src/routes/models/route_access_model.dart';
+import 'package:modugo/src/models/route_access_model.dart';
 
 /// Internal class responsible for managing the lifecycle of modules and their binds.
 ///

@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/module.dart';
-
 import 'package:modugo/src/routes/child_route.dart';
-import 'package:modugo/src/routes/models/guard_model.dart';
+import 'package:modugo/src/models/guard_model.dart';
 
 import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';

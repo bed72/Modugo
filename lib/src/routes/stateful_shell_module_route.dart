@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:modugo/src/interfaces/module_interface.dart';
-
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
-import 'package:modugo/src/routes/models/route_pattern_model.dart';
+
+import 'package:modugo/src/models/route_pattern_model.dart';
+import 'package:modugo/src/interfaces/module_interface.dart';
 
 /// A modular route that enables stateful navigation using [StatefulShellRoute].
 ///

@@ -1,11 +1,11 @@
 import 'package:modugo/src/guard.dart';
 
+import 'package:modugo/src/models/guard_model.dart';
+import 'package:modugo/src/interfaces/guard_interface.dart';
+
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
-import 'package:modugo/src/routes/models/guard_model.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
-
-import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 /// Extension for [ChildRoute] to support injecting parent guards.

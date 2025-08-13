@@ -1,6 +1,6 @@
 // coverage:ignore-file
 
-import 'package:modugo/src/routes/models/binding_key_model.dart';
+import 'package:modugo/src/models/binding_key_model.dart';
 
 /// Interface that defines the core contract for a dependency injector.
 ///
