@@ -55,22 +55,6 @@ final class Manager implements IManager {
     _module = module;
   }
 
-  /// Returns the root [Module] instance that was registered via [Modugo.configure].
-  ///
-  /// This is the top-level module for the app and is used internally
-  /// by features like [Modugo.matchRoute] and lifecycle control.
-  ///
-  /// Throws a [StateError] if called before [Modugo.configure].
-  @override
-  Module get rootModule {
-    final root = _module;
-    if (root == null) {
-      throw StateError('Modugo has not been configured with a root Module.');
-    }
-
-    return root;
-  }
-
   /// Returns a map of registered bind types and their reference counts.
   ///
   /// This is used internally to track how many modules are using each bind
@@ -92,6 +76,22 @@ final class Manager implements IManager {
   @override
   List<RouteAccessModel> getActiveRoutesFor(Module module) =>
       _activeRoutes[module]?.toList() ?? [];
+
+  /// Returns the root [Module] instance that was registered via [Modugo.configure].
+  ///
+  /// This is the top-level module for the app and is used internally
+  /// by features like [Modugo.matchRoute] and lifecycle control.
+  ///
+  /// Throws a [StateError] if called before [Modugo.configure].
+  @override
+  Module get rootModule {
+    final root = _module;
+    if (root == null) {
+      throw StateError('Modugo has not been configured with a root Module.');
+    }
+
+    return root;
+  }
 
   /// Registers all binds from the application-level [module] if not already set.
   ///
