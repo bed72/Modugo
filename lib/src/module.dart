@@ -88,10 +88,6 @@ abstract class Module {
 
   final _routerManager = Manager();
 
-  Module() {
-    binds();
-  }
-
   /// Configures and returns the list of [RouteBase]s defined by this module.
   ///
   /// This method is responsible for:
