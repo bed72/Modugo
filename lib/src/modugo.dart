@@ -99,7 +99,7 @@ final class ModugoConfiguration {
 
   /// Returns a dependency of type [T] from the [Injector].
   ///
-  /// Shortcut for `Injector().get<T>()`.
+  /// Shortcut for `Modugo.get<T>()`.
   static T get<T extends Object>({Type? type, String? instanceName}) =>
       GetIt.I.get<T>(type: type, instanceName: instanceName);
 
@@ -131,7 +131,6 @@ final class ModugoConfiguration {
   /// - [module]: the root module containing all binds and routes
   /// - [pageTransition]: default page transition for all routes
   /// - [debugLogDiagnostics]: enables internal logging for debugging
-  /// - [delayDisposeMilliseconds]: time to keep inactive modules alive
   /// - [observers], [navigatorKey], [redirect], [errorBuilder], etc: standard GoRouter options
   ///
   /// Returns the initialized [GoRouter].
@@ -200,7 +199,7 @@ final class ModugoConfiguration {
 
       lastNotifiedLocation = current;
 
-      Logger.warn('UPDATE NOTIFIER BY ROUTE $current');
+      Logger.information('Update notifier by route $current');
       routeNotifier.update = current;
     });
 
@@ -239,7 +238,6 @@ final class ModugoConfiguration {
     return null;
   }
 
-  /// Recursively flattens all modules starting from [root].
   static List<Module> _collectModules(Module root) {
     final buffer = <Module>[];
 

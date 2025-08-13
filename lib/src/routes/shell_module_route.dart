@@ -27,8 +27,8 @@ import 'package:modugo/src/interfaces/module_interface.dart';
 /// ```dart
 /// ShellModuleRoute(
 ///   routes: [
-///     ModuleRoute('/home', module: HomeModule()),
-///     ModuleRoute('/profile', module: ProfileModule()),
+///     ModuleRoute(path: '/home', module: HomeModule()),
+///     ModuleRoute(path: '/profile', module: ProfileModule()),
 ///   ],
 ///   builder: (context, state, child) {
 ///     return AppScaffold(child: child);

@@ -4,27 +4,30 @@
 
 # Modugo
 
-**Modugo** is a modular dependency and routing manager for Flutter/Dart that organizes the lifecycle of modules, dependencies, and routes. It is inspired by the modular architecture from [go_router_modular](https://pub.dev/packages/go_router_modular).
+**Modugo** is a modular system for Flutter inspired by [Flutter Modular](https://pub.dev/packages/flutter_modular) and [Go Router Modular](https://pub.dev/packages/go_router_modular). It provides a clean structure to organize **modules, routes, and dependency injection**. It provides a clean way to structure your app into isolated modules, but **it does not manage dependency disposal**.
 
-The main difference is that Modugo provides full control and decoupling of **automatic dependency injection and disposal based on navigation**, with detailed logs and an extensible structure.
+## Key Points
+
+- Uses **GoRouter** for navigation between routes.
+- Uses **GetIt** for dependency injection.
+- Dependencies are registered **once at app startup** when modules are initialized.
+- There is **no automatic disposal** of dependencies; once injected, they live for the lifetime of the application.
+- Designed to provide **decoupled, modular architecture** without enforcing lifecycle management.
+- Focuses on **clarity and structure** rather than automatic cleanup.
+
+> ⚠️ Note: Unlike some modular frameworks, Modugo **does not automatically dispose dependencies** when routes are removed. All dependencies live until the app is terminated.
 
 ---
 
 ## 📦 Features
 
-- Per-module registration of **dependencies** with `singleton`, `factory`, and `lazySingleton`
-- **Automatic lifecycle management** triggered by route access or exit
-- Support for **imported modules** (nested modules)
-- **Automatic disposal** of unused dependencies
 - Integration with **GoRouter**
+- Registration of **dependencies** with **GetIt**
+- Support for **imported modules** (nested modules)
 - Support for `ShellRoute` and `StatefulShellRoute`
 - Detailed and configurable logging
-- Support for **persistent modules** that are never disposed
 - Built-in support for **Route Guards**
 - Built-in support for **Regex-based Route Matching**
-- **Event System** with global and module-scoped event handling
-- **EventModule** for organized event-driven architecture
-- **Custom EventBus** support for scoped communication
 
 ---
 
@@ -45,15 +48,12 @@ dependencies:
     /home
       home_page.dart
       home_module.dart
-      home_events.dart          # Event definitions
     /profile
       profile_page.dart
-      profile_module.dart       # or profile_event_module.dart
+      profile_module.dart
     /chat
       chat_page.dart
-      chat_event_module.dart    # EventModule example
-  /events
-    global_events.dart          # Global event definitions
+      chat_module.dart
   app_module.dart
   app_widget.dart
 main.dart
@@ -66,12 +66,18 @@ main.dart
 ### main.dart
 
 ```dart
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  Modugo.configure(module: AppModule(), initialRoute: '/');
+  await Modugo.configure(module: AppModule(), initialRoute: '/');
 
-  runApp(const AppWidget());
+  runApp(
+      ModugoLoaderWidget(
+        loading: const LoadWidget(), // Your loading widget
+        builder: (_) => const AppWidget(),
+        dependencies: [ /* List of asynchronous dependencies */ ],
+      ),
+  );
 }
 ```
 
@@ -86,8 +92,8 @@ class AppWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      routerConfig: Modugo.routerConfig,
       title: 'Modugo App',
+      routerConfig: Modugo.routerConfig,
     );
   }
 }
@@ -100,110 +106,18 @@ class AppWidget extends StatelessWidget {
 ```dart
 final class AppModule extends Module {
   @override
-  void binds(IInjector i) {
-    i.addSingleton<AuthService>((_) => AuthService());
+  void binds() {
+    i.registerSingleton<AuthService>((_) => AuthService());
   }
 
   @override
   List<IModule> routes() => [
     ModuleRoute(path: '/', module: HomeModule()),
+    ModuleRoute(path: '/chat', module: ChatModule()),
     ModuleRoute(path: '/profile', module: ProfileModule()),
-    ModuleRoute(path: '/chat', module: ChatEventModule()), // EventModule example
   ];
 }
 ```
-
-### Simple EventModule Example (with Route Integration)
-
-This example shows how to use an `EventModule` to manage events **and** define a route for your feature/module in a Modugo application.
-
-```dart
-// 1️⃣ Define an event
-class ShowToastEvent {
-  final String message;
-  const ShowToastEvent(this.message);
-}
-
-// 2️⃣ Create your module
-final class ChatEventModule extends EventModule {
-  @override
-  void binds(IInjector i) {
-    // Register dependencies
-    i.addSingleton<ChatController>((_) => ChatController());
-  }
-
-  @override
-  List<IModule> routes() => [
-    // Define the route for the Chat page
-    ChildRoute(
-      path: '/chat',
-      child: (_, __) => const ChatPage(),
-    ),
-  ];
-
-  @override
-  void listen() {
-    // Listen to ShowToastEvent within the scope of this module
-    on<ShowToastEvent>((event, context) {
-      if (context != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(event.message)),
-        );
-      }
-    });
-  }
-}
-
-// 3️⃣ Trigger the event from anywhere in the app:
-// ModugoEventModule.fire(ShowToastEvent('New message received!'));
-```
-
-**How it works:**
-
-1. **Event definition** – Create a simple class to represent your event.
-2. **Module setup** – Use `binds` to register your dependencies.
-3. **Route definition** – Use `routes()` to map paths to widgets.
-4. **Event listening** – Use `listen()` to react to fired events.
-5. **Firing events** – Call `ModugoEventModule.fire(...)` from anywhere in the app.
-
----
-
-## ♻️ Persistent Modules
-
-By default, Modugo automatically disposes dependencies when a module is no longer active (i.e., when all its routes are exited).
-For cases like bottom navigation tabs, you may want to **keep modules alive** even when they are not visible.
-
-To do this, override the `persistent` flag:
-
-```dart
-final class HomeModule extends Module {
-  @override
-  bool get persistent => true;
-
-  @override
-  void binds(IInjector i) {
-    i.addLazySingleton<HomeController>(() => HomeController());
-  }
-
-  @override
-  List<IModule> routes() => [
-    ChildRoute(path: '/', child: (_, _) => const HomePage()),
-  ];
-}
-```
-
-✅ Great for `StatefulShellRoute` branches  
-🚫 Avoid for short-lived or heavy modules
-
----
-
-## ⚖️ Lifecycle
-
-- Dependencies are **automatically registered** when accessing a module route.
-- When all routes of that module are exited, dependencies are **automatically disposed**.
-- Disposal respects `.dispose()`, `.close()`, or `StreamController.close()`.
-- The root `AppModule` is **never disposed**.
-- Dependencies in imported modules are shared and removed only when all consumers are disposed.
 
 ---
 
@@ -218,14 +132,6 @@ Modugo.configure(
 
 - All logs pass through the `Logger` class, which can be extended or customized.
 - Logs include injection, disposal, navigation, and errors.
-
----
-
-## 🧼 Best Practices
-
-- Always specify explicit types for `addSingleton`, `addLazySingleton`, and `addFactory`.
-- Divide your app into **small, cohesive modules**.
-- Use `AppModule` only for **global dependencies**.
 
 ---
 
@@ -339,16 +245,6 @@ StatefulShellModuleRoute(
 )
 ```
 
-To keep module state across tabs:
-
-```dart
-final class ProfileModule extends Module {
-  @override
-  bool get persistent => true;
-  ...
-}
-```
-
 ---
 
 ## 🔍 Route Matching with Regex
@@ -424,7 +320,7 @@ Modugo.routeNotifier.addListener(() {
   final location = Modugo.routeNotifier.value;
 
   if (location == '/home') {
-    action();
+    // Action...
   }
 });
 ```
@@ -445,29 +341,6 @@ This is especially useful in cases like:
 
 ---
 
-### Automatic Integration
-
-Modugo automatically uses `routeNotifier` as the default `refreshListenable` for GoRouter:
-
-```dart
-Modugo.configure(
-  module: AppModule(),
-  // You can override this, but if omitted:
-  // → refreshListenable: Modugo.routeNotifier,
-);
-```
-
----
-
-### Benefits
-
-- ✅ Full visibility of route transitions
-- 🧠 Provides rich context: previous/current/action
-- 🔀 Enables reactive patterns beyond widget tree
-- 🧰 Test-friendly and extensible
-
----
-
 ## ⚰️ Route Guards
 
 You can protect routes using `IGuard`, which allows you to define redirection logic before a route is activated.
@@ -478,7 +351,7 @@ You can protect routes using `IGuard`, which allows you to define redirection lo
 class AuthGuard implements IGuard {
   @override
   FutureOr<String?> call(BuildContext context, GoRouterState state) async {
-    final auth = Modugo.get<AuthService>();
+    final auth = context.read<AuthService>();
     return auth.isLoggedIn ? null : '/login';
   }
 }
@@ -523,108 +396,38 @@ In the example above, `AuthGuard` will be automatically applied to all routes in
 
 ---
 
-## 💊 Dependency Injection
+# Dependency Injection in Modugo
 
-### Supported Types
+In Modugo, dependencies are registered using the `binds()` method inside a `Module`. You have access to `i`, which is a shorthand for `GetIt.instance`. You can register singletons, lazy singletons, or factories in a fluent API style similar to [GetIt](https://pub.dev/packages/get_it).
 
-- `addSingleton<T>((i) => ...)` - Creates instance immediately and reuses it
-- `addLazySingleton<T>((i) => ...)` - Creates instance on first access and reuses it
-- `addFactory<T>((i) => ...)` - Creates new instance every time
-
-### Basic Example
+### Example
 
 ```dart
-final class HomeModule extends Module {
+class HomeModule extends Module {
   @override
-  void binds(IInjector i) {
-    i
-      ..addSingleton<HomeController>((i) => HomeController(i.get<Repository>()))
-      ..addLazySingleton<Repository>((_) => RepositoryImpl())
-      ..addFactory<DateTime>((_) => DateTime.now());
-  }
+  List<Module> imports() => [CoreModule()];
 
   @override
   List<IModule> routes() => [
-    ChildRoute(path: '/home', child: (context, state) => const HomePage()),
+    ChildRoute(path: '/', child: (context, state) => const HomePage()),
   ];
-}
-```
 
-### 🔑 Multiple Instances with Keys
-
-Sometimes you need multiple instances of the same type. Modugo supports this with **keyed bindings**:
-
-```dart
-final class DatabaseModule extends Module {
   @override
-  void binds(IInjector i) {
+  void binds() {
     i
-      ..addSingleton<Database>((i) => Database.primary(), key: 'primary')
-      ..addSingleton<Database>((i) => Database.cache(), key: 'cache')
-      ..addLazySingleton<ApiClient>((i) => ApiClient.main(), key: 'main')
-      ..addLazySingleton<ApiClient>((i) => ApiClient.analytics(), key: 'analytics');
+      ..registerSingleton<ServiceRepository>(ServiceRepository.instance)
+      ..registerLazySingleton<OtherServiceRepository>(OtherServiceRepositoryImpl.new);
   }
 }
 ```
 
-#### Accessing keyed dependencies:
+> All dependencies are registered at startup and remain alive for the full app lifecycle. They are **never automatically disposed**.
 
-```dart
-// Get specific database instances
-final primaryDb = Modugo.get<Database>(key: 'primary');
-final cacheDb = Modugo.get<Database>(key: 'cache');
+### Notes
 
-// Get specific API clients
-final mainApi = injector.get<ApiClient>(key: 'main');
-final analyticsApi = injector.get<ApiClient>(key: 'analytics');
-```
-
-#### Via context extension:
-
-```dart
-// Get keyed dependencies using context
-final primaryDb = context.read<Database>(key: 'primary');
-final mainApi = context.read<ApiClient>(key: 'main');
-```
-
-✅ **Use cases for keyed bindings:**
-
-- Multiple database connections (primary, cache, analytics)
-- Different API clients (main, backup, testing)
-- Environment-specific configurations (dev, staging, prod)
-- Feature-specific services (auth, payments, notifications)
-
----
-
-## 🔍 Accessing Dependencies
-
-### Basic Access
-
-```dart
-final controller = Modugo.get<HomeController>();
-```
-
-Or via context extension:
-
-```dart
-final controller = context.read<HomeController>();
-```
-
-### Keyed Dependencies
-
-```dart
-// Direct access with keys
-final primaryDb = Modugo.get<Database>(key: 'primary');
-final cacheDb = Modugo.get<Database>(key: 'cache');
-```
-
-Or via context extension:
-
-```dart
-// Context extension with keys
-final primaryDb = context.read<Database>(key: 'primary');
-final cacheDb = context.read<Database>(key: 'cache');
-```
+- `registerSingleton<T>(...)` registers a singleton instance immediately.
+- `registerLazySingleton<T>(...)` registers a singleton lazily, creating it only on first access.
+- All registered dependencies are globally accessible via `i.get<T>()` or using Modugo’s `BuildContext` extension `context.read<T>()`.
 
 ---
 

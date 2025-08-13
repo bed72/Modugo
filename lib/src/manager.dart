@@ -1,20 +1,24 @@
-import 'dart:async';
+import 'package:modugo/src/module.dart';
+import 'package:modugo/src/interfaces/manager_interface.dart';
 
-import 'package:modugo/modugo.dart';
-import 'package:modugo/src/models/route_access_model.dart';
-
-/// Internal class responsible for managing the lifecycle of modules and their binds.
+/// Internal class responsible for managing the lifecycle of modules.
 ///
 /// The [Manager] tracks:
 /// - which modules are currently active
-/// - when and how binds should be registered or disposed
 /// - route-to-module associations for cleanup
 ///
 /// It is automatically used by [ModugoConfiguration], and should not be instantiated manually.
 final class Manager implements IManager {
+  /// The root module configured for the application.
+  /// Used as the entry point for route registration and dependency injection.
   Module? _module;
 
-  final Map<Module, List<RouteAccessModel>> _activeRoutes = {};
+  /// Tracks all currently active routes per module.
+  /// Each entry maps a [Module] to a list of route paths that are currently registered/active.
+  final Map<Module, List<String>> _activeRoutes = {};
+
+  /// Tracks the types registered by each module to allow unregistering from GetIt.
+  final Map<Module, Set<Type>> _registeredTypes = {};
 
   /// A private static instance used to implement the singleton pattern.
   ///
@@ -57,12 +61,12 @@ final class Manager implements IManager {
   @override
   bool isModuleActive(Module module) => _activeRoutes.containsKey(module);
 
-  /// Returns a list of currently active [RouteAccessModel]s associated with the given [module].
+  /// Returns a list of currently active [String]s associated with the given [module].
   ///
   /// Each entry tracks an active route path and optional branch, allowing cleanup
   /// or analysis of module usage across routes.
   @override
-  List<RouteAccessModel> getActiveRoutesFor(Module module) =>
+  List<String> getActiveRoutesFor(Module module) =>
       _activeRoutes[module]?.toList() ?? [];
 
   /// Returns the root [Module] instance that was registered via [Modugo.configure].
@@ -86,26 +90,32 @@ final class Manager implements IManager {
   /// This is used to track which routes are currently associated with a module,
   /// enabling precise control over when its binds can be safely disposed.
   ///
-  /// Optionally, a [branch] can be provided to differentiate navigation tabs
-  /// in `StatefulShellModuleRoute`.
   @override
-  void registerRoute(String path, Module module, {String? branch}) {
+  void registerRoute(String path, Module module) {
     _activeRoutes.putIfAbsent(module, () => []);
-    _activeRoutes[module]?.add(RouteAccessModel(path, branch));
+    _activeRoutes[module]?.add(path);
+
+    _registeredTypes.putIfAbsent(module, () => {});
+    _registeredTypes[module]!.add(module.runtimeType);
   }
 
   /// Unregisters a previously tracked [path] from the given [module].
   ///
   /// If the module is not the root module, and no more active routes remain,
-  ///
-  /// Uses a [Timer] to allow for navigation delays before cleanup,
-  /// preventing premature disposal during quick route switches.
+  /// the module is fully disposed.
   @override
-  void unregisterRoute(String path, Module module, {String? branch}) {
+  void unregisterRoute(String path, Module module) {
     if (module == _module) return;
 
-    _activeRoutes[module]?.removeWhere(
-      (r) => r.path == path && r.branch == branch,
-    );
+    _activeRoutes[module]?.removeWhere((p) => p == path);
+
+    if ((_activeRoutes[module]?.isEmpty ?? true)) {
+      _disposeModule(module);
+    }
+  }
+
+  void _disposeModule(Module module) {
+    _activeRoutes.remove(module);
+    _registeredTypes.remove(module);
   }
 }

@@ -122,11 +122,11 @@ void main() {
       await startModugoFake(module: module);
 
       final manager = Manager();
-      manager.registerRoute('/with-branch', module, branch: 'branch-a');
+      manager.registerRoute('/with-branch', module);
 
       expect(manager.isModuleActive(module), isTrue);
 
-      manager.unregisterRoute('/with-branch', module, branch: 'branch-a');
+      manager.unregisterRoute('/with-branch', module);
       await Future.delayed(Duration(milliseconds: 72));
 
       expect(manager.isModuleActive(module), isFalse);

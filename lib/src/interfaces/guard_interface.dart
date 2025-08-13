@@ -17,7 +17,7 @@ import 'package:go_router/go_router.dart';
 /// class AuthGuard implements IGuard {
 ///   @override
 ///   FutureOr<String?> call(BuildContext context, GoRouterState state) {
-///     final authService = Modugo.get<AuthService>();
+///     final authService = context.read<AuthService>();
 ///     return authService.isLoggedIn ? null : '/login';
 ///   }
 /// }

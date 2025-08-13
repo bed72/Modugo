@@ -17,76 +17,81 @@ import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
-/// Abstract base class representing a modular feature or logical section of the app.
+/// A set of module types that have been registered globally,
+/// used to ensure the same module is not bound more than once.
+final Set<Type> _modulesRegistered = {};
+
+/// Abstract base class for a "module" (feature) within the application.
 ///
-/// Each [Module] defines:
-/// - a list of imported modules ([imports]) to compose complex module trees
-/// - a list of routes ([routes]) it exposes for navigation
-/// - a list of dependency injection binds ([binds]) it manages
+/// A [Module] defines:
+/// - [imports()]: other modules it depends on. The `binds()` of imported
+///   modules are executed before the current module's `binds()`.
+/// - [routes()]: the route tree exposed by this module (e.g., [ChildRoute],
+///   [ModuleRoute], [ShellModuleRoute], [StatefulShellModuleRoute]).
+/// - [binds()]: registers the module's dependencies in [GetIt] (via [i]).
 ///
-/// The [_modulePath] stores the base path prefix used internally during route configuration.
+/// Behavior:
+/// - When [configureRoutes()] is called, the framework registers — **only once
+///   per module type** — the `binds()` of the current module **and** all
+///   imported modules, then sets up the route list.
+/// - Dependency registration is idempotent: if a module has already been
+///   registered, its `binds()` will not be executed again.
+/// - Even if a module does not expose its own routes, if it appears in
+///   [imports()], its `binds()` will still be executed.
 ///
-/// Example usage:
+/// Customization:
+/// - Override [persistent] to keep the module's dependencies alive even when
+///   there are no active routes for it.
+/// - Use [initState()] and [dispose()] to manage the module's internal state if
+///   necessary.
+/// - The injection instance is accessible via [i] (shortcut to
+///   `GetIt.instance`).
+///
+/// Example:
 /// ```dart
-/// class HomeModule extends Module {
+/// class AppModule extends Module {
 ///   @override
-///   List<Module> get imports => [SharedModule()];
+///   List<Module> imports() => [SharedModule()];
 ///
 ///   @override
-///   List<IModule> get routes => [ChildRoute('/', child: (c, s) => HomePage())];
-///
-///   @override
-///   List<void Function(GetIt)> get binds => [
-///     (GetIt) => GetIt.addSingleton((i) => HomeController()),
+///   List<IModule> routes() => [
+///     ChildRoute(path: '/', child: (context, state) => const HomePage()),
 ///   ];
+///
+///   @override
+///   void binds() {
+///     i
+///       ..registerLazySingleton<HomeController>(() => HomeController())
+///       ..registerSingleton<ApiClient>(ApiClient());
+///   }
 /// }
 /// ```
+
 abstract class Module {
+  /// Centralized Modugo dependency and route manager instance.
+  /// Handles bind registration, module lifecycle, and route configuration.
+  final _manager = Manager();
+
+  /// Shortcut to access the global GetIt instance used for dependency injection.
+  /// Provides direct access to registered services and singletons.
   GetIt get i => GetIt.instance;
 
-  /// Disposes the module state.
-  void dispose() {}
-
-  /// If true, this module will not have its dependencies automatically disposed.
+  /// Registers all dependency injection bindings for this module.
   ///
-  /// Useful for persistent modules like tabs in a bottom navigation bar.
-  ///
-  /// Defaults to false.
-  bool get persistent => false;
+  /// Override this method to declare your dependencies using the [GetIt].
+  void binds() {}
 
   /// List of imported modules that this module depends on.
   ///
   /// Allows modular composition by importing submodules.
-  ///
   /// Defaults to an empty list.
   List<Module> imports() => const [];
 
   /// List of navigation routes this module exposes.
   ///
   /// Routes can be [ChildRoute], [ModuleRoute], [ShellModuleRoute], etc.
-  ///
   /// Defaults to an empty list.
   List<IModule> routes() => const [];
-
-  /// Registers all dependency injection bindings for this module.
-  ///
-  /// Override this method to declare your dependencies using the [GetIt].
-  ///
-  /// Example:
-  /// ```dart
-  /// @override
-  /// void binds(GetIt i) {
-  ///   i
-  ///     ..addSingleton<A>(() => A())
-  ///     ..addLazySingleton<B>(() => B());
-  /// }
-  /// ```
-  void binds() {}
-
-  /// Initializes the module state.
-  void initState() {}
-
-  final _routerManager = Manager();
 
   /// Configures and returns the list of [RouteBase]s defined by this module.
   ///
@@ -103,25 +108,32 @@ abstract class Module {
   ///
   /// Example:
   /// ```dart
-  /// final routes = myModule.configureRoutes(topLevel: true, path: '/app');
+  /// final routes = module.configureRoutes(topLevel: true, path: '/app');
   /// ```
-  List<RouteBase> configureRoutes({bool topLevel = false, String path = ''}) {
+  List<RouteBase> configureRoutes({bool topLevel = false, String path = '/'}) {
+    _register(path: path);
+
     final childRoutes = _createChildRoutes();
     final shellRoutes = _createShellRoutes(topLevel);
     final moduleRoutes = _createModuleRoutes(topLevel);
 
-    final paths = [
-      ...shellRoutes,
-      ...childRoutes,
-      ...moduleRoutes,
-    ].whereType<GoRoute>().map((r) => r.path);
-
-    Logger.navigation(
-      'Final recorded routes: ${paths.isEmpty ? "(/) or ('')" : "$paths"}',
-    );
-
     return [...shellRoutes, ...childRoutes, ...moduleRoutes];
   }
+
+  List<GoRoute> _createModuleRoutes(bool topLevel) =>
+      routes()
+          .whereType<ModuleRoute>()
+          .map((module) => _createModule(module: module, topLevel: topLevel))
+          .toList();
+
+  List<GoRoute> _createChildRoutes() =>
+      routes()
+          .whereType<ChildRoute>()
+          .map(
+            (route) =>
+                _createChild(effectivePath: route.path!, childRoute: route),
+          )
+          .toList();
 
   GoRoute _createChild({
     required String effectivePath,
@@ -139,21 +151,15 @@ abstract class Module {
           if (result != null) return result;
         }
 
-        if (childRoute.redirect != null) {
-          return await childRoute.redirect!(context, state);
-        }
-
-        return null;
+        return childRoute.redirect != null
+            ? await childRoute.redirect!(context, state)
+            : null;
       },
       builder: (context, state) {
         try {
-          _register(path: state.uri.toString());
-
           return childRoute.child(context, state);
-        } catch (e, s) {
-          _unregister(state.uri.toString());
-
-          Logger.error('Error building route ${state.uri}: $e\n$s');
+        } catch (exception, stack) {
+          Logger.error('Error building route ${state.uri}: $exception\n$stack');
 
           rethrow;
         }
@@ -179,15 +185,6 @@ abstract class Module {
               ),
     );
   }
-
-  List<GoRoute> _createChildRoutes() =>
-      routes()
-          .whereType<ChildRoute>()
-          .map(
-            (route) =>
-                _createChild(effectivePath: route.path!, childRoute: route),
-          )
-          .toList();
 
   GoRoute _createModule({required ModuleRoute module, required bool topLevel}) {
     final childRoute =
@@ -218,11 +215,9 @@ abstract class Module {
           if (result != null) return result;
         }
 
-        if (childRoute?.redirect != null) {
-          return await childRoute!.redirect!(context, state);
-        }
-
-        return null;
+        return childRoute?.redirect != null
+            ? await childRoute!.redirect!(context, state)
+            : null;
       },
       onExit: (context, state) {
         if (childRoute == null) return Future.value(true);
@@ -231,18 +226,11 @@ abstract class Module {
           context,
           state: state,
           route: childRoute,
-          branch: module.path,
           module: module.module,
         );
       },
     );
   }
-
-  List<GoRoute> _createModuleRoutes(bool topLevel) =>
-      routes()
-          .whereType<ModuleRoute>()
-          .map((module) => _createModule(module: module, topLevel: topLevel))
-          .toList();
 
   List<RouteBase> _createShellRoutes(bool topLevel) {
     final shellRoutes = <RouteBase>[];
@@ -284,11 +272,9 @@ abstract class Module {
                 (context, state, child) =>
                     route.builder!(context, state, child),
             redirect: (context, state) async {
-              if (route.redirect != null) {
-                return await route.redirect!(context, state);
-              }
-
-              return null;
+              return route.redirect != null
+                  ? await route.redirect!(context, state)
+                  : null;
             },
             pageBuilder:
                 route.pageBuilder != null
@@ -310,53 +296,15 @@ abstract class Module {
     return shellRoutes;
   }
 
-  T _safePageBuilder<T>({
-    required String label,
-    required GoRouterState state,
-    required T Function() build,
-  }) {
-    try {
-      _register(path: state.uri.toString());
-      return build();
-    } catch (e, s) {
-      _unregister(state.uri.toString());
-      Logger.error('Error building $label for ${state.uri}: $e\n$s');
-      rethrow;
-    }
-  }
-
   String _adjustRoute(String route) =>
       (route == '/' || route.startsWith('/:')) ? '/' : route;
 
-  void _validPath(String path, String type) {
-    try {
-      CompilerRoute(path);
-    } catch (e) {
-      Logger.error('Invalid path in $type: $path → $e');
-
-      throw ArgumentError.value(
-        path,
-        'ChildRoute.path',
-        'Invalid path syntax in $type: $e',
-      );
-    }
-  }
-
-  Page<void> _buildCustomTransitionPage(
-    BuildContext context, {
-    required ChildRoute route,
-    required GoRouterState state,
-  }) {
-    _register(path: state.uri.toString());
-
-    return CustomTransitionPage(
-      key: state.pageKey,
-      child: route.child(context, state),
-      transitionsBuilder: Transition.builder(
-        config: () {},
-        type: route.transition ?? Modugo.getDefaultTransition,
-      ),
-    );
+  /// Unregisters a route path and disposes the module if it has no more active routes.
+  ///
+  /// [path]    The route path to unregister.
+  /// [module]  Optional module instance to unregister instead of `this`.
+  void _unregister(String path, {Module? module}) {
+    _manager.unregisterRoute(path, module ?? this);
   }
 
   Widget _buildModuleChild(
@@ -364,50 +312,114 @@ abstract class Module {
     required ModuleRoute module,
     required GoRouterState state,
     ChildRoute? route,
-  }) {
-    _register(
-      branch: module.path,
-      module: module.module,
-      path: state.uri.toString(),
-    );
-    return route?.child(context, state) ?? Placeholder();
+  }) => route?.child(context, state) ?? Placeholder();
+
+  Page<void> _buildCustomTransitionPage(
+    BuildContext context, {
+    required ChildRoute route,
+    required GoRouterState state,
+  }) => CustomTransitionPage(
+    key: state.pageKey,
+    child: route.child(context, state),
+    transitionsBuilder: Transition.builder(
+      config: () {},
+      type: route.transition ?? Modugo.getDefaultTransition,
+    ),
+  );
+
+  /// Validates a path for correct syntax using [CompilerRoute].
+  void _validPath(String path, String type) {
+    try {
+      CompilerRoute(path);
+    } catch (exception) {
+      Logger.error('Invalid path in $type: $path → $exception');
+      throw ArgumentError.value(
+        path,
+        'ChildRoute.path',
+        'Invalid path syntax in $type: $exception',
+      );
+    }
   }
 
+  T _safePageBuilder<T>({
+    required String label,
+    required T Function() build,
+    required GoRouterState state,
+  }) {
+    try {
+      return build();
+    } catch (exception, stack) {
+      Logger.error(
+        'Error building $label for ${state.uri}: $exception\n$stack',
+      );
+
+      rethrow;
+    }
+  }
+
+  /// Handles route exit by unregistering the route from [Manager] and cleaning up
+  /// the module if it has no more active routes.
+  ///
+  /// Ensures that:
+  /// 1. The module is only unregistered when the route has fully exited.
+  /// 2. All bindings are cleaned from [GetIt] if no routes remain active.
+  /// 3. Any errors during exit handling do not crash the app.
+  ///
+  /// [context] The current [BuildContext].
+  /// [module]  The module associated with the route.
+  /// [route]   The [ChildRoute] that is being exited.
+  /// [state]   The current [GoRouterState].
   FutureOr<bool> _handleRouteExit(
     BuildContext context, {
     required Module module,
     required ChildRoute route,
     required GoRouterState state,
-    String? branch,
   }) {
     final onExit = route.onExit?.call(context, state);
-
     final futureExit =
         onExit is Future<bool> ? onExit : Future.value(onExit ?? true);
 
     return futureExit
         .then((exit) {
-          try {
-            if (exit) {
-              _unregister(state.uri.toString(), module: module, branch: branch);
-            }
-            return exit;
-          } catch (_) {
-            return false;
+          if (exit) {
+            _unregister(state.uri.toString(), module: module);
           }
+          return exit;
         })
         .catchError((_) => false);
   }
 
-  void _register({required String path, Module? module, String? branch}) {
-    if (path == '/') return;
+  /// Registers a module and all its imports recursively and tracks the route path.
+  ///
+  /// Ensures:
+  /// - Imported modules are registered first.
+  /// - `binds()` executes only once per module type.
+  /// - Cyclic imports are ignored.
+  /// - The route is registered only if `path != '/'`.
+  ///
+  /// [path]    The route path to register.
+  /// [module]  Optional module instance to register instead of `this`.
+  void _register({String? path, Module? module}) {
+    final targetModule = module ?? this;
 
-    _routerManager.registerRoute(path, module ?? this, branch: branch);
-  }
+    if (_modulesRegistered.contains(targetModule.runtimeType)) return;
 
-  void _unregister(String path, {Module? module, String? branch}) {
-    dispose();
+    for (final imported in targetModule.imports()) {
+      _register(path: path, module: imported);
+    }
 
-    _routerManager.unregisterRoute(path, module ?? this, branch: branch);
+    if (!_modulesRegistered.contains(targetModule.runtimeType)) {
+      targetModule.binds();
+      _modulesRegistered.add(targetModule.runtimeType);
+
+      Logger.module(
+        '${targetModule.runtimeType} binds registered automatically',
+      );
+    }
+
+    if (path != null && path.isNotEmpty && targetModule.routes().isNotEmpty) {
+      _manager.module = targetModule;
+      _manager.registerRoute(path, targetModule);
+    }
   }
 }

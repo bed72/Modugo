@@ -25,7 +25,7 @@ import 'package:modugo/src/interfaces/module_interface.dart';
 /// Example:
 /// ```dart
 /// ModuleRoute(
-///   '/product',
+///   path: '/product',
 ///   name: 'product-root',
 ///   module: ProductModule(),
 ///   redirect: (context, state) {

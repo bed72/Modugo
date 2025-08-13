@@ -1,13 +1,12 @@
 export 'src/guard.dart';
-export 'src/event.dart';
 export 'src/logger.dart';
 export 'src/modugo.dart';
 export 'src/module.dart';
 export 'src/manager.dart';
 export 'src/transition.dart';
 
-export 'src/models/binding_key_model.dart';
 export 'src/notifiers/router_notifier.dart';
+export 'src/widgets/modugo_loader_widget.dart';
 
 export 'src/interfaces/guard_interface.dart';
 export 'src/interfaces/module_interface.dart';

@@ -2,14 +2,11 @@
 
 import 'package:modugo/src/module.dart';
 
-import 'package:modugo/src/models/route_access_model.dart';
-
 /// Interface that defines the contract for managing module lifecycles and route bindings
 /// within the Modugo system.
 ///
 /// The [IManager] is responsible for:
 /// - tracking the current active [Module]
-/// - managing reference counts of registered [Bind]s
 /// - handling registration and disposal of route/module associations
 ///
 /// Typically used internally by Modugo to orchestrate route-aware
@@ -52,8 +49,8 @@ abstract interface class IManager {
   /// Called when a route is disposed or removed from the navigation stack.
   void unregisterRoute(String route, Module module);
 
-  /// Returns a list of all active [RouteAccessModel]s for the given [module].
+  /// Returns a list of all active [String]s for the given [module].
   ///
-  /// Each [RouteAccessModel] tracks the path and entry timestamp for a route.
-  List<RouteAccessModel> getActiveRoutesFor(Module module);
+  /// Each [String] tracks the path and entry timestamp for a route.
+  List<String> getActiveRoutesFor(Module module);
 }

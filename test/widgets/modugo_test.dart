@@ -67,7 +67,7 @@ final class _DummyShellModule extends Module {
       routes: [
         ModuleRoute(
           path: '/',
-          name: 'home-module',
+          name: 'inner-module',
           module: _InnerShellModule(),
         ),
       ],

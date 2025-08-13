@@ -28,17 +28,6 @@ void main() {
   });
 
   group('Module activity and lifecycle', () {
-    test('should unregister binds of inner module properly', () async {
-      expect(manager.isModuleActive(innerModule), isTrue);
-
-      manager.registerRoute('/inner', innerModule);
-      manager.unregisterRoute('/inner', innerModule);
-      await Future.delayed(Duration(milliseconds: 72));
-
-      expect(manager.isModuleActive(rootModule), isTrue);
-      expect(manager.isModuleActive(innerModule), isFalse);
-    });
-
     test(
       'should not dispose root module even if all routes are removed',
       () async {
@@ -71,58 +60,6 @@ void main() {
         await Future.delayed(Duration(milliseconds: 72));
 
         expect(manager.isModuleActive(innerModule), isFalse);
-      },
-    );
-
-    test(
-      'unregisterRoute removes RouteAccessModel and disposes when empty',
-      () async {
-        final module = _ImportAnotherModule();
-        final manager = Manager();
-
-        manager.registerRoute('/to-remove', module, branch: 'main');
-
-        expect(manager.isModuleActive(module), isTrue);
-
-        manager.unregisterRoute('/to-remove', module, branch: 'main');
-        await Future.delayed(Duration(milliseconds: 72));
-
-        expect(manager.isModuleActive(module), isFalse);
-      },
-    );
-
-    test('unregisterRoute does not dispose if other branches remain', () async {
-      final module = _ImportAnotherModule();
-      final manager = Manager();
-
-      manager.registerRoute('/cart', module, branch: 'a');
-      manager.registerRoute('/cart', module, branch: 'b');
-
-      manager.unregisterRoute('/cart', module, branch: 'a');
-      await Future.delayed(Duration(milliseconds: 72));
-
-      expect(manager.isModuleActive(module), isTrue);
-
-      manager.unregisterRoute('/cart', module, branch: 'b');
-      await Future.delayed(Duration(milliseconds: 72));
-
-      expect(manager.isModuleActive(module), isFalse);
-    });
-
-    test(
-      'calling unregisterRoute with no matching RouteAccessModel does nothing',
-      () {
-        final module = _ImportAnotherModule();
-        final manager = Manager();
-
-        manager.registerRoute('/match', module, branch: 'x');
-
-        manager.unregisterRoute('/wrong', module, branch: 'x');
-        manager.unregisterRoute('/match', module, branch: 'y');
-
-        expect(manager.isModuleActive(module), isTrue);
-
-        manager.unregisterRoute('/match', module, branch: 'x');
       },
     );
   });

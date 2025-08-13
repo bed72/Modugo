@@ -30,8 +30,8 @@ import 'package:modugo/src/interfaces/module_interface.dart';
 /// Example:
 /// ```dart
 /// ChildRoute(
-///   '/product/:id',
 ///   name: 'product',
+///   path: '/product/:id',
 ///   child: (context, state) => ProductPage(id: context.getPathParam('id')),
 /// )
 /// ```

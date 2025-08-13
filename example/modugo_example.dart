@@ -60,9 +60,6 @@ final class HomeModule extends Module {
     ChildRoute(
       path: '/',
       name: 'home-route',
-      guards: [
-        /** GUARDS **/
-      ],
       child: (context, _) {
         final controller = context.read<HomeController>();
         return HomeScreen(controller: controller);
