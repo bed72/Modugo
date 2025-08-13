@@ -1,17 +1,25 @@
+import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:modugo/modugo.dart';
+import 'package:modugo/src/modugo.dart';
+import 'package:modugo/src/module.dart';
+import 'package:modugo/src/manager.dart';
+import 'package:modugo/src/interfaces/module_interface.dart';
+
+import 'package:modugo/src/routes/child_route.dart';
+import 'package:modugo/src/routes/module_route.dart';
+import 'package:modugo/src/routes/shell_module_route.dart';
+import 'package:modugo/src/models/route_pattern_model.dart';
+import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 import 'fakes/fakes.dart';
 
 void main() {
   setUp(() async {
-    Injector().clearAll();
     final manager = Manager();
     manager.module = null;
-    manager.bindReferences.clear();
   });
 
   group('Module route configuration', () {
@@ -44,7 +52,7 @@ void main() {
       await startModugoFake(module: module);
       module.configureRoutes(topLevel: true, path: '/home');
 
-      expect(() => Injector().get<_Service>(), returnsNormally);
+      expect(() => GetIt.I.get<_Service>(), returnsNormally);
     });
 
     test('creates ModuleRoute using / as default child', () async {
@@ -63,8 +71,8 @@ void main() {
       await startModugoFake(module: module);
       final routes = module.configureRoutes(topLevel: true);
 
+      expect(() => GetIt.I.get<_Service>(), returnsNormally);
       expect(routes.whereType<ShellRoute>().isNotEmpty, isTrue);
-      expect(() => Injector().get<_Service>(), returnsNormally);
     });
 
     test('creates StatefulShellRoute with branches', () async {
@@ -115,13 +123,12 @@ void main() {
       await startModugoFake(module: module);
 
       final manager = Manager();
-      manager.registerBindsIfNeeded(module);
       manager.registerRoute('/with-branch', module, branch: 'branch-a');
 
       expect(manager.isModuleActive(module), isTrue);
 
       manager.unregisterRoute('/with-branch', module, branch: 'branch-a');
-      await Future.delayed(Duration(milliseconds: disposeMilisenconds + 72));
+      await Future.delayed(Duration(milliseconds: 72));
 
       expect(manager.isModuleActive(module), isFalse);
     });
@@ -304,8 +311,8 @@ final class _ModuleWith extends Module {
 
 final class _InnerModule extends Module {
   @override
-  void binds(IInjector i) {
-    i.addFactory<_Service>((_) => _Service());
+  void binds(GetIt i) {
+    i.registerFactory<_Service>(() => _Service());
   }
 
   @override
@@ -320,8 +327,8 @@ final class _InnerModule extends Module {
 
 final class _ModuleWithBranch extends Module {
   @override
-  void binds(IInjector i) {
-    i.addSingleton<_Service>((_) => _Service());
+  void binds(GetIt i) {
+    i.registerSingleton<_Service>(_Service());
   }
 
   @override
@@ -395,8 +402,8 @@ final class _ModuleWithShell extends Module {
   @override
   List<IModule> routes() => [
     ShellModuleRoute(
-      binds: [(i) => i.addSingleton<_Service>((_) => _Service())],
       builder: (_, _, child) => Container(child: child),
+      binds: [(i) => i.registerSingleton<_Service>(_Service())],
       routes: [ChildRoute(path: 'tab1', child: (_, _) => const Placeholder())],
     ),
   ];

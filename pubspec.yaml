@@ -12,6 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
 
+  get_it: ^8.2.0
   event_bus: ^2.0.1
   go_router: ^16.1.0
   talker_logger: ^4.9.3

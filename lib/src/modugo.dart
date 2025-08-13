@@ -1,14 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:get_it/get_it.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/module.dart';
-import 'package:modugo/src/dispose.dart';
 import 'package:modugo/src/manager.dart';
-import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/transition.dart';
 
 import 'package:modugo/src/notifiers/router_notifier.dart';
@@ -101,7 +100,8 @@ final class ModugoConfiguration {
   /// Returns a dependency of type [T] from the [Injector].
   ///
   /// Shortcut for `Injector().get<T>()`.
-  static T get<T>() => Injector().get<T>();
+  static T get<T extends Object>({Type? type, String? instanceName}) =>
+      GetIt.I.get<T>(type: type, instanceName: instanceName);
 
   /// Attempts to match a given [location] to a registered route with a [RoutePatternModel].
   ///
@@ -146,7 +146,6 @@ final class ModugoConfiguration {
     Listenable? refreshListenable,
     bool debugLogDiagnostics = false,
     List<NavigatorObserver>? observers,
-    int delayDisposeMilliseconds = 727,
     Codec<Object?, Object?>? extraCodec,
     GlobalKey<NavigatorState>? navigatorKey,
     bool debugLogDiagnosticsGoRouter = false,
@@ -164,7 +163,6 @@ final class ModugoConfiguration {
     GoRouter.optionURLReflectsImperativeAPIs = true;
 
     final routes = module.configureRoutes(topLevel: true);
-    setDisposeMiliseconds(delayDisposeMilliseconds);
 
     modularNavigatorKey = navigatorKey ?? GlobalKey<NavigatorState>();
 

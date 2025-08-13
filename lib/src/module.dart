@@ -2,20 +2,19 @@
 
 import 'dart:async';
 
+import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/manager.dart';
-import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/transition.dart';
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/compiler_route.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
-import 'package:modugo/src/interfaces/injector_interface.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 /// Abstract base class representing a modular feature or logical section of the app.
@@ -37,8 +36,8 @@ import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 ///   List<IModule> get routes => [ChildRoute('/', child: (c, s) => HomePage())];
 ///
 ///   @override
-///   List<void Function(IInjector)> get binds => [
-///     (injector) => injector.addSingleton((i) => HomeController()),
+///   List<void Function(GetIt)> get binds => [
+///     (GetIt) => GetIt.addSingleton((i) => HomeController()),
 ///   ];
 /// }
 /// ```
@@ -66,21 +65,21 @@ abstract class Module {
 
   /// Registers all dependency injection bindings for this module.
   ///
-  /// Override this method to declare your dependencies using the [IInjector].
+  /// Override this method to declare your dependencies using the [GetIt].
   ///
   /// Example:
   /// ```dart
   /// @override
-  /// void binds(IInjector i) {
+  /// void binds(GetIt i) {
   ///   i
   ///     ..addSingleton<A>(() => A())
   ///     ..addLazySingleton<B>(() => B());
   /// }
   /// ```
-  void binds(IInjector i) {}
+  void binds(GetIt i) {}
 
   /// Initializes the module state.
-  void initState(Injector i) {}
+  void initState(GetIt i) {}
 
   /// Disposes the module state.
   void dispose() {}
@@ -105,10 +104,6 @@ abstract class Module {
   /// final routes = myModule.configureRoutes(topLevel: true, path: '/app');
   /// ```
   List<RouteBase> configureRoutes({bool topLevel = false, String path = ''}) {
-    if (!_routerManager.isModuleActive(this)) {
-      _routerManager.registerBindsAppModule(this);
-    }
-
     final childRoutes = _createChildRoutes();
     final shellRoutes = _createShellRoutes(topLevel);
     final moduleRoutes = _createModuleRoutes(topLevel);
@@ -252,20 +247,6 @@ abstract class Module {
 
     for (final route in routes()) {
       if (route is ShellModuleRoute) {
-        if (route.binds.isNotEmpty) {
-          for (final bind in route.binds) {
-            final before = Injector().registeredTypes;
-            bind(Injector());
-            final after = Injector().registeredTypes;
-
-            final newTypes = after.difference(before);
-            for (final type in newTypes) {
-              _routerManager.bindReferences[type] =
-                  (_routerManager.bindReferences[type] ?? 0) + 1;
-            }
-          }
-        }
-
         final innerRoutes =
             route.routes
                 .map((routeOrModule) {
@@ -417,14 +398,14 @@ abstract class Module {
   }
 
   void _register({required String path, Module? module, String? branch}) {
-    _routerManager.registerBindsIfNeeded(module ?? this);
-    initState(Injector());
     if (path == '/') return;
+
     _routerManager.registerRoute(path, module ?? this, branch: branch);
   }
 
   void _unregister(String path, {Module? module, String? branch}) {
     dispose();
+
     _routerManager.unregisterRoute(path, module ?? this, branch: branch);
   }
 }

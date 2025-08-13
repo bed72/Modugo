@@ -1,15 +1,17 @@
+import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/event.dart';
 import 'package:modugo/src/modugo.dart';
-import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/routes/child_route.dart';
 
 import 'package:modugo/src/interfaces/module_interface.dart';
 
 void main() {
+  final injector = GetIt.I;
+
   setUpAll(() {
     TestWidgetsFlutterBinding.ensureInitialized();
     modularNavigatorKey = GlobalKey<NavigatorState>();
@@ -49,8 +51,6 @@ void main() {
 
     group('Initialization', () {
       test('should call listen() during initState', () async {
-        final injector = Injector();
-
         expect(eventModule.receivedValues.isEmpty, isTrue);
         expect(eventModule.receivedMessages.isEmpty, isTrue);
 
@@ -68,7 +68,6 @@ void main() {
       });
 
       test('should work with custom EventBus', () async {
-        final injector = Injector();
         final customEventBus = EventBus();
         final customEventModule = _EventModule(eventBus: customEventBus);
 
@@ -92,7 +91,6 @@ void main() {
 
     group('Event Listening', () {
       test('should receive events through on() method', () async {
-        final injector = Injector();
         eventModule.initState(injector);
 
         const event3 = _AnotherEventMock(100);
@@ -113,7 +111,6 @@ void main() {
       });
 
       test('should handle multiple events of same type', () async {
-        final injector = Injector();
         eventModule.initState(injector);
 
         for (int i = 0; i < 5; i++) {
@@ -131,7 +128,6 @@ void main() {
 
     group('Auto Dispose', () {
       test('should dispose correctly when module is disposed', () async {
-        final injector = Injector();
         eventModule.initState(injector);
 
         ModugoEventModule.fire(const _EventMock('Before dispose'));
@@ -143,7 +139,6 @@ void main() {
       });
 
       test('should not dispose listeners when autoDispose is false', () async {
-        final injector = Injector();
         final noAutoDisposeModule = _EventModuleNoAutoDispose();
 
         noAutoDisposeModule.initState(injector);
@@ -184,7 +179,6 @@ void main() {
 
   group('Integration Tests', () {
     test('should work with multiple EventModules', () async {
-      final injector = Injector();
       final module1 = _EventModule();
       final module2 = _EventModule();
 
@@ -214,7 +208,6 @@ void main() {
     });
 
     test('should create and dispose EventModule without errors', () async {
-      final injector = Injector();
       final eventModule = _EventModule();
 
       expect(() => eventModule.initState(injector), returnsNormally);
@@ -236,7 +229,6 @@ void main() {
       final module1 = _EventModule(eventBus: customEventBus1);
       final module2 = _EventModule(eventBus: customEventBus2);
 
-      final injector = Injector();
       module1.initState(injector);
       module2.initState(injector);
 
@@ -268,7 +260,6 @@ void main() {
     test('should handle EventBus lifecycle correctly', () {
       final customEventBus = EventBus();
       final eventModule = _EventModule(eventBus: customEventBus);
-      final injector = Injector();
 
       expect(() => eventModule.initState(injector), returnsNormally);
       expect(

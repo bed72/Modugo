@@ -1,6 +1,7 @@
-import 'package:flutter/widgets.dart';
+// coverage:ignore-file
 
-import 'package:modugo/src/injector.dart';
+import 'package:get_it/get_it.dart';
+import 'package:flutter/widgets.dart';
 
 /// Extension on [BuildContext] to access dependencies registered in the [Injector].
 ///
@@ -26,8 +27,9 @@ import 'package:modugo/src/injector.dart';
 /// ```
 extension ContextInjectionExtension on BuildContext {
   /// Retrieves a registered dependency of type [T] from the [Injector].
-  /// 
+  ///
   /// Optionally specify a [key] to retrieve a specific instance when multiple
   /// instances of the same type are registered.
-  T read<T>({String? key}) => Injector().get<T>(key: key);
+  T read<T extends Object>({Type? type, String? instanceName}) =>
+      GetIt.I.get<T>(type: type, instanceName: instanceName);
 }

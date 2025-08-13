@@ -31,11 +31,6 @@ abstract interface class IManager {
   /// Throws a [StateError] if called before [Modugo.configure].
   Module get rootModule;
 
-  /// A map tracking how many times each [Bind] type has been registered.
-  ///
-  /// This is used to support reference counting and safe disposal.
-  Map<Type, int> get bindReferences;
-
   /// Returns `true` if the given [module] has already been activated.
   ///
   /// Example:
@@ -45,23 +40,6 @@ abstract interface class IManager {
   /// }
   /// ```
   bool isModuleActive(Module module);
-
-  /// Unregisters all [Bind]s associated with the given [module].
-  ///
-  /// This includes local binds and imported modules.
-  ///
-  /// Automatically handles reference count checks.
-  void unregisterBinds(Module module);
-
-  /// Registers all binds for a [module] if they haven't been registered yet.
-  ///
-  /// This is typically used for dynamic or nested module resolution.
-  void registerBindsIfNeeded(Module module);
-
-  /// Registers all binds for the top-level application [module].
-  ///
-  /// Called once during initial Modugo setup.
-  void registerBindsAppModule(Module module);
 
   /// Associates a route path [route] with a [module] for lifecycle tracking.
   ///

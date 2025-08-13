@@ -1,3 +1,4 @@
+import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 
 import 'package:go_router/go_router.dart';
@@ -8,7 +9,6 @@ import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/module.dart';
 
 import 'package:modugo/src/interfaces/module_interface.dart';
-import 'package:modugo/src/interfaces/injector_interface.dart';
 
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/notifiers/router_notifier.dart';
@@ -86,8 +86,8 @@ final class _Service {
 
 final class _InnerModule extends Module {
   @override
-  void binds(IInjector i) {
-    i.addSingleton<_Service>((_) => _Service());
+  void binds(GetIt i) {
+    i.registerSingleton<_Service>(_Service());
   }
 
   @override

@@ -1,13 +1,13 @@
 // ignore_for_file: unintended_html_in_doc_comment
 
 import 'dart:async';
+import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 import 'package:event_bus/event_bus.dart';
 
 import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/module.dart';
-import 'package:modugo/src/injector.dart';
 
 /// Stores all event subscriptions organized by EventBus and event type.
 ///
@@ -369,7 +369,7 @@ abstract class EventModule extends Module {
   }
 
   @override
-  void initState(Injector i) {
+  void initState(GetIt i) {
     listen();
     super.initState(i);
   }

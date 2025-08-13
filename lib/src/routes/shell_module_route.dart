@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
@@ -7,7 +8,6 @@ import 'package:go_router/go_router.dart';
 import 'package:modugo/src/models/route_pattern_model.dart';
 
 import 'package:modugo/src/interfaces/module_interface.dart';
-import 'package:modugo/src/interfaces/injector_interface.dart';
 
 /// A modular shell route that wraps a group of child [IModule] routes within a common layout or container.
 ///
@@ -55,7 +55,7 @@ final class ShellModuleRoute implements IModule {
   /// Optional binds injected when this shell is active.
   ///
   /// These binds are scoped to the shell and disposed when it’s no longer in use.
-  final List<void Function(IInjector)> binds;
+  final List<void Function(GetIt)> binds;
 
   /// Navigator key used to isolate navigation inside the shell.
   final GlobalKey<NavigatorState>? navigatorKey;
