@@ -1,6 +1,5 @@
 // coverage:ignore-file
 
-import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 
 /// A widget that waits for all asynchronous dependencies to be resolved
@@ -27,7 +26,7 @@ class ModugoLoaderWidget extends StatelessWidget {
   final Widget _loading;
 
   /// The list of futures that must complete before rendering the app.
-  final List<Future<void>>? _dependencies;
+  final Future<List<Future<void>>>? _dependencies;
 
   /// The builder function called when all dependencies are ready.
   final Widget Function(BuildContext) _builder;
@@ -41,7 +40,7 @@ class ModugoLoaderWidget extends StatelessWidget {
     super.key,
     required Widget loading,
     required Widget Function(BuildContext) builder,
-    List<Future>? dependencies,
+    Future<List<Future<void>>>? dependencies,
   }) : _dependencies = dependencies,
        _loading = loading,
        _builder = builder;
@@ -49,7 +48,7 @@ class ModugoLoaderWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: Future.wait([..._dependencies ?? [], GetIt.instance.allReady()]),
+      future: _dependencies,
       builder:
           (context, snapshot) =>
               snapshot.connectionState != ConnectionState.done
