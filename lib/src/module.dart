@@ -332,6 +332,7 @@ abstract class Module {
   /// [module]  Optional module instance to unregister instead of `this`.
   void _unregister(String path, {Module? module}) {
     final targetModule = module ?? this;
+    _manager.module = targetModule;
 
     _manager.unregisterRoute(path, targetModule);
     if (_manager.isModuleActive(targetModule)) dispose();
