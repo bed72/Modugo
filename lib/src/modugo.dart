@@ -97,7 +97,16 @@ final class ModugoConfiguration {
   static bool? _debugLogDiagnostics;
   static TypeTransition? _transition;
 
-  /// Returns a dependency of type [T] from the [Injector].
+  /// Provides global access to the dependency injection container (GetIt).
+  ///
+  /// Example:
+  /// ```dart
+  /// final prefs = Modugo.i<SharedPreferences>();
+  /// final apiClient = Modugo.i<ApiClient>();
+  /// ```
+  static GetIt get i => GetIt.instance;
+
+  /// Returns a dependency of type [T] from the [GetIt].
   ///
   /// Shortcut for `Modugo.get<T>()`.
   static T get<T extends Object>({Type? type, String? instanceName}) =>

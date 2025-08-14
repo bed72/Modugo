@@ -26,11 +26,11 @@ class ModugoLoaderWidget extends StatelessWidget {
   /// The widget displayed while waiting for dependencies to be ready.
   final Widget _loading;
 
+  /// The list of futures that must complete before rendering the app.
+  final List<Future<void>>? _dependencies;
+
   /// The builder function called when all dependencies are ready.
   final Widget Function(BuildContext) _builder;
-
-  /// The list of futures that must complete before rendering the app.
-  final List<Future>? _dependencies;
 
   /// Creates a [ModugoLoaderWidget].
   ///
@@ -50,12 +50,11 @@ class ModugoLoaderWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return FutureBuilder(
       future: Future.wait([..._dependencies ?? [], GetIt.instance.allReady()]),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return _loading;
-        }
-        return _builder(context);
-      },
+      builder:
+          (context, snapshot) =>
+              snapshot.connectionState != ConnectionState.done
+                  ? _loading
+                  : _builder(context),
     );
   }
 }
