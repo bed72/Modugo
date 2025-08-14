@@ -12,14 +12,98 @@ library;
 
 import 'package:modugo/modugo.dart';
 import 'package:flutter/material.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Modugo with the root module
-  Modugo.configure(module: AppModule(), initialRoute: '/');
+  WidgetsFlutterBinding.ensureInitialized();
 
-  runApp(const AppWidget());
+  await Modugo.configure(
+    module: AppModule(),
+    initialRoute: '/',
+    debugLogDiagnostics: true,
+    errorBuilder: AppResolver.error,
+    debugLogDiagnosticsGoRouter: true,
+  );
+
+  runApp(AppResolver.app);
+}
+
+/// Resolves the root application widget and manages asynchronous dependencies.
+///
+/// [AppResolver] provides a single point to access the main app widget (`app`),
+/// handles error navigation (`error`), and exposes all async dependencies required
+/// before rendering the app.
+///
+/// Usage:
+/// ```dart
+/// runApp(AppResolver.app);
+/// ```
+final class AppResolver {
+  /// Returns the main application widget wrapped in [ModugoLoaderWidget].
+  ///
+  /// This ensures that all asynchronous dependencies are completed before
+  /// building the app. While waiting, the `loading` widget is displayed.
+  ///
+  /// Example:
+  /// ```dart
+  /// Widget mainApp = AppResolver.app;
+  /// runApp(mainApp);
+  /// ```
+  static Widget get app => ModugoLoaderWidget(
+    loading: const Placeholder(), // Displayed while dependencies load
+    dependencies: _dependencies(),
+    builder: (_) => const AppWidget(),
+  );
+
+  /// Handles navigation when an error occurs during route resolution.
+  ///
+  /// Typically redirects the user to a safe route (e.g., '/').
+  ///
+  /// Parameters:
+  /// - [context]: The current [BuildContext]
+  /// - [state]: The [GoRouterState] containing routing information
+  ///
+  /// Returns a widget to display (can be `SizedBox.shrink()` if redirection occurs).
+  static Widget error(BuildContext context, GoRouterState state) {
+    context.go('/');
+    return const SizedBox.shrink();
+  }
+
+  /// Returns a list of asynchronous dependencies to be awaited before
+  /// building the app.
+  ///
+  /// This method allows dynamically composing the list of futures that need
+  /// to be resolved, including:
+  /// - Any singleton async registrations from GetIt/Modugo
+  /// - Service initializations (e.g., SharedPreferences, Firebase, RemoteConfig)
+  ///
+  /// The returned `Future<List<Future<void>>>` ensures that [ModugoLoaderWidget]
+  /// can await all necessary initializations.
+  ///
+  /// Example usage inside the loader:
+  /// ```dart
+  /// ModugoLoaderWidget(
+  ///   loading: CircularProgressIndicator(),
+  ///   dependencies: AppResolver._dependencies(),
+  ///   builder: (_) => const AppWidget(),
+  /// );
+  /// ```
+  ///
+  /// Returns:
+  /// - A [Future] that resolves to a [List] of [Future<void>] tasks to await.
+  static Future<List<Future<void>>> _dependencies() async {
+    // Example using SharedPreferences
+    // await Modugo.i.isReady<SharedPreferences>();
+
+    // Example: wait for all required async services
+    return Future.value([
+      Modugo.i.allReady(), // Ensure all GetIt singletons are ready
+      // Add other async dependencies here.
+    ]);
+  }
 }
 
 /// The root widget for the app.
@@ -47,6 +131,11 @@ final class AppModule extends Module {
 final class HomeModule extends Module {
   @override
   void binds() {
+    // Example using SharedPreferences
+    // i.registerSingletonAsync<SharedPreferences>(
+    //   () async => await SharedPreferences.getInstance(),
+    // );
+
     i
       ..registerSingleton<ModugoRepository>(ModugoRepositoryImpl())
       ..registerLazySingleton<HomeController>(
