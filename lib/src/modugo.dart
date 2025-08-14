@@ -9,8 +9,11 @@ import 'package:modugo/src/module.dart';
 import 'package:modugo/src/manager.dart';
 import 'package:modugo/src/transition.dart';
 
-import 'package:modugo/src/models/route_pattern_model.dart';
+import 'package:modugo/src/events/event_channel.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
+
+import 'package:modugo/src/models/route_pattern_model.dart';
+import 'package:modugo/src/models/route_change_event_model.dart';
 
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/match_route.dart';
@@ -168,6 +171,23 @@ final class Modugo {
       debugLogDiagnostics: debugLogDiagnosticsGoRouter,
       overridePlatformDefaultLocation: overridePlatformDefaultLocation,
     );
+
+    String? lastNotifiedLocation;
+
+    _router?.routerDelegate.addListener(() {
+      final config = _router?.routerDelegate.currentConfiguration;
+
+      if (config == null || config.isEmpty) return;
+
+      final current = config.last.matchedLocation;
+
+      if (current.isEmpty) return;
+      if (current == lastNotifiedLocation) return;
+
+      lastNotifiedLocation = current;
+
+      EventChannel.emit(RouteChangedEventModel(current));
+    });
 
     return _router!;
   }

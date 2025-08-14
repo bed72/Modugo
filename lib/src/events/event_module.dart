@@ -48,7 +48,7 @@ abstract class EventModule extends Module {
   /// }, autoDispose: true);
   /// ```
   void on<T>(void Function(T event) callback, {bool? autoDispose}) {
-    EventChannel.instance.on<T>(callback, eventBus: _internalEventBus);
+    EventChannel.i.on<T>(callback, eventBus: _internalEventBus);
     if (autoDispose ?? false) {
       // Track subscription to cancel later
       _moduleSubscriptions.add(_internalEventBus.on<T>().listen((_) {}));
@@ -76,7 +76,7 @@ abstract class EventModule extends Module {
     _moduleSubscriptions.clear();
 
     // Dispose all module-specific listeners from the EventChannel
-    EventChannel.instance.disposeAll(eventBus: _internalEventBus);
+    EventChannel.i.disposeAll(eventBus: _internalEventBus);
 
     super.dispose();
   }

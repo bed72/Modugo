@@ -20,7 +20,7 @@ final class EventChannel {
   /// Singleton instance of [EventChannel].
   ///
   /// Ensures only one instance exists throughout the application.
-  static EventChannel get instance => _instance ??= EventChannel._();
+  static EventChannel get i => _instance ??= EventChannel._();
 
   /// Registers a listener for events of type [T].
   ///
