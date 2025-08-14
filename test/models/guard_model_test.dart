@@ -7,7 +7,6 @@ import 'package:modugo/src/models/guard_model.dart';
 
 import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
-import 'package:modugo/src/interfaces/injector_interface.dart';
 
 void main() {
   group('GuardModel', () {
@@ -38,13 +37,6 @@ void main() {
 
       expect(guardModelWithImports.imports(), mockImports);
     });
-
-    test('delegates persistent to base module', () {
-      final mockModule = _ModuleMock(persistentValue: true);
-      final guardModel = GuardModel(guards: [], module: mockModule);
-
-      expect(guardModel.persistent, isTrue);
-    });
   });
 }
 
@@ -66,21 +58,11 @@ final class _GuardMock implements IGuard {
 
 final class _ModuleMock extends Module {
   final List<IModule> mockRoutes;
-  final bool persistentValue;
 
-  _ModuleMock({this.mockRoutes = const [], this.persistentValue = false});
+  _ModuleMock({this.mockRoutes = const []});
 
   @override
   List<IModule> routes() => mockRoutes;
-
-  @override
-  void binds(IInjector i) {}
-
-  @override
-  List<Module> imports() => [];
-
-  @override
-  bool get persistent => persistentValue;
 }
 
 base class _ImportMock extends _ModuleMock {

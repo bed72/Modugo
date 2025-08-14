@@ -1,9 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:modugo/src/guard.dart';
 import 'package:modugo/src/module.dart';
 
 import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
-import 'package:modugo/src/interfaces/injector_interface.dart';
 
 /// A wrapper [Module] that injects a list of [IGuard]s recursively into all routes.
 ///
@@ -11,6 +11,7 @@ import 'package:modugo/src/interfaces/injector_interface.dart';
 /// by wrapping the original module and overriding its `routes()` method.
 ///
 /// It delegates binding and imports to the wrapped [_module].
+@immutable
 final class GuardModel extends Module {
   final Module _module;
   final List<IGuard> _guards;
@@ -20,13 +21,10 @@ final class GuardModel extends Module {
       _module = module;
 
   @override
-  bool get persistent => _module.persistent;
+  void binds() => _module.binds();
 
   @override
   List<Module> imports() => _module.imports();
-
-  @override
-  void binds(IInjector i) => _module.binds(i);
 
   @override
   List<IModule> routes() =>

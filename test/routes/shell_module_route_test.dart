@@ -1,3 +1,4 @@
+import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -5,7 +6,6 @@ import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 
 import 'package:modugo/src/module.dart';
-import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/models/route_pattern_model.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
 
@@ -150,7 +150,7 @@ void main() {
         restorationScopeId: 'restore-1',
         redirect: (_, _) async => '/redirect',
         builder: (_, _, ___) => const Placeholder(),
-        binds: [(i) => i.addFactory<int>((_) => 123)],
+        binds: [(i) => i.registerFactory<int>(() => 123)],
         pageBuilder: (_, _, child) => MaterialPage(child: child),
       );
 
@@ -180,35 +180,22 @@ void main() {
     });
   });
 
-  test('should execute bind and register in Injector', () {
-    final route = ShellModuleRoute(
-      routes: [_DummyModuleRoute()],
-      builder: (_, _, ___) => const Placeholder(),
-      binds: [(i) => i.addSingleton<String>((_) => 'test-string')],
-    );
-
-    route.binds.first(Injector());
-
-    final result = Injector().get<String>();
-    expect(result, equals('test-string'));
-  });
-
   test('should register multiple binds with distinct types', () {
     final route = ShellModuleRoute(
       routes: [_DummyModuleRoute()],
       builder: (_, _, ___) => const Placeholder(),
       binds: [
-        (i) => i.addSingleton<String>((_) => 'value'),
-        (i) => i.addFactory<int>((_) => 42),
+        (i) => i.registerFactory<int>(() => 42),
+        (i) => i.registerSingleton<String>('value'),
       ],
     );
 
     for (final bind in route.binds) {
-      bind(Injector());
+      bind(GetIt.I);
     }
 
-    expect(Injector().get<String>(), equals('value'));
-    expect(Injector().get<int>(), equals(42));
+    expect(GetIt.I.get<int>(), equals(42));
+    expect(GetIt.I.get<String>(), equals('value'));
   });
 
   test('should consider routes equal even if binds differ', () {
@@ -222,7 +209,7 @@ void main() {
     final altered = ShellModuleRoute(
       routes: [dummyRoute],
       builder: (_, _, ___) => const Placeholder(),
-      binds: [(i) => i.addFactory((_) => 'irrelevant')],
+      binds: [(i) => i.registerFactory(() => 'irrelevant')],
     );
 
     expect(base, equals(altered));

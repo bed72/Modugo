@@ -1,14 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:get_it/get_it.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/module.dart';
-import 'package:modugo/src/dispose.dart';
 import 'package:modugo/src/manager.dart';
-import 'package:modugo/src/injector.dart';
 import 'package:modugo/src/transition.dart';
 
 import 'package:modugo/src/notifiers/router_notifier.dart';
@@ -98,10 +97,20 @@ final class ModugoConfiguration {
   static bool? _debugLogDiagnostics;
   static TypeTransition? _transition;
 
-  /// Returns a dependency of type [T] from the [Injector].
+  /// Provides global access to the dependency injection container (GetIt).
   ///
-  /// Shortcut for `Injector().get<T>()`.
-  static T get<T>() => Injector().get<T>();
+  /// Example:
+  /// ```dart
+  /// final prefs = Modugo.i<SharedPreferences>();
+  /// final apiClient = Modugo.i<ApiClient>();
+  /// ```
+  static GetIt get i => GetIt.instance;
+
+  /// Returns a dependency of type [T] from the [GetIt].
+  ///
+  /// Shortcut for `Modugo.get<T>()`.
+  static T get<T extends Object>({Type? type, String? instanceName}) =>
+      GetIt.I.get<T>(type: type, instanceName: instanceName);
 
   /// Attempts to match a given [location] to a registered route with a [RoutePatternModel].
   ///
@@ -131,7 +140,6 @@ final class ModugoConfiguration {
   /// - [module]: the root module containing all binds and routes
   /// - [pageTransition]: default page transition for all routes
   /// - [debugLogDiagnostics]: enables internal logging for debugging
-  /// - [delayDisposeMilliseconds]: time to keep inactive modules alive
   /// - [observers], [navigatorKey], [redirect], [errorBuilder], etc: standard GoRouter options
   ///
   /// Returns the initialized [GoRouter].
@@ -146,7 +154,6 @@ final class ModugoConfiguration {
     Listenable? refreshListenable,
     bool debugLogDiagnostics = false,
     List<NavigatorObserver>? observers,
-    int delayDisposeMilliseconds = 727,
     Codec<Object?, Object?>? extraCodec,
     GlobalKey<NavigatorState>? navigatorKey,
     bool debugLogDiagnosticsGoRouter = false,
@@ -164,7 +171,6 @@ final class ModugoConfiguration {
     GoRouter.optionURLReflectsImperativeAPIs = true;
 
     final routes = module.configureRoutes(topLevel: true);
-    setDisposeMiliseconds(delayDisposeMilliseconds);
 
     modularNavigatorKey = navigatorKey ?? GlobalKey<NavigatorState>();
 
@@ -202,7 +208,7 @@ final class ModugoConfiguration {
 
       lastNotifiedLocation = current;
 
-      Logger.warn('UPDATE NOTIFIER BY ROUTE $current');
+      Logger.information('Update notifier by route $current');
       routeNotifier.update = current;
     });
 
@@ -241,7 +247,6 @@ final class ModugoConfiguration {
     return null;
   }
 
-  /// Recursively flattens all modules starting from [root].
   static List<Module> _collectModules(Module root) {
     final buffer = <Module>[];
 

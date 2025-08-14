@@ -12,7 +12,6 @@ FutureOr<GoRouter> startModugoFake({
   bool debugLogDiagnostics = false,
 }) async => Modugo.configure(
   module: module,
-  delayDisposeMilliseconds: 600,
   debugLogDiagnostics: debugLogDiagnostics,
   debugLogDiagnosticsGoRouter: debugLogDiagnostics,
 );

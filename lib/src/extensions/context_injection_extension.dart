@@ -1,19 +1,26 @@
+// coverage:ignore-file
+
+import 'package:get_it/get_it.dart';
 import 'package:flutter/widgets.dart';
 
-import 'package:modugo/src/injector.dart';
-
-/// Extension on [BuildContext] to access dependencies registered in the [Injector].
+/// Extension on [BuildContext] to simplify access to dependencies managed
+/// by the [GetIt] (GetIt).
 ///
-/// This provides a shorthand for retrieving dependencies using the current
-/// application context, making the code cleaner and easier to read.
+/// This allows retrieving instances directly from the context without
+/// needing to call `Modugo.get<T>()` or `GetIt.I.get<T>()` manually,
+/// keeping your code cleaner and more readable.
 ///
-/// Example:
+/// ### Usage Example
 /// ```dart
 /// class HomePage extends StatelessWidget {
 ///   @override
 ///   Widget build(BuildContext context) {
+///     // Retrieve a singleton or registered instance
 ///     final controller = context.read<HomeController>();
-///     final primaryDb = context.read<Database>(key: 'primary');
+///
+///     // Retrieve a specific instance by type or name
+///     final primaryDb = context.read<Database>(type: Database, instanceName: 'primary');
+///
 ///     return Scaffold(...);
 ///   }
 /// }
@@ -21,13 +28,23 @@ import 'package:modugo/src/injector.dart';
 ///
 /// This is equivalent to:
 /// ```dart
-/// final controller = Injector().get<HomeController>();
-/// final primaryDb = Injector().get<Database>(key: 'primary');
+/// final controller = Modugo.get<HomeController>();
+/// final primaryDb = Modugo.get<Database>(type: Database, instanceName: 'primary');
 /// ```
+///
+/// ### Notes
+/// - The optional [type] parameter allows specifying the exact type of the
+///   dependency to retrieve when multiple instances of the same class exist.
+/// - The optional [instanceName] can be used to fetch named instances
+///   registered in the [GetIt].
 extension ContextInjectionExtension on BuildContext {
-  /// Retrieves a registered dependency of type [T] from the [Injector].
-  /// 
-  /// Optionally specify a [key] to retrieve a specific instance when multiple
-  /// instances of the same type are registered.
-  T read<T>({String? key}) => Injector().get<T>(key: key);
+  /// Retrieves a registered dependency of type [T] from the [GetIt].
+  ///
+  /// Parameters:
+  /// - [type]: Optional. The exact type to retrieve when multiple types are registered.
+  /// - [instanceName]: Optional. The name of the instance to fetch.
+  ///
+  /// Returns the instance of [T] from the [Injector].
+  T read<T extends Object>({Type? type, String? instanceName}) =>
+      GetIt.I.get<T>(type: type, instanceName: instanceName);
 }
