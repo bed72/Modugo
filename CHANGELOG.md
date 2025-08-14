@@ -1,3 +1,7 @@
+## [3.2.0] - 2025-08-14
+
+- :fire: update version
+
 ## [3.1.0] - 2025-08-14
 
 - chore: release v3.0.0
