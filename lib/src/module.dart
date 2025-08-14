@@ -66,7 +66,6 @@ final Set<Type> _modulesRegistered = {};
 ///   }
 /// }
 /// ```
-
 abstract class Module {
   /// Centralized Modugo dependency and route manager instance.
   /// Handles bind registration, module lifecycle, and route configuration.
@@ -75,6 +74,34 @@ abstract class Module {
   /// Shortcut to access the global GetIt instance used for dependency injection.
   /// Provides direct access to registered services and singletons.
   GetIt get i => GetIt.instance;
+
+  /// Called when the module is initialized.
+  ///
+  /// Use this method to perform any setup required when the module
+  /// becomes active, such as initializing internal state, registering
+  /// listeners, or preparing resources.
+  ///
+  /// This method is automatically called by the framework when the
+  /// module is first instantiated or when its routes become active.
+  ///
+  /// **Note:** Subclasses should call `super.initState()` if they
+  /// override this method to ensure proper module lifecycle behavior.
+  void initState() {}
+
+  /// Called when the module is being disposed.
+  ///
+  /// Use this method to clean up resources, cancel subscriptions,
+  /// dispose internal state, and remove any module-specific event
+  /// listeners.
+  ///
+  /// This method is automatically called by the framework when the
+  /// module is no longer needed or when its routes are removed from
+  /// the navigation stack.
+  ///
+  /// **Important:** Subclasses should call `super.dispose()` if they
+  /// override this method to ensure that all module-level resources,
+  /// including event channels and subscriptions, are properly released.
+  void dispose() {}
 
   /// Registers all dependency injection bindings for this module.
   ///
@@ -304,7 +331,10 @@ abstract class Module {
   /// [path]    The route path to unregister.
   /// [module]  Optional module instance to unregister instead of `this`.
   void _unregister(String path, {Module? module}) {
-    _manager.unregisterRoute(path, module ?? this);
+    final targetModule = module ?? this;
+
+    _manager.unregisterRoute(path, targetModule);
+    if (_manager.isModuleActive(targetModule)) dispose();
   }
 
   Widget _buildModuleChild(

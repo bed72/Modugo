@@ -5,12 +5,10 @@ import 'package:get_it/get_it.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/manager.dart';
 import 'package:modugo/src/transition.dart';
 
-import 'package:modugo/src/notifiers/router_notifier.dart';
 import 'package:modugo/src/models/route_pattern_model.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
 
@@ -19,11 +17,6 @@ import 'package:modugo/src/routes/match_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
-
-/// Alias for the core configuration class used to bootstrap and manage Modugo.
-///
-/// This allows writing `Modugo.configure(...)` instead of the full class name.
-typedef Modugo = ModugoConfiguration;
 
 /// Global key for the main [Navigator] used by Modugo.
 /// This key is used to access the navigator state globally,
@@ -48,54 +41,18 @@ late GlobalKey<NavigatorState> modularNavigatorKey;
 ///   runApp(MyApp());
 /// }
 /// ```
-final class ModugoConfiguration {
+final class Modugo {
+  static bool? _debugLogDiagnostics;
+  static TypeTransition? _transition;
+
   /// Private constructor — this class is not meant to be instantiated.
-  ModugoConfiguration._();
-
-  /// Returns the configured [GoRouter] instance.
-  ///
-  /// Throws an [AssertionError] if [configure] was never called.
-  static GoRouter get routerConfig {
-    assert(_router != null, 'Add ModugoConfiguration.configure in main.dart');
-    return _router!;
-  }
-
-  /// Whether diagnostic logging is enabled for Modugo internals.
-  ///
-  /// Controlled by the `debugLogDiagnostics` flag passed to [configure].
-  static bool get debugLogDiagnostics => _debugLogDiagnostics ?? false;
-
-  /// The default page transition to apply for all routes,
-  /// unless explicitly overridden.
-  static TypeTransition get getDefaultTransition =>
-      _transition ?? TypeTransition.fade;
+  Modugo._();
 
   /// Internal singleton instance of [GoRouter].
   static GoRouter? _router;
 
   /// Global manager instance for handling modules and route lifecycle.
   static final manager = Manager();
-
-  /// A global [RouteNotifier] that emits the current location path when navigation occurs.
-  ///
-  /// This is used internally by Modugo as the default [refreshListenable]
-  /// for [GoRouter] if none is provided. It allows widgets or services
-  /// to listen and react to navigation changes without directly depending on
-  /// the router.
-  ///
-  /// Example:
-  /// ```dart
-  /// Modugo.routeNotifier.addListener(() {
-  ///   final path = Modugo.routeNotifier.value;
-  ///   if (path == '/home') {
-  ///     refreshHomeCarousel();
-  ///   }
-  /// });
-  /// ```
-  static final routeNotifier = RouteNotifier();
-
-  static bool? _debugLogDiagnostics;
-  static TypeTransition? _transition;
 
   /// Provides global access to the dependency injection container (GetIt).
   ///
@@ -106,11 +63,29 @@ final class ModugoConfiguration {
   /// ```
   static GetIt get i => GetIt.instance;
 
+  /// The default page transition to apply for all routes,
+  /// unless explicitly overridden.
+  static TypeTransition get getDefaultTransition =>
+      _transition ?? TypeTransition.fade;
+
   /// Returns a dependency of type [T] from the [GetIt].
   ///
   /// Shortcut for `Modugo.get<T>()`.
   static T get<T extends Object>({Type? type, String? instanceName}) =>
       GetIt.I.get<T>(type: type, instanceName: instanceName);
+
+  /// Whether diagnostic logging is enabled for Modugo internals.
+  ///
+  /// Controlled by the `debugLogDiagnostics` flag passed to [configure].
+  static bool get debugLogDiagnostics => _debugLogDiagnostics ?? false;
+
+  /// Returns the configured [GoRouter] instance.
+  ///
+  /// Throws an [AssertionError] if [configure] was never called.
+  static GoRouter get routerConfig {
+    assert(_router != null, 'Add ModugoConfiguration.configure in main.dart');
+    return _router!;
+  }
 
   /// Attempts to match a given [location] to a registered route with a [RoutePatternModel].
   ///
@@ -193,24 +168,6 @@ final class ModugoConfiguration {
       debugLogDiagnostics: debugLogDiagnosticsGoRouter,
       overridePlatformDefaultLocation: overridePlatformDefaultLocation,
     );
-
-    String? lastNotifiedLocation;
-
-    _router?.routerDelegate.addListener(() {
-      final config = _router?.routerDelegate.currentConfiguration;
-
-      if (config == null || config.isEmpty) return;
-
-      final current = config.last.matchedLocation;
-
-      if (current.isEmpty) return;
-      if (current == lastNotifiedLocation) return;
-
-      lastNotifiedLocation = current;
-
-      Logger.information('Update notifier by route $current');
-      routeNotifier.update = current;
-    });
 
     return _router!;
   }

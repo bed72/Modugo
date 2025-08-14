@@ -25,38 +25,6 @@ void main() {
       },
     );
   });
-
-  group('Modugo.routeNotifier integration', () {
-    testWidgets('routeNotifier emits location changes correctly', (
-      tester,
-    ) async {
-      await Modugo.configure(module: _DummyModule(), initialRoute: '/');
-
-      final notifier = Modugo.routeNotifier;
-
-      String? lastLocation;
-
-      notifier.addListener(() {
-        lastLocation = notifier.value;
-      });
-
-      notifier.update = '/details';
-
-      await tester.pump();
-
-      expect(lastLocation, isNotNull);
-      expect(lastLocation, '/details');
-      expect(notifier.value, equals(lastLocation));
-    });
-  });
-}
-
-final class _DummyModule extends Module {
-  @override
-  List<IModule> routes() => [
-    ChildRoute(path: '/', child: (_, _) => const Placeholder()),
-    ChildRoute(path: '/details', child: (_, _) => const Placeholder()),
-  ];
 }
 
 final class _DummyShellModule extends Module {

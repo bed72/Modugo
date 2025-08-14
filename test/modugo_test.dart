@@ -10,7 +10,6 @@ import 'package:modugo/src/module.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
 
 import 'package:modugo/src/routes/child_route.dart';
-import 'package:modugo/src/notifiers/router_notifier.dart';
 import 'package:modugo/src/extensions/context_injection_extension.dart';
 
 void main() {
@@ -42,40 +41,6 @@ void main() {
     final m1 = Modugo.manager;
     final m2 = Modugo.manager;
     expect(identical(m1, m2), isTrue);
-  });
-
-  group('Modugo.routeNotifier integration', () {
-    test('routeNotifier has default value "/"', () {
-      final notifier = RouteNotifier();
-      expect(notifier.value, '/');
-    });
-
-    test('does not notify on identical current route', () {
-      final notifier = RouteNotifier();
-      int callCount = 0;
-
-      notifier.addListener(() => callCount++);
-
-      notifier.update = '/';
-
-      expect(callCount, equals(0));
-    });
-
-    test('notifies only when current route changes', () {
-      final notifier = RouteNotifier();
-      int count = 0;
-
-      notifier.addListener(() => count++);
-
-      notifier.update = '/initial'; // notify
-      notifier.update = '/initial'; // no notify
-      notifier.update = '/next'; // notify
-      notifier.update = '/next'; // no notify
-      notifier.update = '/final'; // notify
-
-      expect(count, equals(3));
-      expect(notifier.value, equals('/final'));
-    });
   });
 }
 

@@ -15,11 +15,12 @@
 - Designed to provide **decoupled, modular architecture** without enforcing lifecycle management.
 - Focuses on **clarity and structure** rather than automatic cleanup.
 
-> ⚠️ Note: Unlike some modular frameworks, Modugo **does not automatically dispose dependencies** when routes are removed. All dependencies live until the app is terminated.
+> ⚠️ Note: Unlike some modular frameworks, Modugo **does not automatically dispose dependencies** when routes are removed. All dependencies live until the app is terminated.  
+> This is a **breaking change** from versions prior to 3.x, where automatic disposal of route-scoped dependencies was performed. If you are migrating from an older version (<3), be aware that you may need to manually manage dependency disposal.
 
 ---
 
-## 📦 Features
+## Features
 
 - Integration with **GoRouter**
 - Registration of **dependencies** with **GetIt**
@@ -31,7 +32,7 @@
 
 ---
 
-## 🚀 Installation
+## Installation
 
 ```yaml
 dependencies:
@@ -61,7 +62,7 @@ main.dart
 
 ---
 
-## 🟢 Getting Started
+## Getting Started
 
 ### main.dart
 
@@ -121,7 +122,7 @@ final class AppModule extends Module {
 
 ---
 
-## 🧠 Logging and Diagnostics
+## Logging and Diagnostics
 
 ```dart
 Modugo.configure(
@@ -135,7 +136,7 @@ Modugo.configure(
 
 ---
 
-## 🚣 Navigation
+## Navigation
 
 ### `ChildRoute`
 
@@ -247,7 +248,7 @@ StatefulShellModuleRoute(
 
 ---
 
-## 🔍 Route Matching with Regex
+## Route Matching with Regex
 
 Modugo supports a powerful matching system using regex-based patterns. This allows you to:
 
@@ -293,55 +294,87 @@ Useful for:
 
 ---
 
-## 🔄 Route Change Tracking
+## Event System in Modugo
 
-Modugo offers a built-in mechanism to track route changes globally via a `RouteNotifier`.
-This is especially useful when you want to:
+Modugo provides a lightweight event system for modular, decoupled communication between components and modules using `EventBus`. This allows you to emit and listen to typed events in a safe and organized way.
 
-- Refresh parts of the UI when the location changes
-- React to tab switches or deep links
-- Trigger side effects like analytics or data reloading
+### Core Concepts
 
----
+- **defaultEvents**: A global `EventBus` used by the modular system if no custom bus is provided.
+- **eventSubscriptions**: Tracks all active event subscriptions per `EventBus` and event type, allowing proper cleanup and automatic disposal.
 
-### How it works
+### Setting Up Event Listeners
 
-Modugo exposes a global `RouteNotifier` instance:
+You can listen to events of a specific type using the `EventChannel` singleton or your module's `EventModule`:
 
 ```dart
-Modugo.routeNotifier // type: ValueNotifier<String>
-```
+class MyEvent {
+  final String message;
+  MyEvent(this.message);
+}
 
-This object emits a \[String] path whenever navigation occurs.
-You can subscribe to it from anywhere:
-
-```dart
-Modugo.routeNotifier.addListener(() {
-  final location = Modugo.routeNotifier.value;
-
-  if (location == '/home') {
-    // Action...
-  }
+// Listen to events globally
+EventChannel.instance.on<MyEvent>((event) {
+  print('Received event: ${event.message}');
 });
+
+// Emit an event
+EventChannel.emit(MyEvent('Hello Modugo!'));
 ```
 
+### Using a Custom EventBus
+
+You can create and use a custom `EventBus` if you want isolated channels:
+
+```dart
+final customBus = EventBus();
+
+EventChannel.instance.on<MyEvent>((event) {
+  print('Custom bus event: ${event.message}');
+}, eventBus: customBus);
+
+EventChannel.emit(MyEvent('Custom hello!'), eventBus: customBus);
+```
+
+## Automatic Disposal
+
+The system tracks subscriptions so that you can safely dispose individual listeners or all listeners:
+
+```dart
+// Dispose a specific listener
+EventChannel.instance.dispose<MyEvent>();
+
+// Dispose all listeners for a given EventBus
+EventChannel.instance.disposeAll();
+```
+
+## Integration with EventModule
+
+If you extend `EventModule`, you can register listeners inside `listen()`:
+
+```dart
+class MyModule extends EventModule {
+  @override
+  void listen() {
+    on<MyEvent>((event) {
+      print('Module received: ${event.message}');
+    }, autoDispose: true);
+  }
+}
+```
+
+- `autoDispose: true` ensures that the subscription is automatically cancelled when the module is disposed.
+
+## Summary
+
+- Use `EventChannel` for global or module-scoped events.
+- `defaultEvents` is the default bus for all modular events.
+- `eventSubscriptions` tracks active subscriptions for safe disposal.
+- Integrate `EventModule` to manage listeners automatically within module lifecycles.
+
 ---
 
-### Example Use Case
-
-If your app uses dynamic tabs, webviews, or needs to react to specific navigation changes,
-you can use the notifier to refresh content or trigger logic based on the current or previous route.
-
-This is especially useful in cases like:
-
-- Restoring scroll position
-- Refreshing carousels
-- Triggering custom analytics
-- Resetting view state
-
----
-
-## ⚰️ Route Guards
+## Route Guards
 
 You can protect routes using `IGuard`, which allows you to define redirection logic before a route is activated.
 
@@ -387,7 +420,7 @@ List<IModule> routes() => propagateGuards(
 
 In the example above, `AuthGuard` will be automatically applied to all routes inside `HomeModule`, including nested `ChildRoute`s and `ModuleRoute`s, without needing to repeat it manually.
 
-### ℹ️ Behavior
+### Behavior
 
 - If a guard returns a non-null path, navigation is redirected.
 - Guards run **before** the route's `redirect` logic.
@@ -396,7 +429,7 @@ In the example above, `AuthGuard` will be automatically applied to all routes in
 
 ---
 
-# Dependency Injection in Modugo
+## Dependency Injection in Modugo
 
 In Modugo, dependencies are registered using the `binds()` method inside a `Module`. You have access to `i`, which is a shorthand for `GetIt.instance`. You can register singletons, lazy singletons, or factories in a fluent API style similar to [GetIt](https://pub.dev/packages/get_it).
 
@@ -431,12 +464,12 @@ class HomeModule extends Module {
 
 ---
 
-## 🤝 Contributions
+## Contributions
 
 Pull requests, suggestions, and improvements are welcome!
 
 ---
 
-## ⚙️ License
+## License
 
 MIT ©

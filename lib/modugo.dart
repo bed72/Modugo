@@ -5,7 +5,9 @@ export 'src/module.dart';
 export 'src/manager.dart';
 export 'src/transition.dart';
 
-export 'src/notifiers/router_notifier.dart';
+export 'src/events/event_module.dart';
+export 'src/events/event_channel.dart';
+
 export 'src/widgets/modugo_loader_widget.dart';
 
 export 'src/interfaces/guard_interface.dart';
