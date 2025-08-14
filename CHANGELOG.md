@@ -1,3 +1,7 @@
+## [3.1.0] - 2025-08-14
+
+- chore: release v3.0.0
+
 ## [3.0.0] - 2025-08-14
 
 - Merge pull request #16 from bed72/get_it
