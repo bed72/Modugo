@@ -2,21 +2,21 @@ site_name: Modugo
 site_url: https://bed72.github.io/Modugo/
 use_directory_urls: false
 
-docs_dir: docs
+docs_dir: doc
 site_author: Gabriel
 repo_name: bed72/Modugo
-edit_uri: tree/main/docs
+edit_uri: tree/main/doc
 repo_url: https://github.com/bed72/Modugo
 site_description: Modugo — Modularize, injete e navegue.
 
 nav:
   - Início: index.md
   - Módulos:
-    - Introdução: documentation/modules/index.md
+      - Introdução: documentation/modules/index.md
   - Rotas:
-    - Introdução: documentation/routes/index.md
+      - Introdução: documentation/routes/index.md
   - Injeção de Dependência:
-    - Introdução: documentation/injection/index.md
+      - Introdução: documentation/injection/index.md
 
 theme:
   name: material
@@ -42,8 +42,7 @@ theme:
         name: Modo noturno
         icon: material/weather-night
 
-
-markdown_extensions: 
+markdown_extensions:
   - attr_list
   - pymdownx.mark
   - pymdownx.tilde
