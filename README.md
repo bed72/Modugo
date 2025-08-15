@@ -6,6 +6,13 @@
 
 **Modugo** is a modular system for Flutter inspired by [Flutter Modular](https://pub.dev/packages/flutter_modular) and [Go Router Modular](https://pub.dev/packages/go_router_modular). It provides a clean structure to organize **modules, routes, and dependency injection**. It provides a clean way to structure your app into isolated modules, but **it does not manage dependency disposal**.
 
+## 📚 Documentation
+
+⚠️ **Note:** The official documentation for **Modugo** is currently under development.  
+You can access the work-in-progress documentation here: [Modugo Docs](https://bed72.github.io/Modugo/)
+
+Please keep in mind that some sections may be incomplete or subject to change as the library evolves.
+
 ## Key Points
 
 - Uses **GoRouter** for navigation between routes.

@@ -1,4 +1,7 @@
 site_name: Modugo
+site_url: https://bed72.github.io/Modugo/
+use_directory_urls: false
+
 docs_dir: docs
 site_author: Gabriel
 repo_name: bed72/Modugo
@@ -8,9 +11,12 @@ site_description: Modugo — Modularize, injete e navegue.
 
 nav:
   - Início: index.md
-  - Módulos: documentation/modules/index.md
-  - Rotas: documentation/routes/index.md
-  - Injeção de Dependência: documentation/injection/index.md
+  - Módulos:
+    - Introdução: documentation/modules/index.md
+  - Rotas:
+    - Introdução: documentation/routes/index.md
+  - Injeção de Dependência:
+    - Introdução: documentation/injection/index.md
 
 theme:
   name: material

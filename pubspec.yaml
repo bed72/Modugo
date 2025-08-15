@@ -4,6 +4,8 @@ homepage: https://github.com/bed72/Modugo
 repository: https://github.com/bed72/Modugo
 description: Modular Routing and Dependency Injection for Flutter with GetIt and GoRouter.
 
+logo: modugo_logo.png
+
 environment:
   sdk: ^3.7.2
   flutter: ">=3.29.3"
