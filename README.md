@@ -305,7 +305,7 @@ Modugo provides a lightweight event system for modular, decoupled communication 
 
 ### Setting Up Event Listeners
 
-You can listen to events of a specific type using the `EventChannel` singleton or your module's `EventModule`:
+You can listen to events of a specific type using the `EventChannel` singleton or your module's `EventRegistry`:
 
 ```dart
 class MyEvent {
@@ -348,12 +348,12 @@ EventChannel.instance.dispose<MyEvent>();
 EventChannel.instance.disposeAll();
 ```
 
-## Integration with EventModule
+## Integration with EventRegistry
 
-If you extend `EventModule`, you can register listeners inside `listen()`:
+If you use mixin `EventRegistry`, in your module, can register listeners inside `listen()`:
 
 ```dart
-class MyModule extends EventModule {
+class MyModule extends Module with EventRegistry {
   @override
   void listen() {
     on<MyEvent>((event) {
@@ -370,7 +370,7 @@ class MyModule extends EventModule {
 - Use `EventChannel` for global or module-scoped events.
 - `defaultEvents` is the default bus for all modular events.
 - `eventSubscriptions` tracks active subscriptions for safe disposal.
-- Integrate `EventModule` to manage listeners automatically within module lifecycles.
+- Integrate `EventRegistry` to manage listeners automatically within module lifecycles.
 
 ---
 
