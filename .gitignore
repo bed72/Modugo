@@ -10,6 +10,10 @@
 .svn/
 migrate_working_dir/
 
+# Python
+venv
+.venv
+
 # IntelliJ related
 *.iml
 *.ipr

@@ -1,0 +1,65 @@
+site_name: Modugo
+docs_dir: docs
+repo_name: bed72/Modugo
+edit_uri: tree/main/docs
+repo_url: https://github.com/bed72/Modugo
+site_description: Modugo — Modularize, injete e navegue.
+
+nav:
+  - Início: index.md
+  - Módulos: documentation/modules/index.md
+  - Rotas: documentation/routes/index.md
+  - Injeção de Dependência: documentation/injection/index.md
+
+theme:
+  name: material
+  language: pt-BR
+  logo: assets/logo.png
+  favicon: assets/favicon.png
+  features:
+    - search.share
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.copy
+    - content.code.annotate
+  palette:
+    - scheme: slate
+      primary: green
+      toggle:
+        name: Modo claro
+        icon: material/weather-sunny
+    - scheme: default
+      primary: green
+      toggle:
+        name: Modo noturno
+        icon: material/weather-night
+
+
+markdown_extensions: 
+  - attr_list
+  - pymdownx.mark
+  - pymdownx.tilde
+  - pymdownx.emoji
+  - pymdownx.tasklist
+  - pymdownx.highlight
+
+fonts:
+  icon: material/format-font
+  preferences:
+    - text: Default
+    - text: Roboto
+      code: Roboto Mono
+    - text: OpenDyslexic
+      code: OpenDyslexicMono
+      src: https://fonts.cdnfonts.com/css/opendyslexic
+
+extra_css:
+  - stylesheets/extra.css
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/bed72
+    - icon: fontawesome/brands/linkedin
+      link: https://www.linkedin.com/in/gabriel-ramos-bed/
