@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bed72/Modugo/master/images/banner.png" alt="Modugo Logo" />
+  <img src="https://raw.githubusercontent.com/bed72/Modugo/master/art/banner.png" alt="Modugo Logo" />
 </p>
 
 # Modugo
