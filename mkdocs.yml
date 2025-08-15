@@ -1,5 +1,6 @@
 site_name: Modugo
 docs_dir: docs
+site_author: Gabriel
 repo_name: bed72/Modugo
 edit_uri: tree/main/docs
 repo_url: https://github.com/bed72/Modugo

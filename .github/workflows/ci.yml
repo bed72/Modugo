@@ -1,4 +1,4 @@
-name: CI
+name: Tests and Deploy MkDocs
 
 on:
   push:
@@ -6,26 +6,45 @@ on:
       - master
   pull_request:
 
+permissions:
+  contents: write
+
 jobs:
-  analyze-and-test:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
+        with:
+          fetch-depth: 0
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
-
       - run: flutter pub get
-
       - run: dart format --output=none --set-exit-if-changed .
-
       - run: flutter analyze
-
       - run: flutter test --coverage
-
       - name: Package Analysis
         uses: axel-op/dart-package-analyzer@v3
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           failOnWarnings: true
+
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+      - uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - run: pip install -r requirements.txt
+      - run: mkdocs gh-deploy --force
