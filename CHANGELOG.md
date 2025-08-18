@@ -1,3 +1,7 @@
+## [3.2.8] - 2025-08-18
+
+- :fire: adjust image package
+
 ## [3.2.6] - 2025-08-15
 
 - :fire: adjust vesion code
