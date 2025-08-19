@@ -27,6 +27,7 @@ export 'src/routes/compiler_route.dart';
 export 'src/routes/shell_module_route.dart';
 export 'src/routes/stateful_shell_module_route.dart';
 
+export 'src/extensions/uri_extension.dart';
 export 'src/extensions/match_route_extension.dart';
 export 'src/extensions/context_state_extension.dart';
 export 'src/extensions/context_match_extension.dart';
