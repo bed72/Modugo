@@ -1,3 +1,7 @@
+## [3.2.9] - 2025-08-19
+
+- :fire: add uri extensions
+
 ## [3.2.8] - 2025-08-18
 
 - :fire: adjust image package
