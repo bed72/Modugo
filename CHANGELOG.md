@@ -1,3 +1,7 @@
+## [3.2.10] - 2025-08-29
+
+- :fire: Ajust docs
+
 ## [3.2.9] - 2025-08-19
 
 - :fire: add uri extensions
