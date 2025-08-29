@@ -25,7 +25,7 @@ import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 /// This key is used to access the navigator state globally,
 /// allowing for imperative navigation and other operations
 /// without needing to pass the context
-late GlobalKey<NavigatorState> modularNavigatorKey;
+late GlobalKey<NavigatorState> modugoNavigatorKey;
 
 /// The central configuration class for the Modugo routing and dependency system.
 ///
@@ -61,8 +61,7 @@ final class Modugo {
   ///
   /// Example:
   /// ```dart
-  /// final prefs = Modugo.i<SharedPreferences>();
-  /// final apiClient = Modugo.i<ApiClient>();
+  /// final preferences = await Modugo.i.isReady<SharedPreferences>();
   /// ```
   static GetIt get i => GetIt.instance;
 
@@ -150,7 +149,7 @@ final class Modugo {
 
     final routes = module.configureRoutes(topLevel: true);
 
-    modularNavigatorKey = navigatorKey ?? GlobalKey<NavigatorState>();
+    modugoNavigatorKey = navigatorKey ?? GlobalKey<NavigatorState>();
 
     _router = GoRouter(
       routes: routes,
@@ -164,7 +163,7 @@ final class Modugo {
       redirectLimit: redirectLimit,
       routerNeglect: routerNeglect,
       initialLocation: initialRoute,
-      navigatorKey: modularNavigatorKey,
+      navigatorKey: modugoNavigatorKey,
       errorPageBuilder: errorPageBuilder,
       refreshListenable: refreshListenable,
       restorationScopeId: restorationScopeId,

@@ -15,8 +15,6 @@ import 'package:flutter/material.dart';
 // import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
   // Initialize Modugo with the root module
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -69,7 +67,7 @@ final class AppResolver {
   /// Returns a widget to display (can be `SizedBox.shrink()` if redirection occurs).
   static Widget error(BuildContext context, GoRouterState state) {
     context.go('/');
-    return const SizedBox.shrink();
+    return const Placeholder();
   }
 
   /// Returns a list of asynchronous dependencies to be awaited before
