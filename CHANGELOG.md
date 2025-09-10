@@ -1,3 +1,7 @@
+## [3.2.11] - 2025-09-10
+
+- :fire: update go_router version
+
 ## [3.2.10] - 2025-08-29
 
 - :fire: Ajust docs
