@@ -1,3 +1,7 @@
+## [3.2.12] - 2025-09-13
+
+- chore: release v3.2.11
+
 ## [3.2.11] - 2025-09-10
 
 - :fire: update go_router version
