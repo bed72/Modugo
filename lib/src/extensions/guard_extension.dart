@@ -1,7 +1,7 @@
 import 'package:modugo/src/guard.dart';
 
-import 'package:modugo/src/models/guard_model.dart';
 import 'package:modugo/src/interfaces/guard_interface.dart';
+import 'package:modugo/src/decorators/guard_module_decorator.dart';
 
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
@@ -63,7 +63,7 @@ extension ModuleRouteExtensions on ModuleRoute {
     redirect: redirect,
     routePattern: routePattern,
     parentNavigatorKey: parentNavigatorKey,
-    module: GuardModel(module: module, guards: parentGuards),
+    module: GuardModuleDecorator(module: module, guards: parentGuards),
   );
 }
 
