@@ -3,13 +3,13 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/routes/child_route.dart';
-import 'package:modugo/src/models/guard_model.dart';
+import 'package:modugo/src/decorators/guard_module_decorator.dart';
 
 import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/interfaces/module_interface.dart';
 
 void main() {
-  group('GuardModel', () {
+  group('GuardModuleDecorator', () {
     test('injects guards into base module routes', () {
       final baseRoutes = [
         ChildRoute(path: '/test1', child: (_, _) => Placeholder()),
@@ -19,7 +19,10 @@ void main() {
       final mockModule = _ModuleMock(mockRoutes: baseRoutes);
       final guards = [_GuardMock('g1'), _GuardMock('g2')];
 
-      final guardModel = GuardModel(guards: guards, module: mockModule);
+      final guardModel = GuardModuleDecorator(
+        guards: guards,
+        module: mockModule,
+      );
 
       final guardedRoutes = guardModel.routes();
 
@@ -30,12 +33,27 @@ void main() {
       final mockImports = [_ModuleMock()];
 
       final baseModuleWithImports = _ImportMock(mockImports);
-      final guardModelWithImports = GuardModel(
+      final guardModuleWithImports = GuardModuleDecorator(
         guards: [],
         module: baseModuleWithImports,
       );
 
-      expect(guardModelWithImports.imports(), mockImports);
+      expect(guardModuleWithImports.imports(), mockImports);
+    });
+
+    test('runtimeType is the same of the decorated module', () {
+      final mockImports = [_ModuleMock()];
+
+      final baseModuleWithImports = _ImportMock(mockImports);
+      final guardModuleWithImports = GuardModuleDecorator(
+        guards: [],
+        module: baseModuleWithImports,
+      );
+
+      expect(
+        guardModuleWithImports.runtimeType,
+        baseModuleWithImports.runtimeType,
+      );
     });
   });
 }

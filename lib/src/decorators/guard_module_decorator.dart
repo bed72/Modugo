@@ -12,11 +12,11 @@ import 'package:modugo/src/interfaces/module_interface.dart';
 ///
 /// It delegates binding and imports to the wrapped [_module].
 @immutable
-final class GuardModel extends Module {
+final class GuardModuleDecorator extends Module {
   final Module _module;
   final List<IGuard> _guards;
 
-  GuardModel({required Module module, required List<IGuard> guards})
+  GuardModuleDecorator({required Module module, required List<IGuard> guards})
     : _guards = guards,
       _module = module;
 
@@ -29,4 +29,9 @@ final class GuardModel extends Module {
   @override
   List<IModule> routes() =>
       propagateGuards(guards: _guards, routes: _module.routes());
+
+  /// Overrides [runtimeType] returning the decorated [Module.runtimeType]
+  /// This allows us to execute [Module.binds] for each decorated [Module]
+  @override
+  Type get runtimeType => _module.runtimeType;
 }
