@@ -107,7 +107,6 @@ final class StatefulShellModuleRoute implements IModule {
               routes: [
                 GoRoute(
                   builder: route.child,
-                  redirect: route.redirect,
                   name: route.name ?? 'branch_$index',
                   path: route.path!.isEmpty ? '/' : route.path!,
                   pageBuilder:
@@ -115,6 +114,16 @@ final class StatefulShellModuleRoute implements IModule {
                           ? (context, state) =>
                               route.pageBuilder!(context, state)
                           : null,
+                  redirect: (context, state) async {
+                    for (final guard in route.guards) {
+                      final result = await guard(context, state);
+                      if (result != null) return result;
+                    }
+
+                    return route.redirect != null
+                        ? await route.redirect!(context, state)
+                        : null;
+                  },
                 ),
               ],
             );

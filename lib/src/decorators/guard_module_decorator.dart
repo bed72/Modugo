@@ -19,6 +19,8 @@ final class GuardModuleDecorator extends Module {
   final Module _module;
   final List<IGuard> _guards;
 
+  List<IGuard> get guards => _guards;
+
   GuardModuleDecorator({required Module module, required List<IGuard> guards})
     : _guards = guards,
       _module = module;
