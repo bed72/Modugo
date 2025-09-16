@@ -255,7 +255,6 @@ abstract class Module {
             ? await childRoute!.redirect!(context, state)
             : null;
       },
-
       onExit: (context, state) {
         if (childRoute == null) return Future.value(true);
 
