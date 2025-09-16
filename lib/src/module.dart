@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:modugo/src/decorators/guard_module_decorator.dart';
 
 import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/modugo.dart';
@@ -237,8 +238,16 @@ abstract class Module {
             route: childRoute,
           ),
       redirect: (context, state) async {
+        if (module.module is GuardModuleDecorator) {
+          final decorator = module.module as GuardModuleDecorator;
+          for (final guard in decorator.guards) {
+            final result = await guard(context, state);
+            if (result != null) return result;
+          }
+        }
+
         if (module.redirect != null) {
-          final result = module.redirect!(context, state);
+          final result = await module.redirect!(context, state);
           if (result != null) return result;
         }
 
@@ -246,6 +255,7 @@ abstract class Module {
             ? await childRoute!.redirect!(context, state)
             : null;
       },
+
       onExit: (context, state) {
         if (childRoute == null) return Future.value(true);
 
