@@ -1,3 +1,7 @@
+## [3.2.15] - 2025-09-16
+
+- :fire: Fix in StatefulShellBranch add tests
+
 ## [3.2.14] - 2025-09-16
 
 - :fire: add tests by guards
