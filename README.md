@@ -388,7 +388,7 @@ You can protect routes using `IGuard`, which allows you to define redirection lo
 ### 1. Define a guard
 
 ```dart
-class AuthGuard implements IGuard {
+class AuthGuard implements IGuard<String?> {
   @override
   FutureOr<String?> call(BuildContext context, GoRouterState state) async {
     final auth = context.read<AuthService>();
