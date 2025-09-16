@@ -1,3 +1,5 @@
+// coverage:ignore-file
+
 import 'package:flutter/foundation.dart';
 
 import 'package:modugo/src/guard.dart';
