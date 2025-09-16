@@ -16,7 +16,7 @@ import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
-import 'fakes/fakes.dart';
+import '../fakes/fakes.dart';
 
 void main() {
   group('propagateGuards', () {
