@@ -1,3 +1,7 @@
+## [3.2.14] - 2025-09-16
+
+- :fire: add tests by guards
+
 ## [3.2.13] - 2025-09-13
 
 - :tada: update version
