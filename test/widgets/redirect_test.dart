@@ -7,7 +7,7 @@ import 'package:modugo/src/module.dart';
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 
-import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/interfaces/route_interface.dart';
 
 void main() {
   testWidgets('should redirect from ModuleRoute', (tester) async {
@@ -33,7 +33,7 @@ final class _App extends StatelessWidget {
 
 final class _RedirectingModule extends Module {
   @override
-  List<IModule> routes() => [
+  List<IRoute> routes() => [
     ModuleRoute(
       path: '/home',
       module: _DummyModule(),
@@ -45,7 +45,7 @@ final class _RedirectingModule extends Module {
 
 final class _DummyModule extends Module {
   @override
-  List<IModule> routes() => [
+  List<IRoute> routes() => [
     ChildRoute(path: '/', child: (_, _) => const Text('Should never reach')),
   ];
 }

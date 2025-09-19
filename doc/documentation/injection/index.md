@@ -14,7 +14,7 @@ final class HomeModule extends Module {
   List<Module> imports() => [CoreModule()]; // importa outros módulos se necessário
 
   @override
-  List<IModule> routes() => [
+  List<IRoute> routes() => [
     ChildRoute(path: '/', child: (context, state) => const HomePage()),
   ];
 

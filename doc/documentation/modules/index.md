@@ -55,7 +55,7 @@ final class AppModule extends Module {
   }
 
   @override
-  List<IModule> routes() => [
+  List<IRoute> routes() => [
     ModuleRoute(path: '/', module: HomeModule()),
     ModuleRoute(path: '/chat', module: ChatModule()),
     ModuleRoute(path: '/profile', module: ProfileModule()),

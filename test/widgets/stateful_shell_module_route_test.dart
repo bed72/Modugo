@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
-import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/interfaces/route_interface.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 void main() {
@@ -237,11 +237,11 @@ void main() {
   });
 }
 
-final class _UnsupportedRoute implements IModule {}
+final class _UnsupportedRoute implements IRoute {}
 
 final class _DummyModule extends Module {
   @override
-  List<IModule> routes() => [
+  List<IRoute> routes() => [
     ChildRoute(
       name: 'page',
       path: '/shell/page',
@@ -252,7 +252,7 @@ final class _DummyModule extends Module {
 
 final class _ProductModule extends Module {
   @override
-  List<IModule> routes() => [
+  List<IRoute> routes() => [
     ChildRoute(
       path: '/',
       name: 'safe-root-route',

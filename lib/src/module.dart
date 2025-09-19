@@ -5,17 +5,17 @@ import 'dart:async';
 import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:modugo/src/decorators/guard_module_decorator.dart';
 
 import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/modugo.dart';
-import 'package:modugo/src/manager.dart';
 import 'package:modugo/src/transition.dart';
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/compiler_route.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
-import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/interfaces/binder_interface.dart';
+import 'package:modugo/src/interfaces/router_interface.dart';
+import 'package:modugo/src/decorators/guard_module_decorator.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 /// A set of module types that have been registered globally,
@@ -55,7 +55,7 @@ final Set<Type> _modulesRegistered = {};
 ///   List<Module> imports() => [SharedModule()];
 ///
 ///   @override
-///   List<IModule> routes() => [
+///   List<IRoute> routes() => [
 ///     ChildRoute(path: '/', child: (context, state) => const HomePage()),
 ///   ];
 ///
@@ -67,11 +67,7 @@ final Set<Type> _modulesRegistered = {};
 ///   }
 /// }
 /// ```
-abstract class Module {
-  /// Centralized Modugo dependency and route manager instance.
-  /// Handles bind registration, module lifecycle, and route configuration.
-  final _manager = Manager();
-
+abstract class Module with IRouter, IBinder {
   /// Shortcut to access the global GetIt instance used for dependency injection.
   /// Provides direct access to registered services and singletons.
   GetIt get i => GetIt.instance;
@@ -104,23 +100,6 @@ abstract class Module {
   /// including event channels and subscriptions, are properly released.
   void dispose() {}
 
-  /// Registers all dependency injection bindings for this module.
-  ///
-  /// Override this method to declare your dependencies using the [GetIt].
-  void binds() {}
-
-  /// List of imported modules that this module depends on.
-  ///
-  /// Allows modular composition by importing submodules.
-  /// Defaults to an empty list.
-  List<Module> imports() => const [];
-
-  /// List of navigation routes this module exposes.
-  ///
-  /// Routes can be [ChildRoute], [ModuleRoute], [ShellModuleRoute], etc.
-  /// Defaults to an empty list.
-  List<IModule> routes() => const [];
-
   /// Configures and returns the list of [RouteBase]s defined by this module.
   ///
   /// This method is responsible for:
@@ -152,6 +131,7 @@ abstract class Module {
       routes()
           .whereType<ModuleRoute>()
           .map((module) => _createModule(module: module, topLevel: topLevel))
+          .whereType<GoRoute>()
           .toList();
 
   List<GoRoute> _createChildRoutes() =>
@@ -214,7 +194,10 @@ abstract class Module {
     );
   }
 
-  GoRoute _createModule({required ModuleRoute module, required bool topLevel}) {
+  GoRoute? _createModule({
+    required ModuleRoute module,
+    required bool topLevel,
+  }) {
     final childRoute =
         module.module
             .routes()
@@ -222,14 +205,16 @@ abstract class Module {
             .where((route) => _adjustRoute(route.path!) == '/')
             .firstOrNull;
 
-    if (childRoute != null) _validPath(childRoute.path!, 'ModuleRoute');
+    if (childRoute == null) return null;
+
+    _validPath(childRoute.path!, 'ModuleRoute');
 
     return GoRoute(
       path: module.path!,
       routes: module.module.configureRoutes(topLevel: false),
       name: module.name?.isNotEmpty == true ? module.name : null,
       parentNavigatorKey:
-          module.parentNavigatorKey ?? childRoute?.parentNavigatorKey,
+          module.parentNavigatorKey ?? childRoute.parentNavigatorKey,
       builder:
           (context, state) => _buildModuleChild(
             context,
@@ -251,19 +236,12 @@ abstract class Module {
           if (result != null) return result;
         }
 
-        return childRoute?.redirect != null
-            ? await childRoute!.redirect!(context, state)
+        return childRoute.redirect != null
+            ? await childRoute.redirect!(context, state)
             : null;
       },
       onExit: (context, state) {
-        if (childRoute == null) return Future.value(true);
-
-        return _handleRouteExit(
-          context,
-          state: state,
-          route: childRoute,
-          module: module.module,
-        );
+        return Future.value(true);
       },
     );
   }
@@ -334,18 +312,6 @@ abstract class Module {
 
   String _adjustRoute(String route) =>
       (route == '/' || route.startsWith('/:')) ? '/' : route;
-
-  /// Unregisters a route path and disposes the module if it has no more active routes.
-  ///
-  /// [path]    The route path to unregister.
-  /// [module]  Optional module instance to unregister instead of `this`.
-  void _unregister(String path, {Module? module}) {
-    final targetModule = module ?? this;
-    _manager.module = targetModule;
-
-    _manager.unregisterRoute(path, targetModule);
-    if (_manager.isModuleActive(targetModule)) dispose();
-  }
 
   Widget _buildModuleChild(
     BuildContext context, {
@@ -421,9 +387,6 @@ abstract class Module {
 
     return futureExit
         .then((exit) {
-          if (exit) {
-            _unregister(state.uri.toString(), module: module);
-          }
           return exit;
         })
         .catchError((_) => false);
@@ -439,27 +402,30 @@ abstract class Module {
   ///
   /// [path]    The route path to register.
   /// [module]  Optional module instance to register instead of `this`.
-  void _register({String? path, Module? module}) {
-    final targetModule = module ?? this;
+  void _register({String? path, IBinder? binder}) {
+    final targetBinder = binder ?? this;
 
-    if (_modulesRegistered.contains(targetModule.runtimeType)) return;
+    if (_modulesRegistered.contains(binder.runtimeType)) return;
 
-    for (final imported in targetModule.imports()) {
-      _register(path: path, module: imported);
+    for (final importedBinder in targetBinder.imports()) {
+      _register(path: path, binder: importedBinder);
     }
 
-    if (!_modulesRegistered.contains(targetModule.runtimeType)) {
-      targetModule.binds();
-      _modulesRegistered.add(targetModule.runtimeType);
+    if (!_modulesRegistered.contains(targetBinder.runtimeType)) {
+      targetBinder.binds();
+      _modulesRegistered.add(targetBinder.runtimeType);
 
       Logger.module(
-        '${targetModule.runtimeType} binds registered automatically',
+        '${targetBinder.runtimeType} binds registered automatically',
       );
     }
 
-    if (path != null && path.isNotEmpty && targetModule.routes().isNotEmpty) {
-      _manager.module = targetModule;
-      _manager.registerRoute(path, targetModule);
-    }
+    // if (path != null && path.isNotEmpty) {
+    //   _manager.module = targetModule;
+
+    //   if (targetModule.routes().isNotEmpty) {
+    //     _manager.registerRoute(path, targetModule);
+    //   }
+    // }
   }
 }

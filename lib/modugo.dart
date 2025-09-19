@@ -2,7 +2,6 @@ export 'src/guard.dart';
 export 'src/logger.dart';
 export 'src/modugo.dart';
 export 'src/module.dart';
-export 'src/manager.dart';
 export 'src/transition.dart';
 
 export 'src/events/event_channel.dart';
@@ -11,7 +10,7 @@ export 'src/events/event_registry.dart';
 export 'src/widgets/modugo_loader_widget.dart';
 
 export 'src/interfaces/guard_interface.dart';
-export 'src/interfaces/module_interface.dart';
+export 'src/interfaces/route_interface.dart';
 export 'src/interfaces/manager_interface.dart';
 
 export 'src/models/route_model.dart';

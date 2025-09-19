@@ -8,14 +8,14 @@ import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 
 import 'package:modugo/src/models/route_pattern_model.dart';
-import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/interfaces/route_interface.dart';
 
 /// A modular route that enables stateful navigation using [StatefulShellRoute].
 ///
 /// This is useful for apps that use tab-based or bottom navigation,
 /// where each branch preserves its own navigation stack.
 ///
-/// It composes multiple [IModule]s or [ChildRoute]s as independent branches,
+/// It composes multiple [IRoute]s or [ChildRoute]s as independent branches,
 /// and renders them via an [IndexedStack]-based layout using the provided [builder].
 ///
 /// Each branch maintains its own stateful navigation context.
@@ -39,11 +39,11 @@ import 'package:modugo/src/interfaces/module_interface.dart';
 /// );
 /// ```
 @immutable
-final class StatefulShellModuleRoute implements IModule {
+final class StatefulShellModuleRoute implements IRoute {
   /// The list of modules or routes that form each branch of the shell.
   ///
   /// Each item represents a separate navigation stack.
-  final List<IModule> routes;
+  final List<IRoute> routes;
 
   /// Optional ID used for state restoration (Flutter feature).
   final String? restorationScopeId;

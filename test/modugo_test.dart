@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/module.dart';
 
-import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/interfaces/route_interface.dart';
 
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/extensions/context_injection_extension.dart';
@@ -36,12 +36,6 @@ void main() {
 
     expect(identical(first, second), isTrue);
   });
-
-  test('manager getter returns singleton instance', () {
-    final m1 = Modugo.manager;
-    final m2 = Modugo.manager;
-    expect(identical(m1, m2), isTrue);
-  });
 }
 
 final class _Service {
@@ -55,7 +49,7 @@ final class _InnerModule extends Module {
   }
 
   @override
-  List<IModule> routes() => [
+  List<IRoute> routes() => [
     ChildRoute(
       path: '/',
       name: 'home',

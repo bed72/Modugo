@@ -8,7 +8,7 @@ import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/extensions/guard_extension.dart';
 
 import 'package:modugo/src/interfaces/guard_interface.dart';
-import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/interfaces/route_interface.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 /// Injects a list of guards into a given route module.
@@ -27,7 +27,7 @@ import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 /// [parentGuards]: The list of guards to inject.
 ///
 /// Returns the same route type instance with the [guards] injected.
-IModule _injectGuards(IModule route, List<IGuard> guards) {
+IRoute _injectGuards(IRoute route, List<IGuard> guards) {
   if (route is ChildRoute) return route.withInjectedGuards(guards);
   if (route is ModuleRoute) return route.withInjectedGuards(guards);
   if (route is ShellModuleRoute) return route.withInjectedGuards(guards);
@@ -48,7 +48,7 @@ IModule _injectGuards(IModule route, List<IGuard> guards) {
 /// [parentGuards]: The list of guards to inject into each route.
 ///
 /// Returns a new list of route modules with guards injected.
-List<IModule> propagateGuards({
+List<IRoute> propagateGuards({
   required List<IGuard> guards,
-  required List<IModule> routes,
+  required List<IRoute> routes,
 }) => routes.map((route) => _injectGuards(route, guards)).toList();

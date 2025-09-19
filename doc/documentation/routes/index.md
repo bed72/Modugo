@@ -37,7 +37,7 @@ Use `ShellModuleRoute` quando quiser criar uma **área de navegação interna**,
 ```dart
 final class HomeModule extends Module {
   @override
-  List<IModule> routes() => [
+  List<IRoute> routes() => [
     ShellModuleRoute(
       builder: (context, state, child) => PageWidget(child: child),
       routes: [

@@ -6,11 +6,10 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/module.dart';
-import 'package:modugo/src/manager.dart';
 import 'package:modugo/src/transition.dart';
 
 import 'package:modugo/src/events/event_channel.dart';
-import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/interfaces/route_interface.dart';
 
 import 'package:modugo/src/models/route_pattern_model.dart';
 import 'package:modugo/src/models/route_change_event_model.dart';
@@ -54,9 +53,6 @@ final class Modugo {
   /// Internal singleton instance of [GoRouter].
   static GoRouter? _router;
 
-  /// Global manager instance for handling modules and route lifecycle.
-  static final manager = Manager();
-
   /// Provides global access to the dependency injection container (GetIt).
   ///
   /// Example:
@@ -93,18 +89,18 @@ final class Modugo {
   ///
   /// Returns a [MatchRoute] containing the matched route and extracted parameters,
   /// or `null` if no match is found.
-  static MatchRoute? matchRoute(String location) {
-    final allModules = _collectModules(Modugo.manager.rootModule);
+  // static MatchRoute? matchRoute(String location) {
+  // final allModules = _collectModules(Modugo.manager.rootModule);
 
-    for (final module in allModules) {
-      for (final route in module.routes()) {
-        final match = _matchRouteRecursive(route, location);
-        if (match != null) return match;
-      }
-    }
+  //   for (final module in allModules) {
+  //     for (final route in module.routes()) {
+  //       final match = _matchRouteRecursive(route, location);
+  //       if (match != null) return match;
+  //     }
+  //   }
 
-    return null;
-  }
+  //   return null;
+  // }
 
   /// Configures the entire Modugo system by:
   /// - building the root router from the [module]
@@ -191,8 +187,8 @@ final class Modugo {
     return _router!;
   }
 
-  /// Recursively attempts to match a single [IModule] route (any type) to the [location].
-  static MatchRoute? _matchRouteRecursive(IModule route, String location) {
+  /// Recursively attempts to match a single [IRoute] route (any type) to the [location].
+  static MatchRoute? _matchRouteRecursive(IRoute route, String location) {
     final pattern = switch (route) {
       ChildRoute r => r.routePattern,
       ModuleRoute r => r.routePattern,
@@ -223,17 +219,18 @@ final class Modugo {
     return null;
   }
 
-  static List<Module> _collectModules(Module root) {
-    final buffer = <Module>[];
+  //TODO FIX-ME
+  // static List<Module> _collectModules(Module root) {
+  //   final buffer = <Module>[];
 
-    void visit(Module module) {
-      buffer.add(module);
-      for (final imported in module.imports()) {
-        visit(imported);
-      }
-    }
+  //   void visit(IBinder module) {
+  //     buffer.add(module);
+  //     for (final imported in module.imports()) {
+  //       visit(imported);
+  //     }
+  //   }
 
-    visit(root);
-    return buffer;
-  }
+  //   visit(root);
+  //   return buffer;
+  // }
 }

@@ -8,7 +8,7 @@ import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 
 import 'package:modugo/src/models/route_pattern_model.dart';
-import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/interfaces/route_interface.dart';
 
 void main() {
   group('ModuleRoute - navigation key', () {
@@ -206,7 +206,7 @@ void main() {
 
 final class _DummyModule extends Module {
   @override
-  List<IModule> routes() => [
+  List<IRoute> routes() => [
     ChildRoute(path: '/', child: (_, _) => const Placeholder()),
   ];
 }

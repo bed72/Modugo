@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/routes/match_route.dart';
 
-import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/interfaces/route_interface.dart';
 
 void main() {
   group('MatchRoute', () {
@@ -42,7 +42,7 @@ void main() {
   });
 }
 
-final class _DummyModule implements IModule {
+final class _DummyModule implements IRoute {
   const _DummyModule();
 
   @override

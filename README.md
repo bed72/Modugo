@@ -119,7 +119,7 @@ final class AppModule extends Module {
   }
 
   @override
-  List<IModule> routes() => [
+  List<IRoute> routes() => [
     ModuleRoute(path: '/', module: HomeModule()),
     ModuleRoute(path: '/chat', module: ChatModule()),
     ModuleRoute(path: '/profile', module: ProfileModule()),
@@ -169,7 +169,7 @@ Use `ShellModuleRoute` when you want to create a navigation window **inside a sp
 ```dart
 final class HomeModule extends Module {
   @override
-  List<IModule> routes() => [
+  List<IRoute> routes() => [
     ShellModuleRoute(
       builder: (context, state, child) => PageWidget(child: child),
       routes: [
@@ -414,7 +414,7 @@ If you want a guard applied at a **parent module** level to automatically protec
 This is especially useful when you want consistent access control without having to manually add guards to each child route.
 
 ```dart
-List<IModule> routes() => propagateGuards(
+List<IRoute> routes() => propagateGuards(
   guards: [AuthGuard()],
   routes: [
     ModuleRoute(
@@ -448,7 +448,7 @@ class HomeModule extends Module {
   List<Module> imports() => [CoreModule()];
 
   @override
-  List<IModule> routes() => [
+  List<IRoute> routes() => [
     ChildRoute(path: '/', child: (context, state) => const HomePage()),
   ];
 
