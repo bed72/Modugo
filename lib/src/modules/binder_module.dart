@@ -1,5 +1,7 @@
 // coverage:ignore-file
 
+import 'package:flutter/foundation.dart';
+
 import 'package:modugo/src/modules/module.dart';
 import 'package:modugo/src/interfaces/route_interface.dart';
 
@@ -45,5 +47,6 @@ import 'package:modugo/src/interfaces/route_interface.dart';
 /// defines the navigation routes separately.
 abstract class BinderModule extends Module {
   @override
+  @nonVirtual
   List<IRoute> routes() => const [];
 }

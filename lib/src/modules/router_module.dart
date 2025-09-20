@@ -1,5 +1,7 @@
 // coverage:ignore-file
 
+import 'package:flutter/foundation.dart';
+
 import 'package:modugo/src/modules/module.dart';
 import 'package:modugo/src/registers/binder_registry.dart';
 
@@ -47,8 +49,10 @@ import 'package:modugo/src/registers/binder_registry.dart';
 /// register any bindings into the DI container.
 abstract class RouterModule extends Module {
   @override
+  @nonVirtual
   void binds() {}
 
   @override
+  @nonVirtual
   List<BinderRegistry> imports() => const [];
 }
