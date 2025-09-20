@@ -14,7 +14,6 @@ import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/registers/binder_registry.dart';
 import 'package:modugo/src/registers/router_registry.dart';
 
-import 'package:modugo/src/interfaces/route_interface.dart';
 import 'package:modugo/src/decorators/guard_module_decorator.dart';
 
 import 'package:modugo/src/routes/module_route.dart';
@@ -69,7 +68,7 @@ final Set<Type> _modulesRegistered = {};
 ///   }
 /// }
 /// ```
-abstract class Module with RouterRegistry, BinderRegistry implements IRoute {
+abstract class Module with BinderRegistry, RouterRegistry {
   /// Shortcut to access the global GetIt instance used for dependency injection.
   /// Provides direct access to registered services and singletons.
   GetIt get i => GetIt.instance;
