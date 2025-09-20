@@ -10,12 +10,15 @@ import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/transition.dart';
 import 'package:modugo/src/routes/child_route.dart';
+
+import 'package:modugo/src/registers/binder_registry.dart';
+import 'package:modugo/src/registers/router_registry.dart';
+
+import 'package:modugo/src/decorators/guard_module_decorator.dart';
+
 import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/compiler_route.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
-import 'package:modugo/src/interfaces/binder_interface.dart';
-import 'package:modugo/src/interfaces/router_interface.dart';
-import 'package:modugo/src/decorators/guard_module_decorator.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 /// A set of module types that have been registered globally,
@@ -41,8 +44,6 @@ final Set<Type> _modulesRegistered = {};
 ///   [imports()], its `binds()` will still be executed.
 ///
 /// Customization:
-/// - Override [persistent] to keep the module's dependencies alive even when
-///   there are no active routes for it.
 /// - Use [initState()] and [dispose()] to manage the module's internal state if
 ///   necessary.
 /// - The injection instance is accessible via [i] (shortcut to
@@ -67,7 +68,7 @@ final Set<Type> _modulesRegistered = {};
 ///   }
 /// }
 /// ```
-abstract class Module with IRouter, IBinder {
+abstract class Module with BinderRegistry, RouterRegistry {
   /// Shortcut to access the global GetIt instance used for dependency injection.
   /// Provides direct access to registered services and singletons.
   GetIt get i => GetIt.instance;
@@ -117,20 +118,20 @@ abstract class Module with IRouter, IBinder {
   /// ```dart
   /// final routes = module.configureRoutes(topLevel: true, path: '/app');
   /// ```
-  List<RouteBase> configureRoutes({bool topLevel = false, String path = '/'}) {
-    _register(path: path);
+  List<RouteBase> configureRoutes({String path = '/'}) {
+    _register();
 
     final childRoutes = _createChildRoutes();
-    final shellRoutes = _createShellRoutes(topLevel);
-    final moduleRoutes = _createModuleRoutes(topLevel);
+    final shellRoutes = _createShellRoutes();
+    final moduleRoutes = _createModuleRoutes();
 
     return [...shellRoutes, ...childRoutes, ...moduleRoutes];
   }
 
-  List<GoRoute> _createModuleRoutes(bool topLevel) =>
+  List<GoRoute> _createModuleRoutes() =>
       routes()
           .whereType<ModuleRoute>()
-          .map((module) => _createModule(module: module, topLevel: topLevel))
+          .map((module) => _createModule(module: module))
           .whereType<GoRoute>()
           .toList();
 
@@ -194,10 +195,7 @@ abstract class Module with IRouter, IBinder {
     );
   }
 
-  GoRoute? _createModule({
-    required ModuleRoute module,
-    required bool topLevel,
-  }) {
+  GoRoute? _createModule({required ModuleRoute module}) {
     final childRoute =
         module.module
             .routes()
@@ -211,7 +209,7 @@ abstract class Module with IRouter, IBinder {
 
     return GoRoute(
       path: module.path!,
-      routes: module.module.configureRoutes(topLevel: false),
+      routes: module.module.configureRoutes(),
       name: module.name?.isNotEmpty == true ? module.name : null,
       parentNavigatorKey:
           module.parentNavigatorKey ?? childRoute.parentNavigatorKey,
@@ -246,7 +244,7 @@ abstract class Module with IRouter, IBinder {
     );
   }
 
-  List<RouteBase> _createShellRoutes(bool topLevel) {
+  List<RouteBase> _createShellRoutes() {
     final shellRoutes = <RouteBase>[];
 
     for (final route in routes()) {
@@ -263,14 +261,9 @@ abstract class Module with IRouter, IBinder {
                     );
                   }
 
-                  if (routeOrModule is ModuleRoute) {
-                    return _createModule(
-                      topLevel: topLevel,
-                      module: routeOrModule,
-                    );
-                  }
-
-                  return null;
+                  return routeOrModule is ModuleRoute
+                      ? _createModule(module: routeOrModule)
+                      : null;
                 })
                 .whereType<RouteBase>()
                 .toList();
@@ -303,7 +296,7 @@ abstract class Module with IRouter, IBinder {
       }
 
       if (route is StatefulShellModuleRoute) {
-        shellRoutes.add(route.toRoute(topLevel: topLevel, path: '/'));
+        shellRoutes.add(route.toRoute(path: '/'));
       }
     }
 
@@ -392,40 +385,33 @@ abstract class Module with IRouter, IBinder {
         .catchError((_) => false);
   }
 
-  /// Registers a module and all its imports recursively and tracks the route path.
+  /// Registers this module and all its imported modules recursively.
   ///
-  /// Ensures:
-  /// - Imported modules are registered first.
-  /// - `binds()` executes only once per module type.
-  /// - Cyclic imports are ignored.
-  /// - The route is registered only if `path != '/'`.
+  /// Behavior:
+  /// - Imported modules are always registered **before** the current one.
+  /// - Each module type is registered at most once; subsequent attempts
+  ///   are skipped and logged.
+  /// - Prevents cyclic imports by keeping track of already-registered types.
+  /// - Executes the [binds] method of each module to register its
+  ///   dependency injection bindings into [GetIt].
   ///
-  /// [path]    The route path to register.
-  /// [module]  Optional module instance to register instead of `this`.
-  void _register({String? path, IBinder? binder}) {
+  /// [binder] Optional module to register explicitly. If `null`, the current
+  ///   module (`this`) will be used.
+  void _register({BinderRegistry? binder}) {
     final targetBinder = binder ?? this;
 
-    if (_modulesRegistered.contains(binder.runtimeType)) return;
-
-    for (final importedBinder in targetBinder.imports()) {
-      _register(path: path, binder: importedBinder);
+    if (_modulesRegistered.contains(targetBinder.runtimeType)) {
+      Logger.module('${targetBinder.runtimeType} skipped (already registered)');
+      return;
     }
 
-    if (!_modulesRegistered.contains(targetBinder.runtimeType)) {
-      targetBinder.binds();
-      _modulesRegistered.add(targetBinder.runtimeType);
-
-      Logger.module(
-        '${targetBinder.runtimeType} binds registered automatically',
-      );
+    for (final imported in targetBinder.imports()) {
+      _register(binder: imported);
     }
 
-    // if (path != null && path.isNotEmpty) {
-    //   _manager.module = targetModule;
+    targetBinder.binds();
+    _modulesRegistered.add(targetBinder.runtimeType);
 
-    //   if (targetModule.routes().isNotEmpty) {
-    //     _manager.registerRoute(path, targetModule);
-    //   }
-    // }
+    Logger.module('${targetBinder.runtimeType} binds registered automatically');
   }
 }

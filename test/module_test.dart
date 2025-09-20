@@ -21,7 +21,7 @@ void main() {
           StatefulShellModuleRoute(
             builder: (ctx, state, shell) => const Placeholder(),
             routes: [_ModuleInterface()],
-          ).toRoute(topLevel: true, path: '');
+          ).toRoute(path: '');
         }, throwsA(isA<UnsupportedError>()));
       },
     );
@@ -33,7 +33,7 @@ void main() {
       await startModugoFake(module: module);
       final parent = _ParentModuleWithModuleRoute(child: module);
 
-      expect(() => parent.configureRoutes(topLevel: true), returnsNormally);
+      expect(() => parent.configureRoutes(), returnsNormally);
     });
   });
 
@@ -41,35 +41,35 @@ void main() {
     test('creates ChildRoutes and registers binds', () async {
       final module = _InnerModule();
       await startModugoFake(module: module);
-      module.configureRoutes(topLevel: true, path: '/home');
+      module.configureRoutes(path: '/home');
 
-      expect(() => module.i.get<_Service>(), returnsNormally);
+      expect(() => module.i.get<_ServiceMock>(), returnsNormally);
     });
 
-    // test('creates ModuleRoute using / as default child', () async {
-    //   final module = _RootModule();
-    //   await startModugoFake(module: module);
-    //   final routes = module.configureRoutes(topLevel: true);
+    test('creates ModuleRoute using / as default child', () async {
+      final module = _RootModule();
+      await startModugoFake(module: module);
+      final routes = module.configureRoutes();
 
-    //   final profile = routes.whereType<GoRoute>().firstWhere(
-    //     (r) => r.path == '/profile',
-    //   );
-    //   expect(profile.name, 'profile-root');
-    // });
+      final profile = routes.whereType<GoRoute>().firstWhere(
+        (r) => r.path == '/profile',
+      );
+      expect(profile.name, 'profile-root');
+    });
 
     test('creates ShellRoute and registers shell binds', () async {
       final module = _ModuleWithShell();
       await startModugoFake(module: module);
-      final routes = module.configureRoutes(topLevel: true);
+      final routes = module.configureRoutes();
 
-      expect(() => module.i.get<_Service>(), returnsNormally);
+      expect(() => module.i.get<_ServiceMock>(), returnsNormally);
       expect(routes.whereType<ShellRoute>().isNotEmpty, isTrue);
     });
 
     test('creates StatefulShellRoute with branches', () async {
       final module = _ModuleWithStatefulShell();
       await startModugoFake(module: module);
-      final routes = module.configureRoutes(topLevel: true);
+      final routes = module.configureRoutes();
 
       final shell = routes.whereType<StatefulShellRoute>().first;
       expect(shell.branches.length, 2);
@@ -80,7 +80,7 @@ void main() {
     test('registers binds before builder is called', () async {
       final module = _RootModule();
       await startModugoFake(module: module);
-      final routes = module.configureRoutes(topLevel: true);
+      final routes = module.configureRoutes();
 
       final goRoute = routes.whereType<GoRoute>().first;
       final widget = goRoute.builder!(BuildContextFake(), StateFake());
@@ -91,12 +91,12 @@ void main() {
     test('does not unregister if onExit returns false', () async {
       final module = _ModuleWithOnExitFalse();
       await startModugoFake(module: module);
-      module.configureRoutes(topLevel: true);
+      module.configureRoutes();
 
       final goRoute =
-          module
-                  .configureRoutes(topLevel: true)
-                  .firstWhere((r) => r is GoRoute && r.name == 'on-exit-false')
+          module.configureRoutes().firstWhere(
+                (r) => r is GoRoute && r.name == 'on-exit-false',
+              )
               as GoRoute;
 
       final result = await goRoute.onExit?.call(
@@ -106,17 +106,9 @@ void main() {
       expect(result, isFalse);
     });
 
-    // test('ChildRoute path is composed correctly with topLevel', () async {
-    //   final module = _InnerModule();
-    //   final routes = module.configureRoutes(topLevel: true, path: '/top');
-
-    //   final child = routes.whereType<GoRoute>().first;
-    //   expect(child.path, '/home');
-    // });
-
     test('configureRoutes returns all route types', () {
       final module = _ModuleWithStatefulShell();
-      final routes = module.configureRoutes(topLevel: true, path: '/');
+      final routes = module.configureRoutes(path: '/');
 
       expect(routes.any((r) => r is StatefulShellRoute), isTrue);
     });
@@ -134,7 +126,7 @@ void main() {
 
       final parent = _CustomParentModule([guardedRoute]);
 
-      final routes = parent.configureRoutes(topLevel: true);
+      final routes = parent.configureRoutes();
       final goRoute = routes.whereType<GoRoute>().firstWhere(
         (r) => r.path == '/guarded',
       );
@@ -154,7 +146,7 @@ void main() {
         parent.routes().clear();
         parent.routes().add(route);
 
-        final routes = parent.configureRoutes(topLevel: true);
+        final routes = parent.configureRoutes();
         final goRoute = routes.whereType<GoRoute>().first;
 
         final result = await goRoute.redirect!(BuildContextFake(), StateFake());
@@ -171,7 +163,7 @@ void main() {
       parent.routes().clear();
       parent.routes().add(route);
 
-      final routes = parent.configureRoutes(topLevel: true);
+      final routes = parent.configureRoutes();
       final goRoute = routes.whereType<GoRoute>().first;
 
       final result = await goRoute.redirect!(BuildContextFake(), StateFake());
@@ -182,14 +174,14 @@ void main() {
 
 final class _ModuleInterface implements IRoute {}
 
-final class _Service {
+final class _ServiceMock {
   int value = 0;
 }
 
 final class _InnerModule extends Module {
   @override
   void binds() {
-    i.registerFactory<_Service>(_Service.new);
+    i.registerFactory<_ServiceMock>(_ServiceMock.new);
   }
 }
 
@@ -255,7 +247,7 @@ final class _ModuleWithShell extends Module {
   List<IRoute> routes() => [
     ShellModuleRoute(
       builder: (_, _, child) => Container(child: child),
-      binds: [(i) => i.registerSingleton<_Service>(_Service())],
+      binds: [(i) => i.registerSingleton<_ServiceMock>(_ServiceMock())],
       routes: [ChildRoute(path: 'tab1', child: (_, _) => const Placeholder())],
     ),
   ];

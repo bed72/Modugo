@@ -3,10 +3,11 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/routes/child_route.dart';
-import 'package:modugo/src/decorators/guard_module_decorator.dart';
 
 import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/interfaces/route_interface.dart';
+
+import 'package:modugo/src/decorators/guard_module_decorator.dart';
 
 void main() {
   group('GuardModuleDecorator', () {

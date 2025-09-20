@@ -32,11 +32,11 @@ void main() {
   ) async {
     final shellRoute = StatefulShellModuleRoute(
       routes: [_UnsupportedRoute()],
-      builder: (_, _, ___) => const Placeholder(),
+      builder: (_, _, _) => const Placeholder(),
     );
 
     expect(
-      () => shellRoute.toRoute(path: '/', topLevel: true),
+      () => shellRoute.toRoute(path: '/'),
       throwsA(isA<UnsupportedError>()),
     );
   });
@@ -96,7 +96,7 @@ void main() {
 
     final router = GoRouter(
       initialLocation: '/',
-      routes: [route.toRoute(path: '', topLevel: true)],
+      routes: [route.toRoute(path: '')],
     );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
@@ -182,7 +182,7 @@ void main() {
     final router = GoRouter(
       initialLocation: '/',
       errorBuilder: (_, _) => const Text('ERRO NA ROTA'),
-      routes: [shellRoute.toRoute(path: '', topLevel: true)],
+      routes: [shellRoute.toRoute(path: '')],
     );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
@@ -220,7 +220,7 @@ void main() {
     final router = GoRouter(
       initialLocation: '/',
       errorBuilder: (_, _) => const Text('ERRO NA ROTA'),
-      routes: [shellRoute.toRoute(path: '', topLevel: true)],
+      routes: [shellRoute.toRoute(path: '')],
     );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));

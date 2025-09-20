@@ -89,7 +89,7 @@ final class StatefulShellModuleRoute implements IRoute {
   ///
   /// Throws:
   /// - [UnsupportedError] if a route is not a [ModuleRoute] or [ChildRoute].
-  RouteBase toRoute({required String path, required bool topLevel}) {
+  RouteBase toRoute({required String path}) {
     final branches =
         routes.asMap().entries.map((entry) {
           final index = entry.key;
@@ -98,7 +98,7 @@ final class StatefulShellModuleRoute implements IRoute {
           if (route is ModuleRoute) {
             return StatefulShellBranch(
               navigatorKey: route.parentNavigatorKey,
-              routes: route.module.configureRoutes(topLevel: false),
+              routes: route.module.configureRoutes(),
             );
           }
 

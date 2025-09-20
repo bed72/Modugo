@@ -36,7 +36,7 @@ import 'package:modugo/src/interfaces/route_interface.dart';
 ///   List<IRoute> routes() => [
 ///     ChildRoute(
 ///       path: '/products',
-///       child: (_, __) => const ProductsPage(),
+///       child: (_, _) => const ProductsPage(),
 ///     ),
 ///     ModuleRoute(
 ///       path: '/product',

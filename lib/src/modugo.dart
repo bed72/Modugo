@@ -9,16 +9,8 @@ import 'package:modugo/src/module.dart';
 import 'package:modugo/src/transition.dart';
 
 import 'package:modugo/src/events/event_channel.dart';
-import 'package:modugo/src/interfaces/route_interface.dart';
 
-import 'package:modugo/src/models/route_pattern_model.dart';
 import 'package:modugo/src/models/route_change_event_model.dart';
-
-import 'package:modugo/src/routes/child_route.dart';
-import 'package:modugo/src/routes/match_route.dart';
-import 'package:modugo/src/routes/module_route.dart';
-import 'package:modugo/src/routes/shell_module_route.dart';
-import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 /// Global key for the main [Navigator] used by Modugo.
 /// This key is used to access the navigator state globally,
@@ -57,9 +49,9 @@ final class Modugo {
   ///
   /// Example:
   /// ```dart
-  /// final preferences = await Modugo.i.isReady<SharedPreferences>();
+  /// final preferences = await Modugo.binder.isReady<SharedPreferences>();
   /// ```
-  static GetIt get i => GetIt.instance;
+  static GetIt get binder => GetIt.instance;
 
   /// The default page transition to apply for all routes,
   /// unless explicitly overridden.
@@ -84,23 +76,6 @@ final class Modugo {
     assert(_router != null, 'Add ModugoConfiguration.configure in main.dart');
     return _router!;
   }
-
-  /// Attempts to match a given [location] to a registered route with a [RoutePatternModel].
-  ///
-  /// Returns a [MatchRoute] containing the matched route and extracted parameters,
-  /// or `null` if no match is found.
-  // static MatchRoute? matchRoute(String location) {
-  // final allModules = _collectModules(Modugo.manager.rootModule);
-
-  //   for (final module in allModules) {
-  //     for (final route in module.routes()) {
-  //       final match = _matchRouteRecursive(route, location);
-  //       if (match != null) return match;
-  //     }
-  //   }
-
-  //   return null;
-  // }
 
   /// Configures the entire Modugo system by:
   /// - building the root router from the [module]
@@ -143,7 +118,7 @@ final class Modugo {
     _debugLogDiagnostics = debugLogDiagnostics;
     GoRouter.optionURLReflectsImperativeAPIs = true;
 
-    final routes = module.configureRoutes(topLevel: true);
+    final routes = module.configureRoutes();
 
     modugoNavigatorKey = navigatorKey ?? GlobalKey<NavigatorState>();
 
@@ -186,51 +161,4 @@ final class Modugo {
 
     return _router!;
   }
-
-  /// Recursively attempts to match a single [IRoute] route (any type) to the [location].
-  static MatchRoute? _matchRouteRecursive(IRoute route, String location) {
-    final pattern = switch (route) {
-      ChildRoute r => r.routePattern,
-      ModuleRoute r => r.routePattern,
-      ShellModuleRoute r => r.routePattern,
-      StatefulShellModuleRoute r => r.routePattern,
-      _ => null,
-    };
-
-    if (pattern != null && pattern.regex.hasMatch(location)) {
-      final params = pattern.extractParams(location);
-      return MatchRoute(route: route, params: params);
-    }
-
-    final childRoutes = switch (route) {
-      ModuleRoute r => r.module.routes(),
-      ShellModuleRoute r => r.routes,
-      StatefulShellModuleRoute r => r.routes,
-      _ => null,
-    };
-
-    if (childRoutes != null) {
-      for (final child in childRoutes) {
-        final match = _matchRouteRecursive(child, location);
-        if (match != null) return match;
-      }
-    }
-
-    return null;
-  }
-
-  //TODO FIX-ME
-  // static List<Module> _collectModules(Module root) {
-  //   final buffer = <Module>[];
-
-  //   void visit(IBinder module) {
-  //     buffer.add(module);
-  //     for (final imported in module.imports()) {
-  //       visit(imported);
-  //     }
-  //   }
-
-  //   visit(root);
-  //   return buffer;
-  // }
 }

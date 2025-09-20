@@ -25,8 +25,7 @@ void main() {
         ],
       );
 
-      final route =
-          shell.toRoute(path: '/', topLevel: true) as StatefulShellRoute;
+      final route = shell.toRoute(path: '/') as StatefulShellRoute;
       final branch = route.branches.first;
       final goRoute = branch.routes.first as GoRoute;
 
@@ -48,8 +47,7 @@ void main() {
         ],
       );
 
-      final route =
-          shell.toRoute(path: '/', topLevel: true) as StatefulShellRoute;
+      final route = shell.toRoute(path: '/') as StatefulShellRoute;
       final branch = route.branches.first;
       final goRoute = branch.routes.first as GoRoute;
 
@@ -73,8 +71,7 @@ void main() {
       ],
     );
 
-    final route =
-        shell.toRoute(path: '/', topLevel: true) as StatefulShellRoute;
+    final route = shell.toRoute(path: '/') as StatefulShellRoute;
     final branch = route.branches.first;
     final goRoute = branch.routes.first as GoRoute;
 
@@ -98,8 +95,7 @@ void main() {
       ],
     );
 
-    final route =
-        shell.toRoute(path: '/', topLevel: true) as StatefulShellRoute;
+    final route = shell.toRoute(path: '/') as StatefulShellRoute;
     final branch = route.branches.first;
     final goRoute = branch.routes.first as GoRoute;
 
@@ -116,8 +112,7 @@ void main() {
       ],
     );
 
-    final route =
-        shell.toRoute(path: '/', topLevel: true) as StatefulShellRoute;
+    final route = shell.toRoute(path: '/') as StatefulShellRoute;
 
     final feedRoute = route.branches[0].routes.first as GoRoute;
     final chatRoute = route.branches[1].routes.first as GoRoute;
