@@ -10,13 +10,13 @@
 ///
 /// Example:
 /// ```dart
-/// class MyModule extends Module implements IModule {
+/// class MyModule extends Module implements IRoute {
 ///   // Implementation...
 /// }
 /// ```
-abstract interface class IModule {
+abstract interface class IRoute {
   /// Base constructor.
   ///
   /// Since this is a marker interface, no behavior is defined.
-  IModule();
+  IRoute();
 }

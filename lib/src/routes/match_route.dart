@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/interfaces/route_interface.dart';
 
 /// Represents the result of a route pattern match within Modugo.
 ///
@@ -19,7 +19,7 @@ import 'package:modugo/src/interfaces/module_interface.dart';
 @immutable
 final class MatchRoute {
   /// The matched route that owns the route pattern.
-  final IModule route;
+  final IRoute route;
 
   /// The extracted parameters from the matched path.
   final Map<String, String> params;

@@ -5,17 +5,20 @@ import 'dart:async';
 import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:modugo/src/decorators/guard_module_decorator.dart';
 
 import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/modugo.dart';
-import 'package:modugo/src/manager.dart';
 import 'package:modugo/src/transition.dart';
 import 'package:modugo/src/routes/child_route.dart';
+
+import 'package:modugo/src/registers/binder_registry.dart';
+import 'package:modugo/src/registers/router_registry.dart';
+
+import 'package:modugo/src/decorators/guard_module_decorator.dart';
+
 import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/compiler_route.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
-import 'package:modugo/src/interfaces/module_interface.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 /// A set of module types that have been registered globally,
@@ -41,8 +44,6 @@ final Set<Type> _modulesRegistered = {};
 ///   [imports()], its `binds()` will still be executed.
 ///
 /// Customization:
-/// - Override [persistent] to keep the module's dependencies alive even when
-///   there are no active routes for it.
 /// - Use [initState()] and [dispose()] to manage the module's internal state if
 ///   necessary.
 /// - The injection instance is accessible via [i] (shortcut to
@@ -55,7 +56,7 @@ final Set<Type> _modulesRegistered = {};
 ///   List<Module> imports() => [SharedModule()];
 ///
 ///   @override
-///   List<IModule> routes() => [
+///   List<IRoute> routes() => [
 ///     ChildRoute(path: '/', child: (context, state) => const HomePage()),
 ///   ];
 ///
@@ -67,11 +68,7 @@ final Set<Type> _modulesRegistered = {};
 ///   }
 /// }
 /// ```
-abstract class Module {
-  /// Centralized Modugo dependency and route manager instance.
-  /// Handles bind registration, module lifecycle, and route configuration.
-  final _manager = Manager();
-
+abstract class Module with BinderRegistry, RouterRegistry {
   /// Shortcut to access the global GetIt instance used for dependency injection.
   /// Provides direct access to registered services and singletons.
   GetIt get i => GetIt.instance;
@@ -104,23 +101,6 @@ abstract class Module {
   /// including event channels and subscriptions, are properly released.
   void dispose() {}
 
-  /// Registers all dependency injection bindings for this module.
-  ///
-  /// Override this method to declare your dependencies using the [GetIt].
-  void binds() {}
-
-  /// List of imported modules that this module depends on.
-  ///
-  /// Allows modular composition by importing submodules.
-  /// Defaults to an empty list.
-  List<Module> imports() => const [];
-
-  /// List of navigation routes this module exposes.
-  ///
-  /// Routes can be [ChildRoute], [ModuleRoute], [ShellModuleRoute], etc.
-  /// Defaults to an empty list.
-  List<IModule> routes() => const [];
-
   /// Configures and returns the list of [RouteBase]s defined by this module.
   ///
   /// This method is responsible for:
@@ -138,20 +118,21 @@ abstract class Module {
   /// ```dart
   /// final routes = module.configureRoutes(topLevel: true, path: '/app');
   /// ```
-  List<RouteBase> configureRoutes({bool topLevel = false, String path = '/'}) {
-    _register(path: path);
+  List<RouteBase> configureRoutes({String path = '/'}) {
+    _register();
 
     final childRoutes = _createChildRoutes();
-    final shellRoutes = _createShellRoutes(topLevel);
-    final moduleRoutes = _createModuleRoutes(topLevel);
+    final shellRoutes = _createShellRoutes();
+    final moduleRoutes = _createModuleRoutes();
 
     return [...shellRoutes, ...childRoutes, ...moduleRoutes];
   }
 
-  List<GoRoute> _createModuleRoutes(bool topLevel) =>
+  List<GoRoute> _createModuleRoutes() =>
       routes()
           .whereType<ModuleRoute>()
-          .map((module) => _createModule(module: module, topLevel: topLevel))
+          .map((module) => _createModule(module: module))
+          .whereType<GoRoute>()
           .toList();
 
   List<GoRoute> _createChildRoutes() =>
@@ -214,7 +195,7 @@ abstract class Module {
     );
   }
 
-  GoRoute _createModule({required ModuleRoute module, required bool topLevel}) {
+  GoRoute? _createModule({required ModuleRoute module}) {
     final childRoute =
         module.module
             .routes()
@@ -222,14 +203,16 @@ abstract class Module {
             .where((route) => _adjustRoute(route.path!) == '/')
             .firstOrNull;
 
-    if (childRoute != null) _validPath(childRoute.path!, 'ModuleRoute');
+    if (childRoute == null) return null;
+
+    _validPath(childRoute.path!, 'ModuleRoute');
 
     return GoRoute(
       path: module.path!,
-      routes: module.module.configureRoutes(topLevel: false),
+      routes: module.module.configureRoutes(),
       name: module.name?.isNotEmpty == true ? module.name : null,
       parentNavigatorKey:
-          module.parentNavigatorKey ?? childRoute?.parentNavigatorKey,
+          module.parentNavigatorKey ?? childRoute.parentNavigatorKey,
       builder:
           (context, state) => _buildModuleChild(
             context,
@@ -251,24 +234,17 @@ abstract class Module {
           if (result != null) return result;
         }
 
-        return childRoute?.redirect != null
-            ? await childRoute!.redirect!(context, state)
+        return childRoute.redirect != null
+            ? await childRoute.redirect!(context, state)
             : null;
       },
       onExit: (context, state) {
-        if (childRoute == null) return Future.value(true);
-
-        return _handleRouteExit(
-          context,
-          state: state,
-          route: childRoute,
-          module: module.module,
-        );
+        return Future.value(true);
       },
     );
   }
 
-  List<RouteBase> _createShellRoutes(bool topLevel) {
+  List<RouteBase> _createShellRoutes() {
     final shellRoutes = <RouteBase>[];
 
     for (final route in routes()) {
@@ -285,14 +261,9 @@ abstract class Module {
                     );
                   }
 
-                  if (routeOrModule is ModuleRoute) {
-                    return _createModule(
-                      topLevel: topLevel,
-                      module: routeOrModule,
-                    );
-                  }
-
-                  return null;
+                  return routeOrModule is ModuleRoute
+                      ? _createModule(module: routeOrModule)
+                      : null;
                 })
                 .whereType<RouteBase>()
                 .toList();
@@ -325,7 +296,7 @@ abstract class Module {
       }
 
       if (route is StatefulShellModuleRoute) {
-        shellRoutes.add(route.toRoute(topLevel: topLevel, path: '/'));
+        shellRoutes.add(route.toRoute(path: '/'));
       }
     }
 
@@ -334,18 +305,6 @@ abstract class Module {
 
   String _adjustRoute(String route) =>
       (route == '/' || route.startsWith('/:')) ? '/' : route;
-
-  /// Unregisters a route path and disposes the module if it has no more active routes.
-  ///
-  /// [path]    The route path to unregister.
-  /// [module]  Optional module instance to unregister instead of `this`.
-  void _unregister(String path, {Module? module}) {
-    final targetModule = module ?? this;
-    _manager.module = targetModule;
-
-    _manager.unregisterRoute(path, targetModule);
-    if (_manager.isModuleActive(targetModule)) dispose();
-  }
 
   Widget _buildModuleChild(
     BuildContext context, {
@@ -421,45 +380,38 @@ abstract class Module {
 
     return futureExit
         .then((exit) {
-          if (exit) {
-            _unregister(state.uri.toString(), module: module);
-          }
           return exit;
         })
         .catchError((_) => false);
   }
 
-  /// Registers a module and all its imports recursively and tracks the route path.
+  /// Registers this module and all its imported modules recursively.
   ///
-  /// Ensures:
-  /// - Imported modules are registered first.
-  /// - `binds()` executes only once per module type.
-  /// - Cyclic imports are ignored.
-  /// - The route is registered only if `path != '/'`.
+  /// Behavior:
+  /// - Imported modules are always registered **before** the current one.
+  /// - Each module type is registered at most once; subsequent attempts
+  ///   are skipped and logged.
+  /// - Prevents cyclic imports by keeping track of already-registered types.
+  /// - Executes the [binds] method of each module to register its
+  ///   dependency injection bindings into [GetIt].
   ///
-  /// [path]    The route path to register.
-  /// [module]  Optional module instance to register instead of `this`.
-  void _register({String? path, Module? module}) {
-    final targetModule = module ?? this;
+  /// [binder] Optional module to register explicitly. If `null`, the current
+  ///   module (`this`) will be used.
+  void _register({BinderRegistry? binder}) {
+    final targetBinder = binder ?? this;
 
-    if (_modulesRegistered.contains(targetModule.runtimeType)) return;
-
-    for (final imported in targetModule.imports()) {
-      _register(path: path, module: imported);
+    if (_modulesRegistered.contains(targetBinder.runtimeType)) {
+      Logger.module('${targetBinder.runtimeType} skipped (already registered)');
+      return;
     }
 
-    if (!_modulesRegistered.contains(targetModule.runtimeType)) {
-      targetModule.binds();
-      _modulesRegistered.add(targetModule.runtimeType);
-
-      Logger.module(
-        '${targetModule.runtimeType} binds registered automatically',
-      );
+    for (final imported in targetBinder.imports()) {
+      _register(binder: imported);
     }
 
-    if (path != null && path.isNotEmpty && targetModule.routes().isNotEmpty) {
-      _manager.module = targetModule;
-      _manager.registerRoute(path, targetModule);
-    }
+    targetBinder.binds();
+    _modulesRegistered.add(targetBinder.runtimeType);
+
+    Logger.module('${targetBinder.runtimeType} binds registered automatically');
   }
 }

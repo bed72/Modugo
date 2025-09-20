@@ -7,9 +7,9 @@ import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/models/route_pattern_model.dart';
 
-import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/interfaces/route_interface.dart';
 
-/// A modular shell route that wraps a group of child [IModule] routes within a common layout or container.
+/// A modular shell route that wraps a group of child [IRoute] routes within a common layout or container.
 ///
 /// This is useful for building structures like tab navigation, sidebars,
 /// or persistent UI scaffolds where multiple routes share a layout.
@@ -36,9 +36,9 @@ import 'package:modugo/src/interfaces/module_interface.dart';
 /// );
 /// ```
 @immutable
-final class ShellModuleRoute implements IModule {
+final class ShellModuleRoute implements IRoute {
   /// The list of child modules to be rendered inside the shell.
-  final List<IModule> routes;
+  final List<IRoute> routes;
 
   /// Optional ID used for state restoration (Flutter feature).
   final String? restorationScopeId;

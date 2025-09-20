@@ -7,7 +7,7 @@ import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 /// Extension on [MatchRoute] to extract detailed route information
-/// from the underlying [IModule] using pattern matching.
+/// from the underlying [IRoute] using pattern matching.
 ///
 /// These helpers provide convenient access to the matched route's
 /// `name`, `path`, and `type`, without requiring manual type checks.

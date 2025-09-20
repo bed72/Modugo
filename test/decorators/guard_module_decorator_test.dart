@@ -3,10 +3,11 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/routes/child_route.dart';
-import 'package:modugo/src/decorators/guard_module_decorator.dart';
 
 import 'package:modugo/src/interfaces/guard_interface.dart';
-import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/interfaces/route_interface.dart';
+
+import 'package:modugo/src/decorators/guard_module_decorator.dart';
 
 void main() {
   group('GuardModuleDecorator', () {
@@ -75,12 +76,12 @@ final class _GuardMock implements IGuard {
 }
 
 final class _ModuleMock extends Module {
-  final List<IModule> mockRoutes;
+  final List<IRoute> mockRoutes;
 
   _ModuleMock({this.mockRoutes = const []});
 
   @override
-  List<IModule> routes() => mockRoutes;
+  List<IRoute> routes() => mockRoutes;
 }
 
 base class _ImportMock extends _ModuleMock {

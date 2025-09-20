@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
-import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/interfaces/route_interface.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 void main() {
@@ -32,11 +32,11 @@ void main() {
   ) async {
     final shellRoute = StatefulShellModuleRoute(
       routes: [_UnsupportedRoute()],
-      builder: (_, _, ___) => const Placeholder(),
+      builder: (_, _, _) => const Placeholder(),
     );
 
     expect(
-      () => shellRoute.toRoute(path: '/', topLevel: true),
+      () => shellRoute.toRoute(path: '/'),
       throwsA(isA<UnsupportedError>()),
     );
   });
@@ -96,7 +96,7 @@ void main() {
 
     final router = GoRouter(
       initialLocation: '/',
-      routes: [route.toRoute(path: '', topLevel: true)],
+      routes: [route.toRoute(path: '')],
     );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
@@ -182,7 +182,7 @@ void main() {
     final router = GoRouter(
       initialLocation: '/',
       errorBuilder: (_, _) => const Text('ERRO NA ROTA'),
-      routes: [shellRoute.toRoute(path: '', topLevel: true)],
+      routes: [shellRoute.toRoute(path: '')],
     );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
@@ -220,7 +220,7 @@ void main() {
     final router = GoRouter(
       initialLocation: '/',
       errorBuilder: (_, _) => const Text('ERRO NA ROTA'),
-      routes: [shellRoute.toRoute(path: '', topLevel: true)],
+      routes: [shellRoute.toRoute(path: '')],
     );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
@@ -237,11 +237,11 @@ void main() {
   });
 }
 
-final class _UnsupportedRoute implements IModule {}
+final class _UnsupportedRoute implements IRoute {}
 
 final class _DummyModule extends Module {
   @override
-  List<IModule> routes() => [
+  List<IRoute> routes() => [
     ChildRoute(
       name: 'page',
       path: '/shell/page',
@@ -252,7 +252,7 @@ final class _DummyModule extends Module {
 
 final class _ProductModule extends Module {
   @override
-  List<IModule> routes() => [
+  List<IRoute> routes() => [
     ChildRoute(
       path: '/',
       name: 'safe-root-route',

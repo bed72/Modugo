@@ -1,7 +1,7 @@
 import 'package:modugo/src/guard.dart';
 
 import 'package:modugo/src/interfaces/guard_interface.dart';
-import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/interfaces/route_interface.dart';
 
 import 'package:modugo/src/decorators/guard_module_decorator.dart';
 
@@ -76,7 +76,7 @@ extension ShellModuleRouteExtensions on ShellModuleRoute {
 extension StatefulShellModuleRouteExtensions on StatefulShellModuleRoute {
   StatefulShellModuleRoute withInjectedGuards(List<IGuard> inheritedGuards) {
     final injected =
-        routes.map<IModule>((route) {
+        routes.map<IRoute>((route) {
           if (route is ChildRoute) {
             return route.withInjectedGuards(inheritedGuards);
           }

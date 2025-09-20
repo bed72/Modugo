@@ -4,7 +4,7 @@ import 'package:modugo/src/module.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/events/event_channel.dart';
-import 'package:modugo/src/events/event_registry.dart';
+import 'package:modugo/src/registers/event_registry.dart';
 
 void main() {
   group('EventRegistry Tests', () {

@@ -9,7 +9,7 @@ import 'package:modugo/src/transition.dart';
 import 'package:modugo/src/models/route_pattern_model.dart';
 
 import 'package:modugo/src/interfaces/guard_interface.dart';
-import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/interfaces/route_interface.dart';
 
 /// A route that represents a direct child page within a [Module].
 ///
@@ -36,7 +36,7 @@ import 'package:modugo/src/interfaces/module_interface.dart';
 /// )
 /// ```
 @immutable
-final class ChildRoute implements IModule {
+final class ChildRoute implements IRoute {
   /// The relative path of this route, e.g. `'/'` or `'/product/:id'`.
   /// If not passed or null the default value is '/'
   final String? path;
