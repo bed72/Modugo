@@ -5,7 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:modugo/src/module.dart';
+import 'package:modugo/src/modules/module.dart';
 import 'package:modugo/src/transition.dart';
 
 import 'package:modugo/src/events/event_channel.dart';

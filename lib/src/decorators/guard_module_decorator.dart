@@ -3,8 +3,7 @@
 import 'package:flutter/foundation.dart';
 
 import 'package:modugo/src/guard.dart';
-import 'package:modugo/src/module.dart';
-
+import 'package:modugo/src/modules/module.dart';
 import 'package:modugo/src/registers/binder_registry.dart';
 
 import 'package:modugo/src/interfaces/guard_interface.dart';

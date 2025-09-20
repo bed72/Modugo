@@ -1,6 +1,6 @@
 // coverage:ignore-file
 
-import 'package:modugo/src/module.dart';
+import 'package:modugo/src/modules/module.dart';
 
 /// Mixin for declaring dependency injection bindings of a module.
 ///

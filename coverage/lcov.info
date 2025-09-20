@@ -154,7 +154,7 @@ DA:49,2
 LF:11
 LH:11
 end_of_record
-SF:lib/src/module.dart
+SF:lib/src/modules/module.dart
 DA:26,12
 DA:74,4
 DA:87,1

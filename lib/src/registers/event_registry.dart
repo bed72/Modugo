@@ -3,7 +3,7 @@
 import 'dart:async';
 import 'package:event_bus/event_bus.dart';
 
-import 'package:modugo/src/module.dart';
+import 'package:modugo/src/modules/module.dart';
 
 import 'package:modugo/src/events/event.dart';
 import 'package:modugo/src/events/event_channel.dart';
