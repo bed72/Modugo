@@ -14,6 +14,7 @@ import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/registers/binder_registry.dart';
 import 'package:modugo/src/registers/router_registry.dart';
 
+import 'package:modugo/src/interfaces/route_interface.dart';
 import 'package:modugo/src/decorators/guard_module_decorator.dart';
 
 import 'package:modugo/src/routes/module_route.dart';
@@ -68,7 +69,7 @@ final Set<Type> _modulesRegistered = {};
 ///   }
 /// }
 /// ```
-abstract class Module with BinderRegistry, RouterRegistry {
+abstract class Module with RouterRegistry, BinderRegistry implements IRoute {
   /// Shortcut to access the global GetIt instance used for dependency injection.
   /// Provides direct access to registered services and singletons.
   GetIt get i => GetIt.instance;
@@ -278,11 +279,11 @@ abstract class Module with BinderRegistry, RouterRegistry {
             builder:
                 (context, state, child) =>
                     route.builder!(context, state, child),
-            redirect: (context, state) async {
-              return route.redirect != null
-                  ? await route.redirect!(context, state)
-                  : null;
-            },
+            redirect:
+                (context, state) async =>
+                    route.redirect != null
+                        ? await route.redirect!(context, state)
+                        : null,
             pageBuilder:
                 route.pageBuilder != null
                     ? (context, state, child) => _safePageBuilder(
@@ -375,14 +376,9 @@ abstract class Module with BinderRegistry, RouterRegistry {
     required GoRouterState state,
   }) {
     final onExit = route.onExit?.call(context, state);
-    final futureExit =
-        onExit is Future<bool> ? onExit : Future.value(onExit ?? true);
+    final exit = onExit is Future<bool> ? onExit : Future.value(onExit ?? true);
 
-    return futureExit
-        .then((exit) {
-          return exit;
-        })
-        .catchError((_) => false);
+    return exit.then((exit) => exit).catchError((_) => false);
   }
 
   /// Registers this module and all its imported modules recursively.

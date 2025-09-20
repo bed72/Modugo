@@ -98,7 +98,7 @@ final class AppResolver {
 
     // Example: wait for all required async services
     return Future.value([
-      Modugo.binder.allReady(), // Ensure all GetIt singletons are ready
+      Modugo.i.allReady(), // Ensure all GetIt singletons are ready
       // Add other async dependencies here.
     ]);
   }

@@ -7,13 +7,6 @@
 ///
 /// Even though it does not declare any methods or properties, this interface
 /// allows for consistent typing and future-proof extensibility across the framework.
-///
-/// Example:
-/// ```dart
-/// class MyModule extends Module implements IRoute {
-///   // Implementation...
-/// }
-/// ```
 abstract interface class IRoute {
   /// Base constructor.
   ///

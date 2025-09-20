@@ -45,24 +45,14 @@ final class Modugo {
   /// Internal singleton instance of [GoRouter].
   static GoRouter? _router;
 
-  /// Provides global access to the dependency injection container (GetIt).
-  ///
-  /// Example:
-  /// ```dart
-  /// final preferences = await Modugo.binder.isReady<SharedPreferences>();
-  /// ```
-  static GetIt get binder => GetIt.instance;
+  /// Shortcut to access the global GetIt instance used for dependency injection.
+  /// Provides direct access to registered services and singletons.
+  static GetIt get i => GetIt.instance;
 
   /// The default page transition to apply for all routes,
   /// unless explicitly overridden.
   static TypeTransition get getDefaultTransition =>
       _transition ?? TypeTransition.fade;
-
-  /// Returns a dependency of type [T] from the [GetIt].
-  ///
-  /// Shortcut for `Modugo.get<T>()`.
-  static T get<T extends Object>({Type? type, String? instanceName}) =>
-      GetIt.I.get<T>(type: type, instanceName: instanceName);
 
   /// Whether diagnostic logging is enabled for Modugo internals.
   ///

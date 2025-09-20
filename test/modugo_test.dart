@@ -18,14 +18,14 @@ void main() {
     final router = await Modugo.configure(module: module);
 
     expect(router, isA<GoRouter>());
-    expect(() => Modugo.get<_Service>(), returnsNormally);
+    expect(() => Modugo.i.get<_Service>(), returnsNormally);
   });
 
   test('get<T>() retrieves registered dependency', () async {
     final module = _InnerModule();
     await Modugo.configure(module: module);
 
-    final instance = Modugo.get<_Service>();
+    final instance = Modugo.i.get<_Service>();
     expect(instance.value, 1);
   });
 

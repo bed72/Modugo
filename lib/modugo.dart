@@ -14,7 +14,6 @@ export 'src/widgets/modugo_loader_widget.dart';
 
 export 'src/interfaces/guard_interface.dart';
 export 'src/interfaces/route_interface.dart';
-export 'src/interfaces/manager_interface.dart';
 
 export 'src/models/route_model.dart';
 export 'src/models/path_token_model.dart';
