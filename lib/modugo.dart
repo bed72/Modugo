@@ -3,10 +3,12 @@ export 'src/logger.dart';
 export 'src/modugo.dart';
 export 'src/transition.dart';
 
-export 'src/module.dart';
-
-export 'src/events/event_channel.dart';
 export 'src/registers/event_registry.dart';
+export 'src/registers/binder_registry.dart';
+export 'src/registers/router_registry.dart';
+
+export 'src/module.dart';
+export 'src/events/event_channel.dart';
 export 'src/mixins/after_layout_mixin.dart';
 export 'src/widgets/modugo_loader_widget.dart';
 
