@@ -33,7 +33,7 @@ final class Logger {
   Logger._internal() {
     _logger = TalkerLogger(
       settings: TalkerLoggerSettings(
-        maxLineWidth: 72,
+        maxLineWidth: 80,
         enableColors: true,
         defaultTitle: 'MODUGO',
         colors: {

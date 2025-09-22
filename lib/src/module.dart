@@ -110,7 +110,7 @@ abstract class Module with BinderRegistry, RouterRegistry {
   ///
   /// Example:
   /// ```dart
-  /// final routes = module.configureRoutes(topLevel: true, path: '/app');
+  /// final routes = module.configureRoutes();
   /// ```
   List<RouteBase> configureRoutes() {
     _register();
@@ -361,6 +361,6 @@ abstract class Module with BinderRegistry, RouterRegistry {
     targetBinder.binds();
     _modulesRegistered.add(targetBinder.runtimeType);
 
-    Logger.module('${targetBinder.runtimeType} binds registered automatically');
+    Logger.module('${targetBinder.runtimeType} binds registered');
   }
 }
