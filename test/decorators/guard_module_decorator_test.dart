@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/interfaces/route_interface.dart';
 
-import 'package:modugo/src/modules/module.dart';
+import 'package:modugo/src/module.dart';
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/registers/binder_registry.dart';
 import 'package:modugo/src/decorators/guard_module_decorator.dart';

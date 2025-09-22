@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 
-import 'package:modugo/src/modules/module.dart';
+import 'package:modugo/src/module.dart';
 import 'package:modugo/src/interfaces/route_interface.dart';
 
 void main() {

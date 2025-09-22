@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:modugo/src/modules/module.dart';
+import 'package:modugo/src/module.dart';
 import 'package:modugo/src/registers/binder_registry.dart';
 import 'package:modugo/src/interfaces/route_interface.dart';
 
@@ -20,7 +20,7 @@ void main() {
       () {
         expect(() {
           StatefulShellModuleRoute(
-            builder: (ctx, state, shell) => const Placeholder(),
+            builder: (_, _, _) => const Placeholder(),
             routes: [_ModuleInterface()],
           ).toRoute(path: '');
         }, throwsA(isA<UnsupportedError>()));

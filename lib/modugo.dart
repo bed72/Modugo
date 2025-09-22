@@ -3,9 +3,7 @@ export 'src/logger.dart';
 export 'src/modugo.dart';
 export 'src/transition.dart';
 
-export 'src/modules/module.dart';
-export 'src/modules/binder_module.dart';
-export 'src/modules/router_module.dart';
+export 'src/module.dart';
 
 export 'src/events/event_channel.dart';
 export 'src/registers/event_registry.dart';

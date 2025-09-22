@@ -117,7 +117,7 @@ final class AppWidget extends StatelessWidget {
 /// The root module that defines app-level routes.
 ///
 /// This module includes [HomeModule] as its child.
-final class AppModule extends RouterModule {
+final class AppModule extends Module {
   @override
   List<IRoute> routes() => [ModuleRoute(path: '/', module: HomeModule())];
 }

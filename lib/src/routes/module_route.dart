@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:go_router/go_router.dart';
 
-import 'package:modugo/src/modules/module.dart';
+import 'package:modugo/src/module.dart';
 import 'package:modugo/src/interfaces/route_interface.dart';
 
 /// A route that maps a [path] to a child [Module] within the Modugo navigation system.
