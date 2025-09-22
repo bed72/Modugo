@@ -54,7 +54,6 @@ extension ModuleRouteExtensions on ModuleRoute {
 extension ShellModuleRouteExtensions on ShellModuleRoute {
   ShellModuleRoute withInjectedGuards(List<IGuard> inheritedGuards) =>
       ShellModuleRoute(
-        binds: binds,
         builder: builder,
         redirect: redirect,
         observers: observers,

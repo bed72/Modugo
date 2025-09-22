@@ -1,6 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 
@@ -21,9 +21,6 @@ import 'package:modugo/src/interfaces/route_interface.dart';
 /// The shell provides:
 /// - a shared [key] for nested navigation
 /// - optional [restorationScopeId], and [parentNavigatorKey]
-///
-/// Optionally supports [routePattern] to enable custom regex-based
-/// matching and parameter extraction independent of GoRouter.
 ///
 /// Example:
 /// ```dart

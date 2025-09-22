@@ -1,6 +1,6 @@
 // coverage:ignore-file
 
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 /// A widget that waits for asynchronous initialization tasks to complete
 /// before building the main application widget.

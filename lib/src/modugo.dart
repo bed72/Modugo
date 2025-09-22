@@ -30,7 +30,7 @@ GlobalKey<NavigatorState> modugoNavigatorKey = GlobalKey<NavigatorState>();
 ///
 /// Example:
 /// ```dart
-/// void main() async {
+/// Future<void> main() async {
 ///   await Modugo.configure(module: AppModule());
 ///   runApp(MyApp());
 /// }

@@ -10,8 +10,9 @@
 /// then use `flutter run example/modugo_example.dart`.
 library;
 
-import 'package:modugo/modugo.dart';
 import 'package:flutter/material.dart';
+
+import 'package:modugo/modugo.dart';
 // import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {

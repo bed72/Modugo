@@ -1,7 +1,6 @@
 import 'dart:async';
 
-import 'package:get_it/get_it.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 
@@ -16,10 +15,6 @@ import 'package:modugo/src/interfaces/route_interface.dart';
 /// - a shared [navigatorKey] for nested navigation
 /// - optional [observers], [restorationScopeId], and [parentNavigatorKey]
 /// - a [builder] or [pageBuilder] to render a common UI container
-/// - optional [binds] for temporary dependency injection scoped to the shell
-///
-/// Optionally supports [routePattern] to enable custom regex-based
-/// matching and parameter extraction independent of GoRouter.
 ///
 /// Example:
 /// ```dart
@@ -43,11 +38,6 @@ final class ShellModuleRoute implements IRoute {
 
   /// Optional navigator observers for tracking navigation events.
   final List<NavigatorObserver>? observers;
-
-  /// Optional binds injected when this shell is active.
-  ///
-  /// These binds are scoped to the shell and disposed when it’s no longer in use.
-  final List<void Function(GetIt)> binds;
 
   /// Navigator key used to isolate navigation inside the shell.
   final GlobalKey<NavigatorState>? navigatorKey;
@@ -89,7 +79,6 @@ final class ShellModuleRoute implements IRoute {
     this.observers,
     this.pageBuilder,
     this.navigatorKey,
-    this.binds = const [],
     this.parentNavigatorKey,
     this.restorationScopeId,
   });

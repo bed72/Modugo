@@ -10,7 +10,7 @@ import 'package:flutter/widgets.dart';
 /// [BuildContext] only after the widget tree is fully built and laid out.
 ///
 /// Typical use cases:
-/// - Triggering an initial data load from a [ViewModel].
+/// - Triggering an initial data load from a [Cubit], [ViewModel], [Notifier].
 /// - Showing dialogs, snackbars, or navigating after the screen is ready.
 /// - Starting animations or measurements that depend on the rendered layout.
 ///

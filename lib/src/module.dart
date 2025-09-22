@@ -1,7 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:get_it/get_it.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/logger.dart';
@@ -106,17 +106,13 @@ abstract class Module with BinderRegistry, RouterRegistry {
   /// - creating and combining child, shell, and module routes
   /// - optionally logging the final set of registered route paths when diagnostics are enabled
   ///
-  /// Parameters:
-  /// - [topLevel]: indicates if this module is the root module (default: false)
-  /// - [path]: base path prefix to apply to all routes in this module (default: empty)
-  ///
   /// Returns a combined list of all routes defined by this module and its nested structures.
   ///
   /// Example:
   /// ```dart
   /// final routes = module.configureRoutes(topLevel: true, path: '/app');
   /// ```
-  List<RouteBase> configureRoutes({String path = '/'}) {
+  List<RouteBase> configureRoutes() {
     _register();
 
     final childRoutes = _createChildRoutes();
@@ -310,12 +306,13 @@ abstract class Module with BinderRegistry, RouterRegistry {
   /// Validates a path for correct syntax using [CompilerRoute].
   void _validPath(String path, String type) {
     try {
-      CompilerRoute(path);
+      final value = CompilerRoute(path);
+      Logger.navigation('Valid path: $path -> ${value.pattern}');
     } catch (exception) {
       Logger.error('Invalid path in $type: $path → $exception');
       throw ArgumentError.value(
         path,
-        'ChildRoute.path',
+        'path',
         'Invalid path syntax in $type: $exception',
       );
     }

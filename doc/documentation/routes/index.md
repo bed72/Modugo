@@ -113,32 +113,6 @@ class PageWidget extends StatelessWidget {
 
 ---
 
-## 🔹 Roteamento com Regex
-
-Modugo suporta **matchings de rotas poderosos** usando padrões regex.
-
-- Valida caminhos e deep links antes da navegação
-- Extrai parâmetros dinâmicos independentemente do GoRouter
-- Suporta URLs externas, web e lógica de redirect personalizada
-
-```dart
-ChildRoute(
-  path: '/user/:id',
-  child: (_, _) => const UserPage(),
-  routePattern: RoutePatternModel.from(r'^/user/(\d+)\$', paramNames: ['id']),
-)
-
-final match = Modugo.matchRoute('/user/42');
-if (match != null) {
-  print(match.route); // rota encontrada
-  print(match.params); // { 'id': '42' }
-} else {
-  print('Nenhuma correspondência');
-}
-```
-
----
-
 ## 🔹 Tipos de Rotas Suportadas
 
 - ChildRoute

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -42,7 +42,7 @@ void main() {
     test('creates ChildRoutes and registers binds', () async {
       final module = _InnerModule();
       await startModugoFake(module: module);
-      module.configureRoutes(path: '/home');
+      module.configureRoutes();
 
       expect(() => module.i.get<_ServiceMock>(), returnsNormally);
     });
@@ -91,7 +91,7 @@ void main() {
 
     test('configureRoutes returns all route types', () {
       final module = _ModuleWithStatefulShell();
-      final routes = module.configureRoutes(path: '/');
+      final routes = module.configureRoutes();
 
       expect(routes.any((r) => r is StatefulShellRoute), isTrue);
     });
@@ -153,6 +153,21 @@ void main() {
       expect(result, isNull);
     });
   });
+
+  test('Module.configureRoutes throws ArgumentError on invalid path', () {
+    final module = _InvalidPathModule();
+
+    expect(
+      () => module.configureRoutes(),
+      throwsA(
+        isA<ArgumentError>().having(
+          (error) => error.message,
+          'message',
+          contains('Invalid path syntax'),
+        ),
+      ),
+    );
+  });
 }
 
 final class _ModuleInterface implements IRoute {}
@@ -179,6 +194,13 @@ final class _RootModule extends Module {
       name: 'profile-root',
       child: (context, state) => const Placeholder(),
     ),
+  ];
+}
+
+final class _InvalidPathModule extends Module {
+  @override
+  List<IRoute> routes() => [
+    ChildRoute(path: '/product/:(id', child: (_, _) => const Placeholder()),
   ];
 }
 
@@ -218,7 +240,6 @@ final class _ModuleWithShell extends Module {
   List<IRoute> routes() => [
     ShellModuleRoute(
       builder: (_, _, child) => Container(child: child),
-      binds: [(i) => i.registerSingleton<_ServiceMock>(_ServiceMock())],
       routes: [ChildRoute(path: 'tab1', child: (_, _) => const Placeholder())],
     ),
   ];
