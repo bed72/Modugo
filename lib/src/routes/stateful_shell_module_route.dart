@@ -7,7 +7,6 @@ import 'package:go_router/go_router.dart';
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 
-import 'package:modugo/src/models/route_pattern_model.dart';
 import 'package:modugo/src/interfaces/route_interface.dart';
 
 /// A modular route that enables stateful navigation using [StatefulShellRoute].
@@ -48,12 +47,6 @@ final class StatefulShellModuleRoute implements IRoute {
   /// Optional ID used for state restoration (Flutter feature).
   final String? restorationScopeId;
 
-  /// Optional route matching pattern using regex and parameter names.
-  ///
-  /// This allows the module to be matched via a regular expression
-  /// independently of GoRouter's matching logic.
-  final RoutePatternModel? routePattern;
-
   /// Navigator key used to isolate navigation inside the shell.
   final GlobalKey<StatefulNavigationShellState>? key;
 
@@ -76,7 +69,6 @@ final class StatefulShellModuleRoute implements IRoute {
     required this.routes,
     required this.builder,
     this.key,
-    this.routePattern,
     this.parentNavigatorKey,
     this.restorationScopeId,
   });
@@ -150,7 +142,6 @@ final class StatefulShellModuleRoute implements IRoute {
           builder == other.builder &&
           listEquals(routes, other.routes) &&
           runtimeType == other.runtimeType &&
-          routePattern == other.routePattern &&
           key == other.key &&
           restorationScopeId == other.restorationScopeId &&
           parentNavigatorKey == other.parentNavigatorKey;
@@ -159,7 +150,6 @@ final class StatefulShellModuleRoute implements IRoute {
   int get hashCode =>
       Object.hashAll(routes) ^
       builder.hashCode ^
-      routePattern.hashCode ^
       key.hashCode ^
       restorationScopeId.hashCode ^
       parentNavigatorKey.hashCode;

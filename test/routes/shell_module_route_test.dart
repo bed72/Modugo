@@ -6,7 +6,6 @@ import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 
 import 'package:modugo/src/modules/module.dart';
-import 'package:modugo/src/models/route_pattern_model.dart';
 import 'package:modugo/src/interfaces/route_interface.dart';
 
 void main() {
@@ -213,74 +212,6 @@ void main() {
     );
 
     expect(base, equals(altered));
-  });
-
-  group('ShellModuleRoute with RoutePatternModel', () {
-    test('matches correct path and extracts parameters', () {
-      final route = ShellModuleRoute(
-        builder: (_, _, _) => const Placeholder(),
-        routes: [ModuleRoute(path: '/home', module: _DummyModule())],
-        routePattern: RoutePatternModel.from(
-          r'^/org/(\w+)/home$',
-          paramNames: ['orgId'],
-        ),
-      );
-
-      final pattern = route.routePattern!;
-      expect(pattern.regex.hasMatch('/org/acme/home'), isTrue);
-
-      final params = pattern.extractParams('/org/acme/home');
-      expect(params, equals({'orgId': 'acme'}));
-    });
-
-    test('returns false when path does not match pattern', () {
-      final route = ShellModuleRoute(
-        routes: [],
-        builder: (_, _, _) => const Placeholder(),
-        routePattern: RoutePatternModel.from(
-          r'^/dashboard/(\w+)$',
-          paramNames: ['section'],
-        ),
-      );
-
-      final match = route.routePattern!.regex.hasMatch('/settings/profile');
-      expect(match, isFalse);
-
-      final params = route.routePattern!.extractParams('/settings/profile');
-      expect(params, isEmpty);
-    });
-
-    test('== returns true when all fields including routePattern match', () {
-      final pattern = RoutePatternModel.from(r'^/shell$', paramNames: []);
-      final routeA = ShellModuleRoute(
-        routes: [],
-        builder: (_, _, _) => const Placeholder(),
-        routePattern: pattern,
-      );
-      final routeB = ShellModuleRoute(
-        routes: [],
-        builder: (_, _, _) => const Placeholder(),
-        routePattern: pattern,
-      );
-
-      expect(routeA, equals(routeB));
-      expect(routeA.hashCode, equals(routeB.hashCode));
-    });
-
-    test('== returns false when routePatterns differ', () {
-      final routeA = ShellModuleRoute(
-        routes: [],
-        builder: (_, _, _) => const Placeholder(),
-        routePattern: RoutePatternModel.from(r'^/a$', paramNames: []),
-      );
-      final routeB = ShellModuleRoute(
-        routes: [],
-        builder: (_, _, _) => const Placeholder(),
-        routePattern: RoutePatternModel.from(r'^/b$', paramNames: []),
-      );
-
-      expect(routeA, isNot(equals(routeB)));
-    });
   });
 }
 

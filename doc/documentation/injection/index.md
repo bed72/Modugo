@@ -11,7 +11,7 @@ Dentro de cada módulo, você pode registrar **binds** usando o método `binds()
 ```dart
 final class HomeModule extends Module {
   @override
-  List<Module> imports() => [CoreModule()]; // importa outros módulos se necessário
+  List<BinderRegistry> imports() => [CoreModule()]; // importa outros módulos se necessário
 
   @override
   List<IRoute> routes() => [
@@ -43,7 +43,7 @@ Para obter uma instância registrada dentro do módulo ou de qualquer widget que
 
 ```dart
 final service = i.get<ServiceRepository>();
-final service = Modugo.get<ServiceRepository>();
+final service = Modugo.i.get<ServiceRepository>();
 final otherService = context.reade<OtherServiceRepository>();
 ```
 

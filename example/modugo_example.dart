@@ -89,15 +89,12 @@ final class AppResolver {
   ///   builder: (_) => const AppWidget(),
   /// );
   /// ```
-  ///
-  /// Returns:
-  /// - A [Future] that resolves to a [List] of [Future<void>] tasks to await.
-  static Future<List<Future<void>>> _dependencies() async {
+  static Future<void> _dependencies() async {
     // Example using SharedPreferences
     // await Modugo.i.isReady<SharedPreferences>();
 
     // Example: wait for all required async services
-    return Future.value([
+    await Future.wait([
       Modugo.i.allReady(), // Ensure all GetIt singletons are ready
       // Add other async dependencies here.
     ]);
@@ -120,7 +117,7 @@ final class AppWidget extends StatelessWidget {
 /// The root module that defines app-level routes.
 ///
 /// This module includes [HomeModule] as its child.
-final class AppModule extends Module {
+final class AppModule extends RouterModule {
   @override
   List<IRoute> routes() => [ModuleRoute(path: '/', module: HomeModule())];
 }

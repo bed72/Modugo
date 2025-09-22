@@ -5,8 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:modugo/src/models/route_pattern_model.dart';
-
 import 'package:modugo/src/interfaces/route_interface.dart';
 
 /// A modular shell route that wraps a group of child [IRoute] routes within a common layout or container.
@@ -42,12 +40,6 @@ final class ShellModuleRoute implements IRoute {
 
   /// Optional ID used for state restoration (Flutter feature).
   final String? restorationScopeId;
-
-  /// Optional route matching pattern using regex and parameter names.
-  ///
-  /// This allows the module to be matched via a regular expression
-  /// independently of GoRouter's matching logic.
-  final RoutePatternModel? routePattern;
 
   /// Optional navigator observers for tracking navigation events.
   final List<NavigatorObserver>? observers;
@@ -97,7 +89,6 @@ final class ShellModuleRoute implements IRoute {
     this.observers,
     this.pageBuilder,
     this.navigatorKey,
-    this.routePattern,
     this.binds = const [],
     this.parentNavigatorKey,
     this.restorationScopeId,
@@ -108,7 +99,6 @@ final class ShellModuleRoute implements IRoute {
       identical(this, other) ||
       other is ShellModuleRoute &&
           runtimeType == other.runtimeType &&
-          routePattern == other.routePattern &&
           navigatorKey == other.navigatorKey &&
           listEquals(routes, other.routes) &&
           listEquals(observers, other.observers) &&
@@ -120,7 +110,6 @@ final class ShellModuleRoute implements IRoute {
       Object.hashAll(routes) ^
       Object.hashAll(observers ?? []) ^
       navigatorKey.hashCode ^
-      routePattern.hashCode ^
       restorationScopeId.hashCode ^
       parentNavigatorKey.hashCode;
 }

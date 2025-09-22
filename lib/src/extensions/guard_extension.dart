@@ -27,7 +27,6 @@ extension ChildRouteExtensions on ChildRoute {
     redirect: redirect,
     transition: transition,
     pageBuilder: pageBuilder,
-    routePattern: routePattern,
     parentNavigatorKey: parentNavigatorKey,
     guards: [...inheritedGuards, ...guards],
   );
@@ -43,7 +42,6 @@ extension ModuleRouteExtensions on ModuleRoute {
     path: path,
     name: name,
     redirect: redirect,
-    routePattern: routePattern,
     parentNavigatorKey: parentNavigatorKey,
     module: GuardModuleDecorator(module: module, guards: inheritedGuards),
   );
@@ -95,7 +93,6 @@ extension StatefulShellModuleRouteExtensions on StatefulShellModuleRoute {
     return StatefulShellModuleRoute(
       builder: builder,
       routes: injected,
-      routePattern: routePattern,
       parentNavigatorKey: parentNavigatorKey,
       restorationScopeId: restorationScopeId,
     );

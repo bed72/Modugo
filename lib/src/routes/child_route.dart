@@ -6,8 +6,6 @@ import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/transition.dart';
 
-import 'package:modugo/src/models/route_pattern_model.dart';
-
 import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/interfaces/route_interface.dart';
 
@@ -24,15 +22,12 @@ import 'package:modugo/src/interfaces/route_interface.dart';
 /// - exit guards via [onExit]
 /// - dynamic redirection via [redirect]
 ///
-/// Optionally supports [routePattern] to enable custom regex-based
-/// matching and parameter extraction independent of GoRouter.
-///
 /// Example:
 /// ```dart
 /// ChildRoute(
 ///   name: 'product',
 ///   path: '/product/:id',
-///   child: (context, state) => ProductPage(id: context.getPathParam('id')),
+///   child: (context, state) => ProductScreen(id: context.getPathParam('id')),
 /// )
 /// ```
 @immutable
@@ -48,12 +43,6 @@ final class ChildRoute implements IRoute {
   ///
   /// Each guard can allow the navigation or return a redirect path.
   final List<IGuard> guards;
-
-  /// Optional route matching pattern using regex and parameter names.
-  ///
-  /// If provided, it allows the route to be matched and parameters to be extracted
-  /// using a custom regular expression.
-  final RoutePatternModel? routePattern;
 
   /// Optional transition animation for this route.
   ///
@@ -97,7 +86,6 @@ final class ChildRoute implements IRoute {
     this.transition,
     this.path = '/',
     this.pageBuilder,
-    this.routePattern,
     this.guards = const [],
     this.parentNavigatorKey,
   });
@@ -110,7 +98,6 @@ final class ChildRoute implements IRoute {
           name == other.name &&
           transition == other.transition &&
           runtimeType == other.runtimeType &&
-          routePattern == other.routePattern &&
           parentNavigatorKey == other.parentNavigatorKey;
 
   @override
@@ -118,6 +105,5 @@ final class ChildRoute implements IRoute {
       path.hashCode ^
       name.hashCode ^
       transition.hashCode ^
-      routePattern.hashCode ^
       parentNavigatorKey.hashCode;
 }

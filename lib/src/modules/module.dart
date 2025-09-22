@@ -51,7 +51,7 @@ final Set<Type> _modulesRegistered = {};
 /// ```dart
 /// class AppModule extends Module {
 ///   @override
-///   List<Module> imports() => [SharedModule()];
+///   List<BinderRegistry> imports() => [SharedModule()];
 ///
 ///   @override
 ///   List<IRoute> routes() => [

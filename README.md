@@ -8,7 +8,7 @@
 
 ## 📚 Documentation
 
-⚠️ **Note:** The official documentation for **Modugo** is currently under development.  
+⚠️ **Note:** The official documentation for **Modugo** is currently under development.
 You can access the work-in-progress documentation here: [Modugo Docs](https://bed72.github.io/Modugo/)
 
 Please keep in mind that some sections may be incomplete or subject to change as the library evolves.
@@ -22,7 +22,7 @@ Please keep in mind that some sections may be incomplete or subject to change as
 - Designed to provide **decoupled, modular architecture** without enforcing lifecycle management.
 - Focuses on **clarity and structure** rather than automatic cleanup.
 
-> ⚠️ Note: Unlike some modular frameworks, Modugo **does not automatically dispose dependencies** when routes are removed. All dependencies live until the app is terminated.  
+> ⚠️ Note: Unlike some modular frameworks, Modugo **does not automatically dispose dependencies** when routes are removed. All dependencies live until the app is terminated.
 > This is a **breaking change** from versions prior to 3.x, where automatic disposal of route-scoped dependencies was performed. If you are migrating from an older version (<3), be aware that you may need to manually manage dependency disposal.
 
 ---
@@ -83,7 +83,7 @@ Future<void> main() async {
       ModugoLoaderWidget(
         loading: const LoadWidget(), // Your loading widget
         builder: (_) => const AppWidget(),
-        dependencies: [ /* List of asynchronous dependencies */ ],
+        dependencies: /* asynchronous dependencies */,
       ),
   );
 }
@@ -161,7 +161,7 @@ ModuleRoute(path: '/profile', module: ProfileModule()),
 
 Use `ShellModuleRoute` when you want to create a navigation window **inside a specific area of your UI**, similar to `RouteOutlet` in Flutter Modular. This is commonly used in layout scenarios with menus or tabs, where only part of the screen changes based on navigation.
 
-> ℹ️ Internally, it uses GoRouter’s `ShellRoute`.  
+> ℹ️ Internally, it uses GoRouter’s `ShellRoute`.
 > Learn more: [ShellRoute docs](https://pub.dev/documentation/go_router/latest/go_router/ShellRoute-class.html)
 
 #### Module Setup
@@ -219,7 +219,7 @@ class PageWidget extends StatelessWidget {
 }
 ```
 
-✅ Great for creating sub-navigation inside pages  
+✅ Great for creating sub-navigation inside pages
 🎯 Useful for dashboards, admin panels, or multi-section UIs
 
 ### `StatefulShellModuleRoute`
@@ -268,7 +268,6 @@ Modugo supports a powerful matching system using regex-based patterns. This allo
 ```dart
 ChildRoute(
   path: '/user/:id',
-  routePattern: RoutePatternModel.from(r'^/user/(\d+)\$', paramNames: ['id']),
   child: (_, _) => const UserPage(),
 )
 ```
@@ -315,7 +314,7 @@ Modugo provides a lightweight event system for modular, decoupled communication 
 You can listen to events of a specific type using the `EventChannel` singleton or your module's `EventRegistry`:
 
 ```dart
-class MyEvent {
+final class MyEvent {
   final String message;
   MyEvent(this.message);
 }
@@ -388,7 +387,7 @@ You can protect routes using `IGuard`, which allows you to define redirection lo
 ### 1. Define a guard
 
 ```dart
-class AuthGuard implements IGuard<String?> {
+final class AuthGuard implements IGuard<String?> {
   @override
   FutureOr<String?> call(BuildContext context, GoRouterState state) async {
     final auth = context.read<AuthService>();
@@ -443,9 +442,9 @@ In Modugo, dependencies are registered using the `binds()` method inside a `Modu
 ### Example
 
 ```dart
-class HomeModule extends Module {
+final class HomeModule extends Module {
   @override
-  List<Module> imports() => [CoreModule()];
+  List<BinderRegistry> imports() => [CoreModule()];
 
   @override
   List<IRoute> routes() => [

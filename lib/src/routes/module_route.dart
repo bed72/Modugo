@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/modules/module.dart';
-import 'package:modugo/src/models/route_pattern_model.dart';
 import 'package:modugo/src/interfaces/route_interface.dart';
 
 /// A route that maps a [path] to a child [Module] within the Modugo navigation system.
@@ -18,9 +17,6 @@ import 'package:modugo/src/interfaces/route_interface.dart';
 /// - assign a [name] for named navigation
 /// - optional [parentNavigatorKey]
 /// - add a [redirect] function to control access dynamically
-///
-/// Optionally supports [routePattern] to enable custom regex-based
-/// matching and parameter extraction independent of GoRouter.
 ///
 /// Example:
 /// ```dart
@@ -48,12 +44,6 @@ final class ModuleRoute implements IRoute {
   /// This module will provide its own routes and bindings.
   final Module module;
 
-  /// Optional route matching pattern using regex and parameter names.
-  ///
-  /// This allows the module to be matched via a regular expression
-  /// independently of GoRouter's matching logic.
-  final RoutePatternModel? routePattern;
-
   /// The navigator key of the parent (for nested navigator hierarchy).
   final GlobalKey<NavigatorState>? parentNavigatorKey;
 
@@ -70,7 +60,6 @@ final class ModuleRoute implements IRoute {
     this.name,
     this.redirect,
     this.path = '/',
-    this.routePattern,
     this.parentNavigatorKey,
   });
 
@@ -82,7 +71,6 @@ final class ModuleRoute implements IRoute {
           name == other.name &&
           module == other.module &&
           runtimeType == other.runtimeType &&
-          routePattern == other.routePattern &&
           parentNavigatorKey == other.parentNavigatorKey;
 
   @override
@@ -90,6 +78,5 @@ final class ModuleRoute implements IRoute {
       path.hashCode ^
       name.hashCode ^
       module.hashCode ^
-      routePattern.hashCode ^
       parentNavigatorKey.hashCode;
 }

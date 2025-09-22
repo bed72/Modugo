@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/modules/module.dart';
+import 'package:modugo/src/registers/binder_registry.dart';
 import 'package:modugo/src/interfaces/route_interface.dart';
 
 import 'package:modugo/src/routes/child_route.dart';
@@ -169,7 +170,7 @@ final class _InnerModule extends Module {
 
 final class _RootModule extends Module {
   @override
-  List<Module> imports() => [_InnerModule()];
+  List<BinderRegistry> imports() => [_InnerModule()];
 
   @override
   List<IRoute> routes() => [

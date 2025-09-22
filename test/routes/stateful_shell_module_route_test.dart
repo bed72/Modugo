@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/modules/module.dart';
-import 'package:modugo/src/models/route_pattern_model.dart';
 
 import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/interfaces/route_interface.dart';
@@ -162,76 +161,6 @@ void main() {
       expect(result, '/not-allowed');
     },
   );
-
-  group('StatefulShellModuleRoute with RoutePatternModel', () {
-    test('matches correct path and extracts parameters', () {
-      final route = StatefulShellModuleRoute(
-        builder: (_, _, _) => const Placeholder(),
-        routes: [ModuleRoute(path: '/home', module: _DummyModule())],
-        routePattern: RoutePatternModel.from(
-          r'^/org/(\w+)/tab/home$',
-          paramNames: ['orgId'],
-        ),
-      );
-
-      final pattern = route.routePattern!;
-      expect(pattern.regex.hasMatch('/org/acme/tab/home'), isTrue);
-
-      final params = pattern.extractParams('/org/acme/tab/home');
-      expect(params, equals({'orgId': 'acme'}));
-    });
-
-    test('returns false when path does not match pattern', () {
-      final route = StatefulShellModuleRoute(
-        routes: [],
-        builder: (_, _, _) => const Placeholder(),
-        routePattern: RoutePatternModel.from(
-          r'^/dashboard/(\w+)$',
-          paramNames: ['section'],
-        ),
-      );
-
-      final match = route.routePattern!.regex.hasMatch('/invalid/path');
-      expect(match, isFalse);
-
-      final params = route.routePattern!.extractParams('/invalid/path');
-      expect(params, isEmpty);
-    });
-
-    test('== returns true when routePattern and all fields match', () {
-      builder(_, _, _) => const Placeholder();
-      final pattern = RoutePatternModel.from(r'^/shell$', paramNames: []);
-
-      final routeA = StatefulShellModuleRoute(
-        routes: [],
-        builder: builder,
-        routePattern: pattern,
-      );
-
-      final routeB = StatefulShellModuleRoute(
-        routes: [],
-        builder: builder,
-        routePattern: pattern,
-      );
-      expect(routeA, equals(routeB));
-      expect(routeA.hashCode, equals(routeB.hashCode));
-    });
-
-    test('== returns false when routePatterns differ', () {
-      final routeA = StatefulShellModuleRoute(
-        routes: [],
-        builder: (_, _, _) => const Placeholder(),
-        routePattern: RoutePatternModel.from(r'^/a$', paramNames: []),
-      );
-      final routeB = StatefulShellModuleRoute(
-        routes: [],
-        builder: (_, _, _) => const Placeholder(),
-        routePattern: RoutePatternModel.from(r'^/b$', paramNames: []),
-      );
-
-      expect(routeA, isNot(equals(routeB)));
-    });
-  });
 
   group('StatefulShellModuleRoute - navigation key', () {
     test('toRoute generates StatefulShellRoute.indexedStack', () {
