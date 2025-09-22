@@ -197,11 +197,7 @@ abstract class Module with BinderRegistry, RouterRegistry {
 
   GoRoute? _createModule({required ModuleRoute module}) {
     final childRoute =
-        module.module
-            .routes()
-            .whereType<ChildRoute>()
-            .where((route) => _adjustRoute(route.path!) == '/')
-            .firstOrNull;
+        module.module.routes().whereType<ChildRoute>().firstOrNull;
 
     if (childRoute == null) return null;
 
@@ -237,9 +233,6 @@ abstract class Module with BinderRegistry, RouterRegistry {
         return childRoute.redirect != null
             ? await childRoute.redirect!(context, state)
             : null;
-      },
-      onExit: (context, state) {
-        return Future.value(true);
       },
     );
   }
@@ -302,9 +295,6 @@ abstract class Module with BinderRegistry, RouterRegistry {
 
     return shellRoutes;
   }
-
-  String _adjustRoute(String route) =>
-      (route == '/' || route.startsWith('/:')) ? '/' : route;
 
   Widget _buildModuleChild(
     BuildContext context, {

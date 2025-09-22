@@ -16,7 +16,7 @@ import 'package:modugo/src/models/route_change_event_model.dart';
 /// This key is used to access the navigator state globally,
 /// allowing for imperative navigation and other operations
 /// without needing to pass the context
-late GlobalKey<NavigatorState> modugoNavigatorKey;
+GlobalKey<NavigatorState> modugoNavigatorKey = GlobalKey<NavigatorState>();
 
 /// The central configuration class for the Modugo routing and dependency system.
 ///
@@ -110,7 +110,7 @@ final class Modugo {
 
     final routes = module.configureRoutes();
 
-    modugoNavigatorKey = navigatorKey ?? GlobalKey<NavigatorState>();
+    if (navigatorKey != null) modugoNavigatorKey = navigatorKey;
 
     _router = GoRouter(
       routes: routes,
