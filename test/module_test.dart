@@ -88,24 +88,6 @@ void main() {
       expect(widget, isA<Widget>());
     });
 
-    test('does not unregister if onExit returns false', () async {
-      final module = _ModuleWithOnExitFalse();
-      await startModugoFake(module: module);
-      module.configureRoutes();
-
-      final goRoute =
-          module.configureRoutes().firstWhere(
-                (r) => r is GoRoute && r.name == 'on-exit-false',
-              )
-              as GoRoute;
-
-      final result = await goRoute.onExit?.call(
-        BuildContextFake(),
-        StateFake(),
-      );
-      expect(result, isFalse);
-    });
-
     test('configureRoutes returns all route types', () {
       final module = _ModuleWithStatefulShell();
       final routes = module.configureRoutes(path: '/');
@@ -226,18 +208,6 @@ final class _ModuleWithStatefulShell extends Module {
         ModuleRoute(path: '/', module: _ModuleWithDash()),
         ModuleRoute(path: '/settings', module: _ModuleWithSettings()),
       ],
-    ),
-  ];
-}
-
-final class _ModuleWithOnExitFalse extends Module {
-  @override
-  List<IRoute> routes() => [
-    ChildRoute(
-      path: '/some',
-      name: 'on-exit-false',
-      onExit: (_, _) async => false,
-      child: (_, _) => const Text('Some'),
     ),
   ];
 }

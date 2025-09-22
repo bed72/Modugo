@@ -1,7 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:async';
-
 import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -173,13 +171,6 @@ abstract class Module with BinderRegistry, RouterRegistry {
           rethrow;
         }
       },
-      onExit:
-          (context, state) => _handleRouteExit(
-            context,
-            module: this,
-            state: state,
-            route: childRoute,
-          ),
       pageBuilder:
           childRoute.pageBuilder != null
               ? (context, state) => _safePageBuilder(
@@ -344,30 +335,6 @@ abstract class Module with BinderRegistry, RouterRegistry {
 
       rethrow;
     }
-  }
-
-  /// Handles route exit by unregistering the route from [Manager] and cleaning up
-  /// the module if it has no more active routes.
-  ///
-  /// Ensures that:
-  /// 1. The module is only unregistered when the route has fully exited.
-  /// 2. All bindings are cleaned from [GetIt] if no routes remain active.
-  /// 3. Any errors during exit handling do not crash the app.
-  ///
-  /// [context] The current [BuildContext].
-  /// [module]  The module associated with the route.
-  /// [route]   The [ChildRoute] that is being exited.
-  /// [state]   The current [GoRouterState].
-  FutureOr<bool> _handleRouteExit(
-    BuildContext context, {
-    required Module module,
-    required ChildRoute route,
-    required GoRouterState state,
-  }) {
-    final onExit = route.onExit?.call(context, state);
-    final exit = onExit is Future<bool> ? onExit : Future.value(onExit ?? true);
-
-    return exit.then((exit) => exit).catchError((_) => false);
   }
 
   /// Registers this module and all its imported modules recursively.
