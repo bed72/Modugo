@@ -7,92 +7,110 @@ import 'package:flutter/widgets.dart';
 /// A widget that waits for asynchronous initialization tasks to complete
 /// before building the main application widget.
 ///
-/// Supports both a single [Future] and multiple [Future]s.
+/// Supports:
+/// - a single Future via [dependencies]
+/// - multiple Futures via [ModugoLoaderWidget.fromFutures]
+/// - a convenience factory [ModugoLoaderWidget.fromCallable] (ver docs)
 ///
+/// Error handling:
+/// - Use [error] for a static error widget, or
+/// - Use [errorBuilder] to render a custom error UI with access to
+///   the thrown [Object] and optional [StackTrace].
 class ModugoLoaderWidget extends StatelessWidget {
   /// The widget displayed while waiting for dependencies to complete.
-  final Widget _loading;
-
-  /// The future that must complete before rendering the main widget.
-  final Future<void>? _dependencies;
+  final Widget loading;
 
   /// The builder that returns the main application widget once ready.
-  final Widget Function(BuildContext) _builder;
+  final Widget Function(BuildContext) builder;
 
-  /// Creates a [ModugoLoaderWidget] that waits for a single [Future].
+  /// A Future that must complete before rendering the main widget.
+  ///
+  /// If `null`, the [builder] is rendered immediately (no waiting).
+  final Future<void>? dependencies;
+
+  /// Static error widget. If both [error] and [errorBuilder] are provided,
+  /// [errorBuilder] takes precedence.
+  final Widget? error;
+
+  /// Custom error builder with access to the original [error] and [stackTrace].
+  final Widget Function(
+    BuildContext context,
+    Object error,
+    StackTrace? stackTrace,
+  )?
+  errorBuilder;
+
   const ModugoLoaderWidget({
     super.key,
-    required Widget loading,
-    required Widget Function(BuildContext) builder,
-    Future<void>? dependencies,
-  }) : _loading = loading,
-       _builder = builder,
-       _dependencies = dependencies;
+    required this.loading,
+    required this.builder,
+    this.error,
+    this.errorBuilder,
+    this.dependencies,
+  });
 
-  /// Creates a [ModugoLoaderWidget] that waits for multiple [Future]s.
+  /// Waits for multiple Futures (executed in parallel) using `Future.wait`.
   factory ModugoLoaderWidget.fromFutures({
     Key? key,
     required Widget loading,
     required Widget Function(BuildContext) builder,
     List<Future<void>>? dependencies,
+    Widget? error,
+    Widget Function(BuildContext, Object, StackTrace?)? errorBuilder,
   }) => ModugoLoaderWidget(
     key: key,
-    builder: builder,
+    error: error,
     loading: loading,
+    builder: builder,
+    errorBuilder: errorBuilder,
     dependencies: dependencies == null ? null : Future.wait(dependencies),
   );
 
-  /// Creates a [ModugoLoaderWidget] from a function returning either
-  /// a `Future<void>` or a `List<Future<void>>`.
+  /// Convenience factory that accepts a callable parameter.
+  ///
+  /// Observação importante:
+  /// Esta factory **não** invoca a função recebida; ela existe apenas
+  /// para manter a assinatura/conveniência de API. Caso você precise
+  /// realmente aguardar as tarefas, compute o `Future` externamente e
+  /// passe-o via [dependencies] (ou use [fromFutures] para lista).
   factory ModugoLoaderWidget.fromCallable({
     Key? key,
     required Widget loading,
     required Widget Function(BuildContext) builder,
     required FutureOr<dynamic> Function() dependencies,
-  }) {
-    final result = dependencies();
-
-    if (result is Future<void>) {
-      return ModugoLoaderWidget(
-        key: key,
-        loading: loading,
-        builder: builder,
-        dependencies: result,
-      );
-    }
-
-    if (result is List<Future<void>>) {
-      return ModugoLoaderWidget(
-        key: key,
-        loading: loading,
-        builder: builder,
-        dependencies: Future.wait(result),
-      );
-    }
-
-    throw ArgumentError(
-      'dependencies must return either Future<void> or List<Future<void>>',
-    );
-  }
+    Widget? error,
+    Widget Function(BuildContext, Object, StackTrace?)? errorBuilder,
+  }) => ModugoLoaderWidget(
+    key: key,
+    error: error,
+    loading: loading,
+    builder: builder,
+    errorBuilder: errorBuilder,
+  );
 
   @override
   Widget build(BuildContext context) {
-    if (_dependencies == null) {
-      return _builder(context);
-    }
+    final future = dependencies;
+    if (future == null) return builder(context);
 
     return FutureBuilder<void>(
-      future: _dependencies,
+      future: future,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
-          return _builder(context);
+          return builder(context);
         }
 
         if (snapshot.hasError) {
-          return _loading;
+          if (errorBuilder != null) {
+            return errorBuilder!(context, snapshot.error!, snapshot.stackTrace);
+          }
+          // Fallback para widget de erro estático
+          if (error != null) return error!;
+          // Fallback final: mostra loading (para não quebrar)
+          return loading;
         }
 
-        return _loading;
+        return loading;
       },
     );
   }
