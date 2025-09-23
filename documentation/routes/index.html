@@ -507,15 +507,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#roteamento-com-regex" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Roteamento com Regex
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#tipos-de-rotas-suportadas" class="md-nav__link">
     <span class="md-ellipsis">
       🔹 Tipos de Rotas Suportadas
@@ -719,15 +710,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#roteamento-com-regex" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Roteamento com Regex
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#tipos-de-rotas-suportadas" class="md-nav__link">
     <span class="md-ellipsis">
       🔹 Tipos de Rotas Suportadas
@@ -802,7 +784,7 @@
 <p>ℹ️ Internamente, utiliza <code>GoRouter</code>'s <code>ShellRoute</code>.</p>
 <pre><code class="language-dart">final class HomeModule extends Module {
   @override
-  List&lt;IModule&gt; routes() =&gt; [
+  List&lt;IRoute&gt; routes() =&gt; [
     ShellModuleRoute(
       builder: (context, state, child) =&gt; PageWidget(child: child),
       routes: [
@@ -866,28 +848,6 @@ Internamente, utiliza <code>StatefulShellRoute</code> do GoRouter. Cada <code>Mo
 </code></pre>
 <p>✅ Excelente para sub-navegação dentro de páginas
 🎯 Útil para dashboards, painéis administrativos ou UIs multi-seção</p>
-<hr />
-<h2 id="roteamento-com-regex">🔹 Roteamento com Regex</h2>
-<p>Modugo suporta <strong>matchings de rotas poderosos</strong> usando padrões regex.</p>
-<ul>
-<li>Valida caminhos e deep links antes da navegação</li>
-<li>Extrai parâmetros dinâmicos independentemente do GoRouter</li>
-<li>Suporta URLs externas, web e lógica de redirect personalizada</li>
-</ul>
-<pre><code class="language-dart">ChildRoute(
-  path: '/user/:id',
-  child: (_, _) =&gt; const UserPage(),
-  routePattern: RoutePatternModel.from(r'^/user/(\d+)\$', paramNames: ['id']),
-)
-
-final match = Modugo.matchRoute('/user/42');
-if (match != null) {
-  print(match.route); // rota encontrada
-  print(match.params); // { 'id': '42' }
-} else {
-  print('Nenhuma correspondência');
-}
-</code></pre>
 <hr />
 <h2 id="tipos-de-rotas-suportadas">🔹 Tipos de Rotas Suportadas</h2>
 <ul>

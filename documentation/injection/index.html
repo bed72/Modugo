@@ -700,10 +700,10 @@
 <p>Dentro de cada módulo, você pode registrar <strong>binds</strong> usando o método <code>binds()</code>:</p>
 <pre><code class="language-dart">final class HomeModule extends Module {
   @override
-  List&lt;Module&gt; imports() =&gt; [CoreModule()]; // importa outros módulos se necessário
+  List&lt;BinderRegistry&gt; imports() =&gt; [CoreModule()]; // importa outros módulos se necessário
 
   @override
-  List&lt;IModule&gt; routes() =&gt; [
+  List&lt;IRoute&gt; routes() =&gt; [
     ChildRoute(path: '/', child: (context, state) =&gt; const HomePage()),
   ];
 
@@ -728,7 +728,7 @@
 <h2 id="acessando-dependencias">🔹 Acessando Dependências</h2>
 <p>Para obter uma instância registrada dentro do módulo ou de qualquer widget que faça parte do módulo:</p>
 <pre><code class="language-dart">final service = i.get&lt;ServiceRepository&gt;();
-final service = Modugo.get&lt;ServiceRepository&gt;();
+final service = Modugo.i.get&lt;ServiceRepository&gt;();
 final otherService = context.reade&lt;OtherServiceRepository&gt;();
 </code></pre>
 <blockquote>
