@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/transition.dart';
 import 'package:modugo/src/routes/child_route.dart';
-import 'package:modugo/src/models/route_pattern_model.dart';
 import 'package:modugo/src/interfaces/guard_interface.dart';
 
 void main() {
@@ -171,73 +170,6 @@ void main() {
       );
 
       expect(a, equals(b));
-    });
-  });
-
-  group('ChildRoute with RoutePatternModel', () {
-    test('matches correct path and extracts parameter', () {
-      final route = ChildRoute(
-        path: '/product/:id',
-        routePattern: RoutePatternModel.from(
-          r'^/product/(\d+)$',
-          paramNames: ['id'],
-        ),
-        child: (_, _) => const Placeholder(),
-      );
-
-      final pattern = route.routePattern!;
-      expect(pattern.regex.hasMatch('/product/123'), isTrue);
-
-      final params = pattern.extractParams('/product/123');
-      expect(params, equals({'id': '123'}));
-    });
-
-    test('does not match incorrect path', () {
-      final route = ChildRoute(
-        path: '/product/:id',
-        routePattern: RoutePatternModel.from(
-          r'^/product/(\d+)$',
-          paramNames: ['id'],
-        ),
-        child: (_, _) => const Placeholder(),
-      );
-
-      final pattern = route.routePattern!;
-      expect(pattern.regex.hasMatch('/product/abc/details'), isFalse);
-
-      final params = pattern.extractParams('/product/abc/details');
-      expect(params, isEmpty);
-    });
-
-    test('supports multiple parameters', () {
-      final route = ChildRoute(
-        path: '/order/:orderId/item/:itemId',
-        routePattern: RoutePatternModel.from(
-          r'^/order/(\d+)/item/(\w+)$',
-          paramNames: ['orderId', 'itemId'],
-        ),
-        child: (_, _) => const Placeholder(),
-      );
-
-      final pattern = route.routePattern!;
-      expect(pattern.regex.hasMatch('/order/42/item/widgetX'), isTrue);
-
-      final params = pattern.extractParams('/order/42/item/widgetX');
-      expect(params, equals({'orderId': '42', 'itemId': 'widgetX'}));
-    });
-
-    test('matches route with no parameters and returns empty map', () {
-      final route = ChildRoute(
-        path: '/noparams',
-        routePattern: RoutePatternModel.from(r'^/noparams$'),
-        child: (_, _) => const Placeholder(),
-      );
-
-      final pattern = route.routePattern!;
-      expect(pattern.regex.hasMatch('/noparams'), isTrue);
-
-      final params = pattern.extractParams('/noparams');
-      expect(params, isEmpty);
     });
   });
 }

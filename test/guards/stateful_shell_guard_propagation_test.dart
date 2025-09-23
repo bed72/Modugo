@@ -5,10 +5,11 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/module.dart';
 
-import 'package:modugo/src/extensions/guard_extension.dart';
 import 'package:modugo/src/interfaces/guard_interface.dart';
-import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/interfaces/route_interface.dart';
 
+import 'package:modugo/src/registers/binder_registry.dart';
+import 'package:modugo/src/extensions/guard_extension.dart';
 import 'package:modugo/src/decorators/guard_module_decorator.dart';
 
 import 'package:modugo/src/routes/child_route.dart';
@@ -116,17 +117,17 @@ final class _FakeRedirectGuard implements IGuard<String?> {
 }
 
 final class _FakeModule extends Module {
-  final List<IModule> _routes;
+  final List<IRoute> _routes;
   _FakeModule(this._routes);
 
   @override
   void binds() {}
 
   @override
-  List<Module> imports() => const [];
+  List<BinderRegistry> imports() => const [];
 
   @override
-  List<IModule> routes() => _routes;
+  List<IRoute> routes() => _routes;
 }
 
 ChildRoute _child(String path, {List<IGuard> guards = const []}) =>

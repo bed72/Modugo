@@ -1,15 +1,13 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/transition.dart';
 
-import 'package:modugo/src/models/route_pattern_model.dart';
-
 import 'package:modugo/src/interfaces/guard_interface.dart';
-import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/interfaces/route_interface.dart';
 
 /// A route that represents a direct child page within a [Module].
 ///
@@ -24,19 +22,16 @@ import 'package:modugo/src/interfaces/module_interface.dart';
 /// - exit guards via [onExit]
 /// - dynamic redirection via [redirect]
 ///
-/// Optionally supports [routePattern] to enable custom regex-based
-/// matching and parameter extraction independent of GoRouter.
-///
 /// Example:
 /// ```dart
 /// ChildRoute(
 ///   name: 'product',
 ///   path: '/product/:id',
-///   child: (context, state) => ProductPage(id: context.getPathParam('id')),
+///   child: (context, state) => ProductScreen(id: context.getPathParam('id')),
 /// )
 /// ```
 @immutable
-final class ChildRoute implements IModule {
+final class ChildRoute implements IRoute {
   /// The relative path of this route, e.g. `'/'` or `'/product/:id'`.
   /// If not passed or null the default value is '/'
   final String? path;
@@ -48,12 +43,6 @@ final class ChildRoute implements IModule {
   ///
   /// Each guard can allow the navigation or return a redirect path.
   final List<IGuard> guards;
-
-  /// Optional route matching pattern using regex and parameter names.
-  ///
-  /// If provided, it allows the route to be matched and parameters to be extracted
-  /// using a custom regular expression.
-  final RoutePatternModel? routePattern;
 
   /// Optional transition animation for this route.
   ///
@@ -97,7 +86,6 @@ final class ChildRoute implements IModule {
     this.transition,
     this.path = '/',
     this.pageBuilder,
-    this.routePattern,
     this.guards = const [],
     this.parentNavigatorKey,
   });
@@ -110,7 +98,6 @@ final class ChildRoute implements IModule {
           name == other.name &&
           transition == other.transition &&
           runtimeType == other.runtimeType &&
-          routePattern == other.routePattern &&
           parentNavigatorKey == other.parentNavigatorKey;
 
   @override
@@ -118,6 +105,5 @@ final class ChildRoute implements IModule {
       path.hashCode ^
       name.hashCode ^
       transition.hashCode ^
-      routePattern.hashCode ^
       parentNavigatorKey.hashCode;
 }

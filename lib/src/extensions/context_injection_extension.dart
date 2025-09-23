@@ -7,7 +7,7 @@ import 'package:flutter/widgets.dart';
 /// by the [GetIt] (GetIt).
 ///
 /// This allows retrieving instances directly from the context without
-/// needing to call `Modugo.get<T>()` or `GetIt.I.get<T>()` manually,
+/// needing to call `Modugo.i.get<T>()` or `GetIt.I.get<T>()` manually,
 /// keeping your code cleaner and more readable.
 ///
 /// ### Usage Example
@@ -28,8 +28,8 @@ import 'package:flutter/widgets.dart';
 ///
 /// This is equivalent to:
 /// ```dart
-/// final controller = Modugo.get<HomeController>();
-/// final primaryDb = Modugo.get<Database>(type: Database, instanceName: 'primary');
+/// final controller = Modugo.i.get<HomeController>();
+/// final primaryDb = Modugo.i.get<Database>(type: Database, instanceName: 'primary');
 /// ```
 ///
 /// ### Notes

@@ -1,7 +1,7 @@
 import 'package:modugo/src/guard.dart';
 
 import 'package:modugo/src/interfaces/guard_interface.dart';
-import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/interfaces/route_interface.dart';
 
 import 'package:modugo/src/decorators/guard_module_decorator.dart';
 
@@ -27,7 +27,6 @@ extension ChildRouteExtensions on ChildRoute {
     redirect: redirect,
     transition: transition,
     pageBuilder: pageBuilder,
-    routePattern: routePattern,
     parentNavigatorKey: parentNavigatorKey,
     guards: [...inheritedGuards, ...guards],
   );
@@ -43,7 +42,6 @@ extension ModuleRouteExtensions on ModuleRoute {
     path: path,
     name: name,
     redirect: redirect,
-    routePattern: routePattern,
     parentNavigatorKey: parentNavigatorKey,
     module: GuardModuleDecorator(module: module, guards: inheritedGuards),
   );
@@ -56,7 +54,6 @@ extension ModuleRouteExtensions on ModuleRoute {
 extension ShellModuleRouteExtensions on ShellModuleRoute {
   ShellModuleRoute withInjectedGuards(List<IGuard> inheritedGuards) =>
       ShellModuleRoute(
-        binds: binds,
         builder: builder,
         redirect: redirect,
         observers: observers,
@@ -76,7 +73,7 @@ extension ShellModuleRouteExtensions on ShellModuleRoute {
 extension StatefulShellModuleRouteExtensions on StatefulShellModuleRoute {
   StatefulShellModuleRoute withInjectedGuards(List<IGuard> inheritedGuards) {
     final injected =
-        routes.map<IModule>((route) {
+        routes.map<IRoute>((route) {
           if (route is ChildRoute) {
             return route.withInjectedGuards(inheritedGuards);
           }
@@ -95,7 +92,6 @@ extension StatefulShellModuleRouteExtensions on StatefulShellModuleRoute {
     return StatefulShellModuleRoute(
       builder: builder,
       routes: injected,
-      routePattern: routePattern,
       parentNavigatorKey: parentNavigatorKey,
       restorationScopeId: restorationScopeId,
     );

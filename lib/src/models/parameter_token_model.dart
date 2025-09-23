@@ -71,13 +71,13 @@ final class ParameterTokenModel implements IToken {
   String toPattern() => pattern;
 
   @override
+  int get hashCode => Object.hash(name, pattern);
+
+  @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is ParameterTokenModel &&
           name == other.name &&
           pattern == other.pattern &&
           runtimeType == other.runtimeType;
-
-  @override
-  int get hashCode => Object.hash(name, pattern);
 }

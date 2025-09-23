@@ -1,30 +1,26 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 
-import 'package:modugo/src/models/route_pattern_model.dart';
-import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/interfaces/route_interface.dart';
 
 /// A modular route that enables stateful navigation using [StatefulShellRoute].
 ///
 /// This is useful for apps that use tab-based or bottom navigation,
 /// where each branch preserves its own navigation stack.
 ///
-/// It composes multiple [IModule]s or [ChildRoute]s as independent branches,
+/// It composes multiple [IRoute]s or [ChildRoute]s as independent branches,
 /// and renders them via an [IndexedStack]-based layout using the provided [builder].
 ///
 /// Each branch maintains its own stateful navigation context.
 /// The shell provides:
 /// - a shared [key] for nested navigation
 /// - optional [restorationScopeId], and [parentNavigatorKey]
-///
-/// Optionally supports [routePattern] to enable custom regex-based
-/// matching and parameter extraction independent of GoRouter.
 ///
 /// Example:
 /// ```dart
@@ -39,20 +35,14 @@ import 'package:modugo/src/interfaces/module_interface.dart';
 /// );
 /// ```
 @immutable
-final class StatefulShellModuleRoute implements IModule {
+final class StatefulShellModuleRoute implements IRoute {
   /// The list of modules or routes that form each branch of the shell.
   ///
   /// Each item represents a separate navigation stack.
-  final List<IModule> routes;
+  final List<IRoute> routes;
 
   /// Optional ID used for state restoration (Flutter feature).
   final String? restorationScopeId;
-
-  /// Optional route matching pattern using regex and parameter names.
-  ///
-  /// This allows the module to be matched via a regular expression
-  /// independently of GoRouter's matching logic.
-  final RoutePatternModel? routePattern;
 
   /// Navigator key used to isolate navigation inside the shell.
   final GlobalKey<StatefulNavigationShellState>? key;
@@ -76,7 +66,6 @@ final class StatefulShellModuleRoute implements IModule {
     required this.routes,
     required this.builder,
     this.key,
-    this.routePattern,
     this.parentNavigatorKey,
     this.restorationScopeId,
   });
@@ -89,7 +78,7 @@ final class StatefulShellModuleRoute implements IModule {
   ///
   /// Throws:
   /// - [UnsupportedError] if a route is not a [ModuleRoute] or [ChildRoute].
-  RouteBase toRoute({required String path, required bool topLevel}) {
+  RouteBase toRoute({required String path}) {
     final branches =
         routes.asMap().entries.map((entry) {
           final index = entry.key;
@@ -98,7 +87,7 @@ final class StatefulShellModuleRoute implements IModule {
           if (route is ModuleRoute) {
             return StatefulShellBranch(
               navigatorKey: route.parentNavigatorKey,
-              routes: route.module.configureRoutes(topLevel: false),
+              routes: route.module.configureRoutes(),
             );
           }
 
@@ -150,7 +139,6 @@ final class StatefulShellModuleRoute implements IModule {
           builder == other.builder &&
           listEquals(routes, other.routes) &&
           runtimeType == other.runtimeType &&
-          routePattern == other.routePattern &&
           key == other.key &&
           restorationScopeId == other.restorationScopeId &&
           parentNavigatorKey == other.parentNavigatorKey;
@@ -159,7 +147,6 @@ final class StatefulShellModuleRoute implements IModule {
   int get hashCode =>
       Object.hashAll(routes) ^
       builder.hashCode ^
-      routePattern.hashCode ^
       key.hashCode ^
       restorationScopeId.hashCode ^
       parentNavigatorKey.hashCode;

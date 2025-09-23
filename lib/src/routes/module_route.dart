@@ -1,12 +1,11 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/module.dart';
-import 'package:modugo/src/models/route_pattern_model.dart';
-import 'package:modugo/src/interfaces/module_interface.dart';
+import 'package:modugo/src/interfaces/route_interface.dart';
 
 /// A route that maps a [path] to a child [Module] within the Modugo navigation system.
 ///
@@ -18,9 +17,6 @@ import 'package:modugo/src/interfaces/module_interface.dart';
 /// - assign a [name] for named navigation
 /// - optional [parentNavigatorKey]
 /// - add a [redirect] function to control access dynamically
-///
-/// Optionally supports [routePattern] to enable custom regex-based
-/// matching and parameter extraction independent of GoRouter.
 ///
 /// Example:
 /// ```dart
@@ -35,7 +31,7 @@ import 'package:modugo/src/interfaces/module_interface.dart';
 /// );
 /// ```
 @immutable
-final class ModuleRoute implements IModule {
+final class ModuleRoute implements IRoute {
   /// The path at which this module is mounted (e.g. `/shop`, `/admin/users`).
   /// If not passed or null the default value is '/'
   final String? path;
@@ -47,12 +43,6 @@ final class ModuleRoute implements IModule {
   ///
   /// This module will provide its own routes and bindings.
   final Module module;
-
-  /// Optional route matching pattern using regex and parameter names.
-  ///
-  /// This allows the module to be matched via a regular expression
-  /// independently of GoRouter's matching logic.
-  final RoutePatternModel? routePattern;
 
   /// The navigator key of the parent (for nested navigator hierarchy).
   final GlobalKey<NavigatorState>? parentNavigatorKey;
@@ -70,7 +60,6 @@ final class ModuleRoute implements IModule {
     this.name,
     this.redirect,
     this.path = '/',
-    this.routePattern,
     this.parentNavigatorKey,
   });
 
@@ -82,7 +71,6 @@ final class ModuleRoute implements IModule {
           name == other.name &&
           module == other.module &&
           runtimeType == other.runtimeType &&
-          routePattern == other.routePattern &&
           parentNavigatorKey == other.parentNavigatorKey;
 
   @override
@@ -90,6 +78,5 @@ final class ModuleRoute implements IModule {
       path.hashCode ^
       name.hashCode ^
       module.hashCode ^
-      routePattern.hashCode ^
       parentNavigatorKey.hashCode;
 }

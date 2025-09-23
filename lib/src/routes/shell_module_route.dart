@@ -1,15 +1,12 @@
 import 'dart:async';
 
-import 'package:get_it/get_it.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:modugo/src/models/route_pattern_model.dart';
+import 'package:modugo/src/interfaces/route_interface.dart';
 
-import 'package:modugo/src/interfaces/module_interface.dart';
-
-/// A modular shell route that wraps a group of child [IModule] routes within a common layout or container.
+/// A modular shell route that wraps a group of child [IRoute] routes within a common layout or container.
 ///
 /// This is useful for building structures like tab navigation, sidebars,
 /// or persistent UI scaffolds where multiple routes share a layout.
@@ -18,10 +15,6 @@ import 'package:modugo/src/interfaces/module_interface.dart';
 /// - a shared [navigatorKey] for nested navigation
 /// - optional [observers], [restorationScopeId], and [parentNavigatorKey]
 /// - a [builder] or [pageBuilder] to render a common UI container
-/// - optional [binds] for temporary dependency injection scoped to the shell
-///
-/// Optionally supports [routePattern] to enable custom regex-based
-/// matching and parameter extraction independent of GoRouter.
 ///
 /// Example:
 /// ```dart
@@ -36,26 +29,15 @@ import 'package:modugo/src/interfaces/module_interface.dart';
 /// );
 /// ```
 @immutable
-final class ShellModuleRoute implements IModule {
+final class ShellModuleRoute implements IRoute {
   /// The list of child modules to be rendered inside the shell.
-  final List<IModule> routes;
+  final List<IRoute> routes;
 
   /// Optional ID used for state restoration (Flutter feature).
   final String? restorationScopeId;
 
-  /// Optional route matching pattern using regex and parameter names.
-  ///
-  /// This allows the module to be matched via a regular expression
-  /// independently of GoRouter's matching logic.
-  final RoutePatternModel? routePattern;
-
   /// Optional navigator observers for tracking navigation events.
   final List<NavigatorObserver>? observers;
-
-  /// Optional binds injected when this shell is active.
-  ///
-  /// These binds are scoped to the shell and disposed when it’s no longer in use.
-  final List<void Function(GetIt)> binds;
 
   /// Navigator key used to isolate navigation inside the shell.
   final GlobalKey<NavigatorState>? navigatorKey;
@@ -97,8 +79,6 @@ final class ShellModuleRoute implements IModule {
     this.observers,
     this.pageBuilder,
     this.navigatorKey,
-    this.routePattern,
-    this.binds = const [],
     this.parentNavigatorKey,
     this.restorationScopeId,
   });
@@ -108,7 +88,6 @@ final class ShellModuleRoute implements IModule {
       identical(this, other) ||
       other is ShellModuleRoute &&
           runtimeType == other.runtimeType &&
-          routePattern == other.routePattern &&
           navigatorKey == other.navigatorKey &&
           listEquals(routes, other.routes) &&
           listEquals(observers, other.observers) &&
@@ -120,7 +99,6 @@ final class ShellModuleRoute implements IModule {
       Object.hashAll(routes) ^
       Object.hashAll(observers ?? []) ^
       navigatorKey.hashCode ^
-      routePattern.hashCode ^
       restorationScopeId.hashCode ^
       parentNavigatorKey.hashCode;
 }

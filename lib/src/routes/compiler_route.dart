@@ -5,21 +5,29 @@ import 'package:modugo/src/routes/paths/extract.dart' as ex;
 
 /// A compiled representation of a dynamic route path.
 ///
-/// This class handles:
-/// - parsing a path pattern into tokens
-/// - generating a [RegExp] for matching
-/// - extracting path parameters from URLs
-/// - building URLs from parameter maps
+/// This class is responsible for transforming a human-friendly path pattern
+/// into a set of reusable utilities for validation, matching, and building paths.
 ///
-/// It's useful for internal validation, parameter extraction, and dynamic path generation.
+/// ### Responsibilities
+/// - Parse the provided [pattern] into tokens (static and dynamic segments).
+/// - Generate a [RegExp] that can match concrete URLs against the pattern.
+/// - Extract parameter values from matching paths.
+/// - Build concrete paths from parameter maps.
+/// - Validate the pattern syntax to avoid malformed route definitions.
 ///
-/// Example:
+/// ### Supported parameter syntax
+/// - Parameters start with `:` followed by a valid identifier:
+///   - Valid: `:id`, `:slug`, `:userId`
+///   - Invalid: `:(id`, `:1abc`, `::foo`, `:id-name`
+///
+/// ### Example
 /// ```dart
 /// final route = CompilerRoute('/product/:id');
 ///
-/// route.match('/product/42'); // → true
-/// route.extract('/product/42'); // → { 'id': '42' }
-/// route.build({ 'id': '42' }); // → '/product/42'
+/// route.match('/product/42');       // → true
+/// route.extract('/product/42');     // → { 'id': '42' }
+/// route.build({ 'id': '42' });      // → '/product/42'
+/// route.parameters;                 // → ['id']
 /// ```
 final class CompilerRoute {
   /// The original path pattern used to define this route.
@@ -27,56 +35,103 @@ final class CompilerRoute {
   /// Example: `/user/:id`
   final String pattern;
 
+  /// Collected parameter names while parsing the pattern.
   final List<String> _parameters = [];
 
   /// Tokens parsed from the [pattern], including static and dynamic segments.
   late final _tokens = parse(pattern, parameters: _parameters);
 
-  /// Regular expression generated from the [pattern], used to match URLs.
+  /// Regular expression generated from the [pattern], used to match incoming paths.
   late final _regExp = tokensToRegExp(_tokens);
 
-  /// Function used to build a path from a map of arguments.
+  /// Function used to build a path string from a map of arguments.
   late final _builder = tokensToFunction(_tokens);
 
   /// Creates a [CompilerRoute] from a path [pattern].
   ///
-  /// The [pattern] may include named parameters (e.g. `:id`) and
-  /// optional inline regex patterns.
-  CompilerRoute(this.pattern);
+  /// The constructor validates the syntax of the provided pattern to ensure
+  /// parameters follow the expected format.
+  CompilerRoute(this.pattern) {
+    _validatePattern(pattern);
+  }
+
+  /// Validates the syntax of the route pattern.
+  ///
+  /// Ensures that:
+  /// - Parameters begin with `:`
+  /// - Parameter names follow the identifier rules:
+  ///   `[a-zA-Z_][a-zA-Z0-9_]*`
+  /// - No spaces are allowed within the path.
+  ///
+  /// Throws a [FormatException] if the pattern is malformed.
+  void _validatePattern(String pattern) {
+    final paramRegex = RegExp(r'^:[a-zA-Z_][a-zA-Z0-9_]*$');
+
+    // Split by '/' to isolate each segment
+    for (final segment in pattern.split('/')) {
+      if (segment.startsWith(':')) {
+        if (!paramRegex.hasMatch(segment)) {
+          throw FormatException(
+            'Invalid parameter syntax: $segment in "$pattern"',
+          );
+        }
+      }
+    }
+
+    if (pattern.contains(' ')) {
+      throw FormatException(
+        'Invalid path syntax (contains spaces): "$pattern"',
+      );
+    }
+  }
 
   /// Returns `true` if the given [path] matches this route's compiled [RegExp].
+  ///
+  /// Example:
+  /// ```dart
+  /// CompilerRoute('/user/:id').match('/user/123'); // → true
+  /// ```
   bool match(String path) => _regExp.hasMatch(path);
 
   /// Extracts path parameter values from a given [path], if it matches the pattern.
   ///
-  /// Returns `null` if no match is found.
+  /// Returns `null` if the path does not match.
   ///
   /// Example:
   /// ```dart
-  /// route.extract('/user/123'); // → { 'id': '123' }
+  /// CompilerRoute('/user/:id').extract('/user/123');
+  /// // → { 'id': '123' }
   /// ```
   Map<String, String>? extract(String path) {
-    final match = _regExp.matchAsPrefix(path);
+    // remove query params and fragment
+    final cleanPath = path.split('?').first.split('#').first;
+
+    final match = _regExp.matchAsPrefix(cleanPath);
     if (match == null) return null;
     return ex.extract(_parameters, match);
   }
 
-  /// Builds a path string by injecting [args] into the pattern.
+  /// Builds a concrete path string by injecting [args] into the pattern.
   ///
-  /// Throws an [ArgumentError] if a required argument is missing
-  /// or if any value does not match the expected format.
+  /// Throws an [ArgumentError] if a required parameter is missing or
+  /// does not satisfy the expected format.
   ///
   /// Example:
   /// ```dart
-  /// route.build({ 'id': '42' }); // → '/product/42'
+  /// CompilerRoute('/user/:id').build({ 'id': '123' });
+  /// // → '/user/123'
   /// ```
   String build(Map<String, String> args) => _builder(args);
 
-  /// The [RegExp] used to match incoming paths.
+  /// The [RegExp] used to match incoming paths against this route.
   RegExp get regExp => _regExp;
 
-  /// The list of parameter names expected by this route.
+  /// The list of parameter names defined in this route pattern.
   ///
-  /// This is populated during parsing.
+  /// Example:
+  /// ```dart
+  /// CompilerRoute('/user/:id/:tab').parameters;
+  /// // → ['id', 'tab']
+  /// ```
   List<String> get parameters => List.unmodifiable(_parameters);
 }
