@@ -1,3 +1,7 @@
+## [3.3.0] - 2025-09-22
+
+- Merge pull request #22 from bed72/binder
+
 ## [3.2.15] - 2025-09-16
 
 - :fire: Fix in StatefulShellBranch add tests
