@@ -11,7 +11,7 @@ Dentro de cada módulo, você pode registrar **binds** usando o método `binds()
 ```dart
 final class HomeModule extends Module {
   @override
-  List<BinderRegistry> imports() => [CoreModule()]; // importa outros módulos se necessário
+  List<IBinder> imports() => [CoreModule()]; // importa outros módulos se necessário
 
   @override
   List<IRoute> routes() => [

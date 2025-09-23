@@ -7,8 +7,8 @@ import 'package:modugo/src/module.dart';
 
 import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/interfaces/route_interface.dart';
+import 'package:modugo/src/interfaces/binder_interface.dart';
 
-import 'package:modugo/src/registers/binder_registry.dart';
 import 'package:modugo/src/extensions/guard_extension.dart';
 import 'package:modugo/src/decorators/guard_module_decorator.dart';
 
@@ -124,7 +124,7 @@ final class _FakeModule extends Module {
   void binds() {}
 
   @override
-  List<BinderRegistry> imports() => const [];
+  List<IBinder> imports() => const [];
 
   @override
   List<IRoute> routes() => _routes;

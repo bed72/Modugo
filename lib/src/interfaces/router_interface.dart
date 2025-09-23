@@ -4,7 +4,7 @@ import 'package:modugo/src/interfaces/route_interface.dart';
 
 /// Mixin for declaring navigation routes exposed by a module.
 ///
-/// A [RouterRegistry] defines the routing surface of a module,
+/// A [IRouter] defines the routing surface of a module,
 /// independent of dependency injection concerns.
 /// This keeps the responsibility of *what screens/pages a module
 /// provides* separate from *how its dependencies are wired*.
@@ -31,7 +31,7 @@ import 'package:modugo/src/interfaces/route_interface.dart';
 ///
 /// ### Example
 /// ```dart
-/// final class ProductsModule extends Module with RouterRegistry {
+/// final class ProductsModule extends Module with IRouter {
 ///   @override
 ///   List<IRoute> routes() => [
 ///     ChildRoute(
@@ -50,9 +50,9 @@ import 'package:modugo/src/interfaces/route_interface.dart';
 /// (`/products`) and a nested submodule (`/product`).
 ///
 /// See also:
-/// - [BinderRegistry] for dependency injection bindings.
-/// - [Module] which combines [RouterRegistry] and [BinderRegistry].
-mixin RouterRegistry {
+/// - [IBinder] for dependency injection bindings.
+/// - [Module] which combines [IRouter] and [IBinder].
+mixin IRouter {
   /// List of navigation routes this module exposes.
   ///
   /// Override this method to declare which routes belong to this module.

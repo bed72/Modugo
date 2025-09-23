@@ -1,47 +1,14 @@
 // coverage:ignore-file
 
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 
 /// A widget that waits for asynchronous initialization tasks to complete
 /// before building the main application widget.
 ///
-/// This is typically used to delay the rendering of the app until
-/// all required dependencies are ready (for example,
-/// `GetIt.instance.allReady()` or a database initialization).
+/// Supports both a single [Future] and multiple [Future]s.
 ///
-/// ### Usage
-///
-/// - **Single future:**
-/// ```dart
-/// void main() {
-///   runApp(
-///     ModugoLoaderWidget(
-///       dependencies: GetIt.instance.allReady(),
-///       loading: const CircularProgressIndicator(),
-///       builder: (context) => const AppWidget(),
-///     ),
-///   );
-/// }
-/// ```
-///
-/// - **Multiple futures (wait for all):**
-/// ```dart
-/// void main() {
-///   runApp(
-///     ModugoLoaderWidget.fromFutures(
-///       dependencies: [
-///         GetIt.instance.allReady(),
-///         initDatabase(),
-///       ],
-///       loading: const CircularProgressIndicator(),
-///       builder: (context) => const AppWidget(),
-///     ),
-///   );
-/// }
-/// ```
-///
-/// In both cases, [loading] is displayed while waiting for the tasks,
-/// and [builder] is called once all dependencies have completed.
 class ModugoLoaderWidget extends StatelessWidget {
   /// The widget displayed while waiting for dependencies to complete.
   final Widget _loading;
@@ -63,32 +30,70 @@ class ModugoLoaderWidget extends StatelessWidget {
        _dependencies = dependencies;
 
   /// Creates a [ModugoLoaderWidget] that waits for multiple [Future]s.
-  ///
-  /// Internally calls `Future.wait` so that the app is only built
-  /// once all tasks in [dependencies] have completed.
   factory ModugoLoaderWidget.fromFutures({
     Key? key,
     required Widget loading,
     required Widget Function(BuildContext) builder,
     List<Future<void>>? dependencies,
+  }) => ModugoLoaderWidget(
+    key: key,
+    builder: builder,
+    loading: loading,
+    dependencies: dependencies == null ? null : Future.wait(dependencies),
+  );
+
+  /// Creates a [ModugoLoaderWidget] from a function returning either
+  /// a `Future<void>` or a `List<Future<void>>`.
+  factory ModugoLoaderWidget.fromCallable({
+    Key? key,
+    required Widget loading,
+    required Widget Function(BuildContext) builder,
+    required FutureOr<dynamic> Function() dependencies,
   }) {
-    return ModugoLoaderWidget(
-      key: key,
-      builder: builder,
-      loading: loading,
-      dependencies: dependencies != null ? Future.wait(dependencies) : null,
+    final result = dependencies();
+
+    if (result is Future<void>) {
+      return ModugoLoaderWidget(
+        key: key,
+        loading: loading,
+        builder: builder,
+        dependencies: result,
+      );
+    }
+
+    if (result is List<Future<void>>) {
+      return ModugoLoaderWidget(
+        key: key,
+        loading: loading,
+        builder: builder,
+        dependencies: Future.wait(result),
+      );
+    }
+
+    throw ArgumentError(
+      'dependencies must return either Future<void> or List<Future<void>>',
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
+    if (_dependencies == null) {
+      return _builder(context);
+    }
+
+    return FutureBuilder<void>(
       future: _dependencies,
-      builder:
-          (context, snapshot) =>
-              snapshot.connectionState != ConnectionState.done
-                  ? _loading
-                  : _builder(context),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          return _builder(context);
+        }
+
+        if (snapshot.hasError) {
+          return _loading;
+        }
+
+        return _loading;
+      },
     );
   }
 }

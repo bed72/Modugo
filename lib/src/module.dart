@@ -7,13 +7,13 @@ import 'package:go_router/go_router.dart';
 import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/transition.dart';
-import 'package:modugo/src/routes/child_route.dart';
 
-import 'package:modugo/src/registers/binder_registry.dart';
-import 'package:modugo/src/registers/router_registry.dart';
+import 'package:modugo/src/interfaces/router_interface.dart';
+import 'package:modugo/src/interfaces/binder_interface.dart';
 
 import 'package:modugo/src/decorators/guard_module_decorator.dart';
 
+import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/compiler_route.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
@@ -51,7 +51,7 @@ final Set<Type> _modulesRegistered = {};
 /// ```dart
 /// class AppModule extends Module {
 ///   @override
-///   List<BinderRegistry> imports() => [SharedModule()];
+///   List<IBinder> imports() => [SharedModule()];
 ///
 ///   @override
 ///   List<IRoute> routes() => [
@@ -66,7 +66,7 @@ final Set<Type> _modulesRegistered = {};
 ///   }
 /// }
 /// ```
-abstract class Module with BinderRegistry, RouterRegistry {
+abstract class Module with IBinder, IRouter {
   /// Shortcut to access the global GetIt instance used for dependency injection.
   /// Provides direct access to registered services and singletons.
   GetIt get i => GetIt.instance;
@@ -307,7 +307,7 @@ abstract class Module with BinderRegistry, RouterRegistry {
   void _validPath(String path, String type) {
     try {
       final value = CompilerRoute(path);
-      Logger.navigation('Valid path: $path -> ${value.pattern}');
+      Logger.navigation('Valid path: ${value.pattern}');
     } catch (exception) {
       Logger.error('Invalid path in $type: $path → $exception');
       throw ArgumentError.value(
@@ -346,7 +346,7 @@ abstract class Module with BinderRegistry, RouterRegistry {
   ///
   /// [binder] Optional module to register explicitly. If `null`, the current
   ///   module (`this`) will be used.
-  void _register({BinderRegistry? binder}) {
+  void _register({IBinder? binder}) {
     final targetBinder = binder ?? this;
 
     if (_modulesRegistered.contains(targetBinder.runtimeType)) {
