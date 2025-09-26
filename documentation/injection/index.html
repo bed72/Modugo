@@ -700,7 +700,7 @@
 <p>Dentro de cada módulo, você pode registrar <strong>binds</strong> usando o método <code>binds()</code>:</p>
 <pre><code class="language-dart">final class HomeModule extends Module {
   @override
-  List&lt;BinderRegistry&gt; imports() =&gt; [CoreModule()]; // importa outros módulos se necessário
+  List&lt;IBinder&gt; imports() =&gt; [CoreModule()]; // importa outros módulos se necessário
 
   @override
   List&lt;IRoute&gt; routes() =&gt; [
