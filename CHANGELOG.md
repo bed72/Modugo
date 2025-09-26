@@ -1,3 +1,7 @@
+## [3.3.1] - 2025-09-26
+
+- Merge pull request #23 from bed72/loader
+
 ## [3.3.0] - 2025-09-22
 
 - Merge pull request #22 from bed72/binder
