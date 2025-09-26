@@ -4,10 +4,11 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/events/event_channel.dart';
-import 'package:modugo/src/registers/event_registry.dart';
+
+import 'package:modugo/src/interfaces/event_interface.dart';
 
 void main() {
-  group('EventRegistry Tests', () {
+  group('IEvent Tests', () {
     late _EventModule module;
 
     setUp(() {
@@ -77,7 +78,7 @@ final class _EventMock {
   _EventMock(this.message);
 }
 
-final class _EventModule extends Module with EventRegistry {
+final class _EventModule extends Module with IEvent {
   final void Function(_EventMock event)? onEventCalled;
 
   _EventModule({this.onEventCalled});

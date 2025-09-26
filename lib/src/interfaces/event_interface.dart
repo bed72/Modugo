@@ -27,7 +27,7 @@ import 'package:modugo/src/events/event_channel.dart';
 ///   }
 /// }
 /// ```
-mixin EventRegistry on Module {
+mixin IEvent on Module {
   late final EventBus _internalEventBus = defaultEvents;
 
   /// Tracks all subscriptions registered by this module that require disposal.

@@ -4,7 +4,7 @@ import 'package:modugo/src/module.dart';
 
 /// Mixin for declaring dependency injection bindings of a module.
 ///
-/// A [BinderRegistry] defines *what services or dependencies a module
+/// A [IBinder] defines *what services or dependencies a module
 /// provides* and *what other modules it depends on*.
 /// This separates the concern of dependency injection from routing,
 /// ensuring a clear division of responsibilities inside a [Module].
@@ -28,7 +28,7 @@ import 'package:modugo/src/module.dart';
 ///
 /// ### Example
 /// ```dart
-/// final class AuthModule with BinderRegistry {
+/// final class AuthModule with IBinder {
 ///   @override
 ///   void binds() {
 ///     final i = GetIt.instance;
@@ -38,7 +38,7 @@ import 'package:modugo/src/module.dart';
 ///   }
 ///
 ///   @override
-///   List<BinderRegistry> imports() => [CoreModule()];
+///   List<IBinder> imports() => [CoreModule()];
 /// }
 /// ```
 ///
@@ -46,9 +46,9 @@ import 'package:modugo/src/module.dart';
 /// and declares a dependency on [CoreModule] to reuse its bindings.
 ///
 /// See also:
-/// - [RouterRegistry] for route declarations.
-/// - [Module] which combines [BinderRegistry] and [RouterRegistry].
-mixin BinderRegistry {
+/// - [IRouter] for route declarations.
+/// - [Module] which combines [IBinder] and [IRouter].
+mixin IBinder {
   /// Registers all dependency injection bindings for this module.
   ///
   /// Override this method to declare your dependencies using the [GetIt].
@@ -58,5 +58,5 @@ mixin BinderRegistry {
   ///
   /// Allows modular composition by importing submodules.
   /// Defaults to an empty list.
-  List<BinderRegistry> imports() => const [];
+  List<IBinder> imports() => const [];
 }
