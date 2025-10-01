@@ -142,7 +142,7 @@ void main() {
   });
 
   test(
-    'StatefulShellModuleRoute applies guard when ModuleRoute path is not "/"',
+    'StatefulShellModuleRoute does not force childRoute.redirect when ModuleRoute path is not "/"',
     () async {
       final module = _StatefulShellGuardedModuleWithRealPath();
 
@@ -158,7 +158,7 @@ void main() {
 
       final result = await guardedRoute.redirect!(_FakeContext(), _FakeState());
 
-      expect(result, '/not-allowed');
+      expect(result, isNull);
     },
   );
 

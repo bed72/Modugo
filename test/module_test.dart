@@ -119,24 +119,21 @@ void main() {
       expect(result, '/fallback');
     });
 
-    test(
-      'uses ChildRoute.redirect only if redirect and module.redirect allow',
-      () async {
-        final module = _SimpleChildModuleWithRedirect();
-        final parent = _ParentModuleWithModuleRoute(child: module);
+    test('module.redirect does not force childRoute.redirect', () async {
+      final module = _SimpleChildModuleWithRedirect();
+      final parent = _ParentModuleWithModuleRoute(child: module);
 
-        final route = ModuleRoute(module: module, path: '/guarded');
+      final route = ModuleRoute(module: module, path: '/guarded');
 
-        parent.routes().clear();
-        parent.routes().add(route);
+      parent.routes().clear();
+      parent.routes().add(route);
 
-        final routes = parent.configureRoutes();
-        final goRoute = routes.whereType<GoRoute>().first;
+      final routes = parent.configureRoutes();
+      final goRoute = routes.whereType<GoRoute>().first;
 
-        final result = await goRoute.redirect!(BuildContextFake(), StateFake());
-        expect(result, '/child-redirect');
-      },
-    );
+      final result = await goRoute.redirect!(BuildContextFake(), StateFake());
+      expect(result, isNull);
+    });
 
     test('returns null if guards allow and no redirects are defined', () async {
       final module = _SimpleChildModule();
