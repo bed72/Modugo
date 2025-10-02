@@ -158,7 +158,7 @@ void main() {
 
       final result = await guardedRoute.redirect!(_FakeContext(), _FakeState());
 
-      expect(result, isNull);
+      expect(result, '/not-allowed');
     },
   );
 
