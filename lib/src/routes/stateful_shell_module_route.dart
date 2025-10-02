@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
+import 'package:modugo/src/routes/redirect_route.dart';
 
 import 'package:modugo/src/interfaces/route_interface.dart';
 
@@ -88,6 +89,26 @@ final class StatefulShellModuleRoute implements IRoute {
             return StatefulShellBranch(
               navigatorKey: route.parentNavigatorKey,
               routes: route.module.configureRoutes(),
+            );
+          }
+
+          if (route is RedirectRoute) {
+            return StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: route.path,
+                  name: route.name ?? 'branch_redirect_$index',
+                  redirect: (context, state) async {
+                    for (final guard in route.guards) {
+                      final result = await guard(context, state);
+                      if (result != null) return result;
+                    }
+
+                    final redirect = await route.redirect(context, state);
+                    return redirect == state.uri.path ? null : redirect;
+                  },
+                ),
+              ],
             );
           }
 

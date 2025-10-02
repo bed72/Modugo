@@ -14,7 +14,7 @@ import 'package:modugo/src/routes/redirect_route.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
-import 'fakes/fakes.dart';
+import '../fakes/fakes.dart';
 
 void main() {
   group('Module route configuration', () {

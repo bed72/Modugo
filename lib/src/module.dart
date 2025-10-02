@@ -119,8 +119,9 @@ abstract class Module with IBinder, IRouter {
     final childRoutes = _createChildRoutes();
     final shellRoutes = _createShellRoutes();
     final moduleRoutes = _createModuleRoutes();
+    final redirectRoutes = _createRedirectRoutes();
 
-    return [...shellRoutes, ...childRoutes, ...moduleRoutes];
+    return [...shellRoutes, ...childRoutes, ...moduleRoutes, ...redirectRoutes];
   }
 
   List<GoRoute> _createModuleRoutes() =>
@@ -131,29 +132,31 @@ abstract class Module with IBinder, IRouter {
           .toList();
 
   List<GoRoute> _createChildRoutes() =>
-      routes().expand((route) {
-        if (route is ChildRoute) {
-          return [_createChild(effectivePath: route.path!, childRoute: route)];
-        }
+      routes()
+          .whereType<ChildRoute>()
+          .map(
+            (route) =>
+                _createChild(effectivePath: route.path!, childRoute: route),
+          )
+          .toList();
 
-        if (route is RedirectRoute) {
-          _validPath(route.path, 'RedirectRoute');
-          return [
-            GoRoute(
-              path: route.path,
-              name: route.name,
-              redirect: (context, state) async {
-                for (final guard in route.guards) {
-                  final result = await guard.call(context, state);
-                  if (result != null) return result;
-                }
-                return await route.redirect(context, state);
-              },
-            ),
-          ];
-        }
+  List<GoRoute> _createRedirectRoutes() =>
+      routes().whereType<RedirectRoute>().map((route) {
+        _validPath(route.path, 'RedirectRoute');
+        return GoRoute(
+          path: route.path,
+          name: route.name,
+          redirect: (context, state) async {
+            for (final guard in route.guards) {
+              final result = await guard.call(context, state);
+              if (result != null) return result;
+            }
 
-        return const <GoRoute>[];
+            final target = await route.redirect(context, state);
+
+            return target != null && target == state.uri.path ? null : target;
+          },
+        );
       }).toList();
 
   GoRoute _createChild({
@@ -206,10 +209,31 @@ abstract class Module with IBinder, IRouter {
     final childRoute =
         module.module.routes().whereType<ChildRoute>().firstOrNull;
 
-    if (childRoute == null) return null;
+    final redirectRoute =
+        module.module.routes().whereType<RedirectRoute>().firstOrNull;
 
-    _validPath(childRoute.path!, 'ModuleRoute');
+    if (childRoute == null && redirectRoute == null) return null;
 
+    if (redirectRoute != null) {
+      _validPath(redirectRoute.path, 'ModuleRoute/RedirectRoute');
+      return GoRoute(
+        path: module.path!,
+        routes: module.module.configureRoutes(),
+        name: module.name?.isNotEmpty == true ? module.name : null,
+        parentNavigatorKey: module.parentNavigatorKey,
+        redirect: (context, state) async {
+          for (final guard in redirectRoute.guards) {
+            final result = await guard.call(context, state);
+            if (result != null) return result;
+          }
+
+          final redirect = await redirectRoute.redirect(context, state);
+          return redirect == state.uri.path ? null : redirect;
+        },
+      );
+    }
+
+    _validPath(childRoute!.path!, 'ModuleRoute');
     return GoRoute(
       path: module.path!,
       routes: module.module.configureRoutes(),
@@ -233,8 +257,8 @@ abstract class Module with IBinder, IRouter {
         }
 
         if (module.redirect == null) return null;
-
-        return await module.redirect!(context, state);
+        final redirect = await module.redirect!(context, state);
+        return redirect == state.uri.path ? null : redirect;
       },
     );
   }
@@ -253,6 +277,33 @@ abstract class Module with IBinder, IRouter {
                     return _createChild(
                       childRoute: routeOrModule,
                       effectivePath: routeOrModule.path!,
+                    );
+                  }
+
+                  if (routeOrModule is RedirectRoute) {
+                    _validPath(
+                      routeOrModule.path,
+                      'ShellModuleRoute/RedirectRoute',
+                    );
+
+                    return GoRoute(
+                      path: routeOrModule.path,
+                      name: routeOrModule.name,
+                      redirect: (context, state) async {
+                        for (final guard in routeOrModule.guards) {
+                          final result = await guard.call(context, state);
+                          if (result != null) return result;
+                        }
+
+                        final redirect = await routeOrModule.redirect(
+                          context,
+                          state,
+                        );
+
+                        return redirect != null && redirect == state.uri.path
+                            ? null
+                            : redirect;
+                      },
                     );
                   }
 

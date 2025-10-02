@@ -3,6 +3,7 @@
 
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
+import 'package:modugo/src/routes/redirect_route.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 
 import 'package:modugo/src/extensions/guard_extension.dart';
@@ -20,6 +21,7 @@ import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 /// Supported route types:
 /// - [ChildRoute]
 /// - [ModuleRoute]
+/// - [RedirectRoute]
 /// - [ShellModuleRoute]
 /// - [StatefulShellModuleRoute]
 ///
@@ -30,6 +32,7 @@ import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 IRoute _injectGuards(IRoute route, List<IGuard> guards) {
   if (route is ChildRoute) return route.withInjectedGuards(guards);
   if (route is ModuleRoute) return route.withInjectedGuards(guards);
+  if (route is RedirectRoute) return route.withInjectedGuards(guards);
   if (route is ShellModuleRoute) return route.withInjectedGuards(guards);
   if (route is StatefulShellModuleRoute) {
     return route.withInjectedGuards(guards);
