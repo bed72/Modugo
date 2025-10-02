@@ -96,18 +96,15 @@ void main() {
         name: 'details',
         path: '/details/:id',
         parentNavigatorKey: key,
+        onExit: (_, _) async => true,
         transition: TypeTransition.fade,
-        onExit: (context, state) async => true,
-        redirect: (context, state) async => '/login',
-        pageBuilder:
-            (context, state) => const MaterialPage(child: Text('Page')),
+        pageBuilder: (_, _) => const MaterialPage(child: Text('Page')),
         child: (_, _) => const Placeholder(),
       );
 
       expect(route.name, 'details');
       expect(route.child, isNotNull);
       expect(route.onExit, isNotNull);
-      expect(route.redirect, isNotNull);
       expect(route.path, '/details/:id');
       expect(route.pageBuilder, isNotNull);
       expect(route.parentNavigatorKey, key);
@@ -123,7 +120,6 @@ void main() {
       expect(route.path, '/home');
       expect(route.name, isNull);
       expect(route.onExit, isNull);
-      expect(route.redirect, isNull);
       expect(route.transition, isNull);
       expect(route.pageBuilder, isNull);
       expect(route.parentNavigatorKey, isNull);

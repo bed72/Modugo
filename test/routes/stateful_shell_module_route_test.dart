@@ -62,40 +62,6 @@ void main() {
   });
 
   test(
-    'StatefulShellModuleRoute applies guard redirect from ModuleRoute inside branch',
-    () async {
-      final module = _StatefulShellGuardedModule();
-
-      final routes = module.configureRoutes();
-      final shell = routes.whereType<StatefulShellRoute>().first;
-
-      final guardedBranch = shell.branches.first;
-      final guardedRoute = guardedBranch.routes.whereType<GoRoute>().first;
-
-      final redirectFn = guardedRoute.redirect!;
-      final result = await redirectFn(BuildContextFake(), StateFake());
-
-      expect(result, '/not-allowed');
-    },
-  );
-
-  test(
-    'applies redirect from ChildRoute with guards in StatefulShellModuleRoute',
-    () async {
-      final module = _StatefulShellWithChildGuardModule();
-
-      final routes = module.configureRoutes();
-      final shell = routes.whereType<StatefulShellRoute>().first;
-
-      final route = shell.branches.first.routes.whereType<GoRoute>().first;
-      final redirectFn = route.redirect!;
-      final result = await redirectFn(BuildContextFake(), StateFake());
-
-      expect(result, '/denied');
-    },
-  );
-
-  test(
     'only first guard result is respected in ChildRoute inside StatefulShell',
     () async {
       final module = _StatefulShellWithMultipleGuardsModule();
@@ -146,30 +112,6 @@ void main() {
     expect(a, equals(b));
   });
 
-  test(
-    'StatefulShellModuleRoute does not force childRoute.redirect when ModuleRoute path is not "/"',
-    () async {
-      final module = _StatefulShellGuardedModuleWithRealPath();
-
-      final routes = module.configureRoutes();
-      final shell = routes.whereType<StatefulShellRoute>().first;
-
-      final guardedRoute = shell.branches.first.routes
-          .whereType<GoRoute>()
-          .firstWhere(
-            (_) => true,
-            orElse: () => throw TestFailure('No GoRoute found in first branch'),
-          );
-
-      final result = await guardedRoute.redirect!(
-        BuildContextFake(),
-        StateFake(),
-      );
-
-      expect(result, '/not-allowed');
-    },
-  );
-
   group('StatefulShellModuleRoute - navigation key', () {
     test('toRoute generates StatefulShellRoute.indexedStack', () {
       final route = StatefulShellModuleRoute(
@@ -188,7 +130,6 @@ void main() {
       final route = StatefulShellModuleRoute(
         key: key,
         parentNavigatorKey: parentKey,
-        restorationScopeId: 'shell-scope',
         builder: (_, _, _) => const Placeholder(),
         routes: [
           ModuleRoute(path: '/', module: _DummyModule()),
@@ -198,7 +139,6 @@ void main() {
 
       expect(route.key, key);
       expect(route.parentNavigatorKey, parentKey);
-      expect(route.restorationScopeId, 'shell-scope');
     });
   });
 }
@@ -250,7 +190,6 @@ final class _GuardedChildModule extends Module {
       path: '/',
       guards: [_BlockGuard()],
       child: (_, _) => const Placeholder(),
-      redirect: (context, state) => '/not-allowed',
     ),
   ];
 }
@@ -258,11 +197,7 @@ final class _GuardedChildModule extends Module {
 final class _GuardedChildModuleWithRealPath extends Module {
   @override
   List<IRoute> routes() => [
-    ChildRoute(
-      path: '/guarded',
-      child: (_, _) => const SizedBox.shrink(),
-      redirect: (context, state) => '/not-allowed',
-    ),
+    ChildRoute(path: '/guarded', child: (_, _) => const SizedBox.shrink()),
   ];
 }
 

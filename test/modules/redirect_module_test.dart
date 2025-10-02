@@ -17,7 +17,7 @@ import '../fakes/fakes.dart';
 
 void main() {
   group('RedirectRoute - basic', () {
-    test('Apply simple redirect', () async {
+    test('apply simple redirect', () async {
       final module = _ModuleWithRedirect();
       final routes = module.configureRoutes();
 
@@ -35,7 +35,7 @@ void main() {
       expect(result, '/new/123');
     });
 
-    test('Does not loop when redirect points to same route', () async {
+    test('does not loop when redirect points to same route', () async {
       final module = _ModuleWithRedirectLoop();
       final routes = module.configureRoutes();
 
@@ -47,7 +47,7 @@ void main() {
   });
 
   group('RedirectRoute - with guards', () {
-    test('Execute guard before redirect', () async {
+    test('execute guard before redirect', () async {
       final module = _ModuleWithGuardedRedirect();
       final routes = module.configureRoutes();
 
@@ -59,7 +59,7 @@ void main() {
   });
 
   group('RedirectRoute - inside ModuleRoute', () {
-    test('ModuleRoute with RedirectRoute works', () async {
+    test('moduleRoute with RedirectRoute works', () async {
       final module = _ParentWithRedirectChild();
       final routes = module.configureRoutes();
 
@@ -74,7 +74,7 @@ void main() {
   });
 
   group('Redirect Route - inside Shell ModuleRoute', () {
-    test('Works as an alias within the shell', () async {
+    test('works as an alias within the shell', () async {
       final module = _ShellWithRedirect();
       final routes = module.configureRoutes();
 
@@ -90,7 +90,7 @@ void main() {
   });
 
   group('Redirect Route - inside Stateful Shell ModuleRoute', () {
-    test('Redirect is applied within branch', () async {
+    test('redirect is applied within branch', () async {
       final module = _StatefulShellWithRedirect();
       final routes = module.configureRoutes();
 

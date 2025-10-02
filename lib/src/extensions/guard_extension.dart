@@ -25,7 +25,6 @@ extension ChildRouteExtensions on ChildRoute {
     name: name,
     child: child,
     onExit: onExit,
-    redirect: redirect,
     transition: transition,
     pageBuilder: pageBuilder,
     parentNavigatorKey: parentNavigatorKey,
@@ -42,7 +41,6 @@ extension ModuleRouteExtensions on ModuleRoute {
   ModuleRoute withInjectedGuards(List<IGuard> inheritedGuards) => ModuleRoute(
     path: path,
     name: name,
-    redirect: redirect,
     parentNavigatorKey: parentNavigatorKey,
     module: GuardModuleDecorator(module: module, guards: inheritedGuards),
   );
@@ -101,12 +99,10 @@ extension ShellModuleRouteExtensions on ShellModuleRoute {
   ShellModuleRoute withInjectedGuards(List<IGuard> inheritedGuards) =>
       ShellModuleRoute(
         builder: builder,
-        redirect: redirect,
         observers: observers,
         pageBuilder: pageBuilder,
         navigatorKey: navigatorKey,
         parentNavigatorKey: parentNavigatorKey,
-        restorationScopeId: restorationScopeId,
         routes: propagateGuards(routes: routes, guards: inheritedGuards),
       );
 }
@@ -139,7 +135,6 @@ extension StatefulShellModuleRouteExtensions on StatefulShellModuleRoute {
       builder: builder,
       routes: injected,
       parentNavigatorKey: parentNavigatorKey,
-      restorationScopeId: restorationScopeId,
     );
   }
 }

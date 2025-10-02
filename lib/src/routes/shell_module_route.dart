@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
@@ -33,9 +31,6 @@ final class ShellModuleRoute implements IRoute {
   /// The list of child modules to be rendered inside the shell.
   final List<IRoute> routes;
 
-  /// Optional ID used for state restoration (Flutter feature).
-  final String? restorationScopeId;
-
   /// Optional navigator observers for tracking navigation events.
   final List<NavigatorObserver>? observers;
 
@@ -44,12 +39,6 @@ final class ShellModuleRoute implements IRoute {
 
   /// The navigator key of the parent (for nested navigator hierarchy).
   final GlobalKey<NavigatorState>? parentNavigatorKey;
-
-  /// Optional redirect logic that runs before the shell is entered.
-  ///
-  /// Return `null` to allow access; return a path string to redirect.
-  final FutureOr<String?> Function(BuildContext context, GoRouterState state)?
-  redirect;
 
   /// Function that wraps the [child] widget with a shell UI (e.g. layout, scaffold).
   ///
@@ -75,13 +64,18 @@ final class ShellModuleRoute implements IRoute {
   const ShellModuleRoute({
     required this.routes,
     required this.builder,
-    this.redirect,
     this.observers,
     this.pageBuilder,
     this.navigatorKey,
     this.parentNavigatorKey,
-    this.restorationScopeId,
   });
+
+  @override
+  int get hashCode =>
+      Object.hashAll(routes) ^
+      Object.hashAll(observers ?? []) ^
+      navigatorKey.hashCode ^
+      parentNavigatorKey.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -91,14 +85,5 @@ final class ShellModuleRoute implements IRoute {
           navigatorKey == other.navigatorKey &&
           listEquals(routes, other.routes) &&
           listEquals(observers, other.observers) &&
-          restorationScopeId == other.restorationScopeId &&
           parentNavigatorKey == other.parentNavigatorKey;
-
-  @override
-  int get hashCode =>
-      Object.hashAll(routes) ^
-      Object.hashAll(observers ?? []) ^
-      navigatorKey.hashCode ^
-      restorationScopeId.hashCode ^
-      parentNavigatorKey.hashCode;
 }

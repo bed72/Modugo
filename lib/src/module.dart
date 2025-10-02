@@ -175,11 +175,7 @@ abstract class Module with IBinder, IRouter {
           if (result != null) return result;
         }
 
-        if (childRoute.redirect == null) return null;
-
-        final path = await childRoute.redirect!(context, state);
-
-        return path != null && path == state.uri.path ? null : path;
+        return null;
       },
       builder: (context, state) {
         try {
@@ -256,9 +252,7 @@ abstract class Module with IBinder, IRouter {
           }
         }
 
-        if (module.redirect == null) return null;
-        final redirect = await module.redirect!(context, state);
-        return redirect == state.uri.path ? null : redirect;
+        return null;
       },
     );
   }
@@ -320,15 +314,9 @@ abstract class Module with IBinder, IRouter {
             observers: route.observers,
             navigatorKey: route.navigatorKey,
             parentNavigatorKey: route.parentNavigatorKey,
-            restorationScopeId: route.restorationScopeId,
             builder:
                 (context, state, child) =>
                     route.builder!(context, state, child),
-            redirect:
-                (context, state) async =>
-                    route.redirect != null
-                        ? await route.redirect!(context, state)
-                        : null,
             pageBuilder:
                 route.pageBuilder != null
                     ? (context, state, child) => _safePageBuilder(

@@ -59,26 +59,6 @@ void main() {
     },
   );
 
-  test('ChildRoute guard has priority over local redirect', () async {
-    final shell = StatefulShellModuleRoute(
-      builder: (context, state, navShell) => const SizedBox(),
-      routes: [
-        _child(
-          '/feed',
-          guards: [_RedirectGuard('/login')],
-          redirect: (context, state) async => '/other',
-        ),
-      ],
-    );
-
-    final route = shell.toRoute(path: '/') as StatefulShellRoute;
-    final branch = route.branches.first;
-    final goRoute = branch.routes.first as GoRoute;
-
-    final result = await goRoute.redirect!(_FakeBuildContext(), _FakeGoState());
-    expect(result, '/login');
-  });
-
   test('ModuleRoute inside StatefulShell inherits guards', () async {
     final module = _FakeModule([_child('/deep')]);
 
@@ -158,13 +138,5 @@ final class _FakeModule extends Module {
   List<IRoute> routes() => _routes;
 }
 
-ChildRoute _child(
-  String path, {
-  List<IGuard> guards = const [],
-  FutureOr<String?> Function(BuildContext, GoRouterState)? redirect,
-}) => ChildRoute(
-  path: path,
-  guards: guards,
-  redirect: redirect,
-  child: (_, _) => const SizedBox(),
-);
+ChildRoute _child(String path, {List<IGuard> guards = const []}) =>
+    ChildRoute(path: path, guards: guards, child: (_, _) => const SizedBox());

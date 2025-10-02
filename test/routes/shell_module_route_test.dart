@@ -19,7 +19,6 @@ void main() {
         navigatorKey: key,
         observers: observers,
         parentNavigatorKey: key,
-        restorationScopeId: 'scope',
         builder: (_, _, _) => const Placeholder(),
       );
 
@@ -28,7 +27,6 @@ void main() {
         navigatorKey: key,
         observers: observers,
         parentNavigatorKey: key,
-        restorationScopeId: 'scope',
         builder: (_, _, _) => const Placeholder(),
       );
 
@@ -72,7 +70,6 @@ void main() {
 
       final route = ShellModuleRoute(
         navigatorKey: shellKey,
-        restorationScopeId: 'shell',
         parentNavigatorKey: parentKey,
         builder: (_, _, child) => Material(child: child),
         routes: [ModuleRoute(path: '/', module: _DummyModule())],
@@ -80,7 +77,6 @@ void main() {
 
       expect(route.routes, hasLength(1));
       expect(route.navigatorKey, shellKey);
-      expect(route.restorationScopeId, 'shell');
       expect(route.parentNavigatorKey, parentKey);
     });
 
@@ -93,22 +89,6 @@ void main() {
 
       final b = ShellModuleRoute(
         navigatorKey: GlobalKey(),
-        routes: [_DummyModuleRoute()],
-        builder: (_, _, _) => const Placeholder(),
-      );
-
-      expect(a, isNot(equals(b)));
-    });
-
-    test('should not be equal when restorationScopeId differs', () {
-      final a = ShellModuleRoute(
-        restorationScopeId: 'scope1',
-        routes: [_DummyModuleRoute()],
-        builder: (_, _, _) => const Placeholder(),
-      );
-
-      final b = ShellModuleRoute(
-        restorationScopeId: 'scope2',
         routes: [_DummyModuleRoute()],
         builder: (_, _, _) => const Placeholder(),
       );
@@ -144,19 +124,15 @@ void main() {
         navigatorKey: navigatorKey,
         parentNavigatorKey: parentKey,
         routes: [_DummyModuleRoute()],
-        restorationScopeId: 'restore-1',
-        redirect: (_, _) async => '/redirect',
         builder: (_, _, _) => const Placeholder(),
         pageBuilder: (_, _, child) => MaterialPage(child: child),
       );
 
       expect(route.routes.length, 1);
-      expect(route.redirect, isNotNull);
       expect(route.observers?.length, 1);
       expect(route.pageBuilder, isNotNull);
       expect(route.navigatorKey, navigatorKey);
       expect(route.parentNavigatorKey, parentKey);
-      expect(route.restorationScopeId, 'restore-1');
     });
 
     test('should handle minimal constructor input', () {
@@ -166,11 +142,9 @@ void main() {
       );
 
       expect(route.observers, isNull);
-      expect(route.redirect, isNull);
       expect(route.pageBuilder, isNull);
       expect(route.navigatorKey, isNull);
       expect(route.parentNavigatorKey, isNull);
-      expect(route.restorationScopeId, isNull);
     });
   });
 }

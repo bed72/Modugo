@@ -1,5 +1,4 @@
 import 'package:flutter/widgets.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/module.dart';
@@ -19,7 +18,6 @@ void main() {
         name: 'produto-module',
         module: _DummyModule(),
         parentNavigatorKey: key,
-        redirect: (context, state) async => '/redirected',
       );
 
       expect(route.path, '/produto');
@@ -67,36 +65,14 @@ void main() {
   });
 
   group('ModuleRoute - field assignment', () {
-    test('should assign all fields correctly with redirect', () {
-      final module = _DummyModule();
-      redirectFn(BuildContext context, GoRouterState state) => '/redirected';
-
-      final route = ModuleRoute(
-        name: 'auth',
-        path: '/auth',
-        module: module,
-        redirect: redirectFn,
-      );
-
-      expect(route.name, 'auth');
-      expect(route.path, '/auth');
-      expect(route.module, module);
-      expect(route.redirect, isNotNull);
-      expect(
-        route.redirect!(_FakeBuildContext(), _FakeGoRouterState()),
-        equals('/redirected'),
-      );
-    });
-
     test('should assign fields correctly without optional values', () {
       final module = _DummyModule();
 
       final route = ModuleRoute(path: '/about', module: module);
 
-      expect(route.path, '/about');
       expect(route.name, isNull);
+      expect(route.path, '/about');
       expect(route.module, module);
-      expect(route.redirect, isNull);
     });
   });
 }
@@ -106,24 +82,4 @@ final class _DummyModule extends Module {
   List<IRoute> routes() => [
     ChildRoute(path: '/', child: (_, _) => const Placeholder()),
   ];
-}
-
-final class _FakeBuildContext extends BuildContext {
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
-final class _FakeGoRouterState extends GoRouterState {
-  _FakeGoRouterState()
-    : super(
-        RouteConfiguration(
-          ValueNotifier(RoutingConfig(routes: [])),
-          navigatorKey: GlobalKey<NavigatorState>(),
-        ),
-        fullPath: '/',
-        uri: Uri.parse('/'),
-        matchedLocation: '/',
-        pathParameters: const {},
-        pageKey: const ValueKey('fake'),
-      );
 }
