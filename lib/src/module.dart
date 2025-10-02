@@ -16,6 +16,7 @@ import 'package:modugo/src/decorators/guard_module_decorator.dart';
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/compiler_route.dart';
+import 'package:modugo/src/routes/redirect_route.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
@@ -130,13 +131,30 @@ abstract class Module with IBinder, IRouter {
           .toList();
 
   List<GoRoute> _createChildRoutes() =>
-      routes()
-          .whereType<ChildRoute>()
-          .map(
-            (route) =>
-                _createChild(effectivePath: route.path!, childRoute: route),
-          )
-          .toList();
+      routes().expand((route) {
+        if (route is ChildRoute) {
+          return [_createChild(effectivePath: route.path!, childRoute: route)];
+        }
+
+        if (route is RedirectRoute) {
+          _validPath(route.path, 'RedirectRoute');
+          return [
+            GoRoute(
+              path: route.path,
+              name: route.name,
+              redirect: (context, state) async {
+                for (final guard in route.guards) {
+                  final result = await guard.call(context, state);
+                  if (result != null) return result;
+                }
+                return await route.redirect(context, state);
+              },
+            ),
+          ];
+        }
+
+        return const <GoRoute>[];
+      }).toList();
 
   GoRoute _createChild({
     required String effectivePath,

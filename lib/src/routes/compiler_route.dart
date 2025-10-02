@@ -55,6 +55,56 @@ final class CompilerRoute {
     _validatePattern(pattern);
   }
 
+  /// The [RegExp] used to match incoming paths against this route.
+  RegExp get regExp => _regExp;
+
+  /// Returns `true` if the given [path] matches this route's compiled [RegExp].
+  ///
+  /// Example:
+  /// ```dart
+  /// CompilerRoute('/user/:id').match('/user/123'); // → true
+  /// ```
+  bool match(String path) => _regExp.hasMatch(path);
+
+  /// Builds a concrete path string by injecting [args] into the pattern.
+  ///
+  /// Throws an [ArgumentError] if a required parameter is missing or
+  /// does not satisfy the expected format.
+  ///
+  /// Example:
+  /// ```dart
+  /// CompilerRoute('/user/:id').build({ 'id': '123' });
+  /// // → '/user/123'
+  /// ```
+  String build(Map<String, String> args) => _builder(args);
+
+  /// The list of parameter names defined in this route pattern.
+  ///
+  /// Example:
+  /// ```dart
+  /// CompilerRoute('/user/:id/:tab').parameters;
+  /// // → ['id', 'tab']
+  /// ```
+  List<String> get parameters => List.unmodifiable(_parameters);
+
+  /// Extracts path parameter values from a given [path], if it matches the pattern.
+  ///
+  /// Returns `null` if the path does not match.
+  ///
+  /// Example:
+  /// ```dart
+  /// CompilerRoute('/user/:id').extract('/user/123');
+  /// // → { 'id': '123' }
+  /// ```
+  Map<String, String>? extract(String path) {
+    // remove query params and fragment
+    final cleanPath = path.split('?').first.split('#').first;
+
+    final match = _regExp.matchAsPrefix(cleanPath);
+    if (match == null) return null;
+    return ex.extract(_parameters, match);
+  }
+
   /// Validates the syntax of the route pattern.
   ///
   /// Ensures that:
@@ -84,54 +134,4 @@ final class CompilerRoute {
       );
     }
   }
-
-  /// Returns `true` if the given [path] matches this route's compiled [RegExp].
-  ///
-  /// Example:
-  /// ```dart
-  /// CompilerRoute('/user/:id').match('/user/123'); // → true
-  /// ```
-  bool match(String path) => _regExp.hasMatch(path);
-
-  /// Extracts path parameter values from a given [path], if it matches the pattern.
-  ///
-  /// Returns `null` if the path does not match.
-  ///
-  /// Example:
-  /// ```dart
-  /// CompilerRoute('/user/:id').extract('/user/123');
-  /// // → { 'id': '123' }
-  /// ```
-  Map<String, String>? extract(String path) {
-    // remove query params and fragment
-    final cleanPath = path.split('?').first.split('#').first;
-
-    final match = _regExp.matchAsPrefix(cleanPath);
-    if (match == null) return null;
-    return ex.extract(_parameters, match);
-  }
-
-  /// Builds a concrete path string by injecting [args] into the pattern.
-  ///
-  /// Throws an [ArgumentError] if a required parameter is missing or
-  /// does not satisfy the expected format.
-  ///
-  /// Example:
-  /// ```dart
-  /// CompilerRoute('/user/:id').build({ 'id': '123' });
-  /// // → '/user/123'
-  /// ```
-  String build(Map<String, String> args) => _builder(args);
-
-  /// The [RegExp] used to match incoming paths against this route.
-  RegExp get regExp => _regExp;
-
-  /// The list of parameter names defined in this route pattern.
-  ///
-  /// Example:
-  /// ```dart
-  /// CompilerRoute('/user/:id/:tab').parameters;
-  /// // → ['id', 'tab']
-  /// ```
-  List<String> get parameters => List.unmodifiable(_parameters);
 }

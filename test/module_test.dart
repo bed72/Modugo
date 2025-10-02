@@ -4,11 +4,13 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/module.dart';
 
+import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/interfaces/route_interface.dart';
 import 'package:modugo/src/interfaces/binder_interface.dart';
 
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
+import 'package:modugo/src/routes/redirect_route.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
@@ -166,12 +168,62 @@ void main() {
       ),
     );
   });
+
+  group('RedirectRoute integration', () {
+    test('creates RedirectRoute and applies redirect', () async {
+      final module = _ModuleWithRedirect();
+      await startModugoFake(module: module);
+
+      final routes = module.configureRoutes();
+      final goRoute = routes.whereType<GoRoute>().firstWhere(
+        (r) => r.path == '/old/:id',
+      );
+
+      final result = await goRoute.redirect!(BuildContextFake(), StateFake());
+
+      expect(result, '/new/home');
+    });
+
+    test('guards can override redirect', () async {
+      final module = _ModuleWithGuardedRedirect();
+      await startModugoFake(module: module);
+
+      final routes = module.configureRoutes();
+      final goRoute = routes.whereType<GoRoute>().first;
+
+      final result = await goRoute.redirect!(BuildContextFake(), StateFake());
+
+      expect(result, '/blocked');
+    });
+
+    test('RedirectRoute equality works', () {
+      final a = RedirectRoute(
+        path: '/alias',
+        name: 'alias',
+        redirect: (_, _) => '/target',
+      );
+      final b = RedirectRoute(
+        path: '/alias',
+        name: 'alias',
+        redirect: (_, _) => '/other',
+      );
+
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+    });
+  });
 }
 
 final class _ModuleInterface implements IRoute {}
 
 final class _ServiceMock {
   int value = 0;
+}
+
+final class _AlwaysRedirectGuard implements IGuard {
+  @override
+  Future<String?> call(BuildContext context, GoRouterState state) async =>
+      '/blocked';
 }
 
 final class _InnerModule extends Module {
@@ -281,6 +333,30 @@ final class _SimpleChildModuleWithRedirect extends Module {
       path: '/',
       child: (_, _) => const Text('Page'),
       redirect: (_, _) => '/child-redirect',
+    ),
+  ];
+}
+
+final class _ModuleWithRedirect extends Module {
+  @override
+  List<IRoute> routes() => [
+    RedirectRoute(
+      path: '/old/:id',
+      redirect: (_, state) {
+        final id = state.uri.pathSegments.last;
+        return '/new/$id';
+      },
+    ),
+  ];
+}
+
+final class _ModuleWithGuardedRedirect extends Module {
+  @override
+  List<IRoute> routes() => [
+    RedirectRoute(
+      path: '/old/:id',
+      redirect: (_, _) => '/new/xxx',
+      guards: [_AlwaysRedirectGuard()],
     ),
   ];
 }

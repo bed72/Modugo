@@ -11,6 +11,8 @@ import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
+import '../fakes/fakes.dart';
+
 void main() {
   group('StatefulShellModuleRoute - equality and hashCode', () {
     test('should be equal when routes and builder match', () {
@@ -71,7 +73,7 @@ void main() {
       final guardedRoute = guardedBranch.routes.whereType<GoRoute>().first;
 
       final redirectFn = guardedRoute.redirect!;
-      final result = await redirectFn(_FakeContext(), _FakeState());
+      final result = await redirectFn(BuildContextFake(), StateFake());
 
       expect(result, '/not-allowed');
     },
@@ -87,7 +89,7 @@ void main() {
 
       final route = shell.branches.first.routes.whereType<GoRoute>().first;
       final redirectFn = route.redirect!;
-      final result = await redirectFn(_FakeContext(), _FakeState());
+      final result = await redirectFn(BuildContextFake(), StateFake());
 
       expect(result, '/denied');
     },
@@ -103,7 +105,7 @@ void main() {
 
       final route = shell.branches.first.routes.whereType<GoRoute>().first;
       final redirectFn = route.redirect!;
-      final result = await redirectFn(_FakeContext(), _FakeState());
+      final result = await redirectFn(BuildContextFake(), StateFake());
 
       expect(result, '/first');
     },
@@ -119,7 +121,10 @@ void main() {
 
       final guardedRoute =
           shell.branches.first.routes.whereType<GoRoute>().first;
-      final result = await guardedRoute.redirect!(_FakeContext(), _FakeState());
+      final result = await guardedRoute.redirect!(
+        BuildContextFake(),
+        StateFake(),
+      );
 
       expect(result, '/not-allowed');
     },
@@ -156,7 +161,10 @@ void main() {
             orElse: () => throw TestFailure('No GoRoute found in first branch'),
           );
 
-      final result = await guardedRoute.redirect!(_FakeContext(), _FakeState());
+      final result = await guardedRoute.redirect!(
+        BuildContextFake(),
+        StateFake(),
+      );
 
       expect(result, '/not-allowed');
     },
@@ -326,24 +334,4 @@ final class _StatefulShellGuardedModuleWithRealPath extends Module {
       ],
     ),
   ];
-}
-
-final class _FakeContext extends BuildContext {
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
-final class _FakeState extends GoRouterState {
-  _FakeState()
-    : super(
-        RouteConfiguration(
-          ValueNotifier(RoutingConfig(routes: [])),
-          navigatorKey: GlobalKey<NavigatorState>(),
-        ),
-        fullPath: '/',
-        uri: Uri.parse('/'),
-        matchedLocation: '/',
-        pathParameters: const {},
-        pageKey: const ValueKey('fake'),
-      );
 }
