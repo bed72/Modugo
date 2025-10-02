@@ -154,7 +154,9 @@ abstract class Module with IBinder, IRouter {
           if (result != null) return result;
         }
 
-        return null;
+        return childRoute.redirect == null
+            ? null
+            : await childRoute.redirect!(context, state);
       },
       builder: (context, state) {
         try {
