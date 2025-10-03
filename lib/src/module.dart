@@ -152,9 +152,11 @@ abstract class Module with IBinder, IRouter {
               if (result != null) return result;
             }
 
-            final target = await route.redirect(context, state);
+            final redirect = await route.redirect(context, state);
 
-            return target != null && target == state.uri.path ? null : target;
+            return redirect != null && redirect == state.uri.path
+                ? null
+                : redirect;
           },
         );
       }).toList();
@@ -205,37 +207,14 @@ abstract class Module with IBinder, IRouter {
     final childRoute =
         module.module.routes().whereType<ChildRoute>().firstOrNull;
 
-    final redirectRoute =
-        module.module.routes().whereType<RedirectRoute>().firstOrNull;
+    if (childRoute != null) _validPath(childRoute.path!, 'ModuleRoute');
 
-    if (childRoute == null && redirectRoute == null) return null;
-
-    if (redirectRoute != null) {
-      _validPath(redirectRoute.path, 'ModuleRoute/RedirectRoute');
-      return GoRoute(
-        path: module.path!,
-        routes: module.module.configureRoutes(),
-        name: module.name?.isNotEmpty == true ? module.name : null,
-        parentNavigatorKey: module.parentNavigatorKey,
-        redirect: (context, state) async {
-          for (final guard in redirectRoute.guards) {
-            final result = await guard.call(context, state);
-            if (result != null) return result;
-          }
-
-          final redirect = await redirectRoute.redirect(context, state);
-          return redirect == state.uri.path ? null : redirect;
-        },
-      );
-    }
-
-    _validPath(childRoute!.path!, 'ModuleRoute');
     return GoRoute(
       path: module.path!,
       routes: module.module.configureRoutes(),
       name: module.name?.isNotEmpty == true ? module.name : null,
       parentNavigatorKey:
-          module.parentNavigatorKey ?? childRoute.parentNavigatorKey,
+          module.parentNavigatorKey ?? childRoute?.parentNavigatorKey,
       builder:
           (context, state) => _buildModuleChild(
             context,
