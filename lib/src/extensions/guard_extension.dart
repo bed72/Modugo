@@ -7,7 +7,6 @@ import 'package:modugo/src/decorators/guard_module_decorator.dart';
 
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
-import 'package:modugo/src/routes/redirect_route.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
@@ -44,51 +43,6 @@ extension ModuleRouteExtensions on ModuleRoute {
     parentNavigatorKey: parentNavigatorKey,
     module: GuardModuleDecorator(module: module, guards: inheritedGuards),
   );
-}
-
-/// Extension methods for [RedirectRoute] to support guard injection.
-///
-/// This is primarily used by [propagateGuards] to automatically apply
-/// parent-level guards to nested [RedirectRoute] instances.
-///
-/// ### Behavior
-/// - Creates a new [RedirectRoute] with the same properties as the original.
-/// - Combines the [inheritedGuards] from the parent with the route's own [guards].
-/// - Guard execution order:
-///   1. Inherited guards (from parent modules or shells)
-///   2. Local guards (declared directly on this route)
-///
-/// ### Example
-/// ```dart
-/// final guardedRedirect = RedirectRoute(
-///   path: '/old/:id',
-///   redirect: (context, state) {
-///     final id = state.pathParameters['id'];
-///     return '/new/$id';
-///   },
-/// );
-///
-/// final propagated = guardedRedirect.withInjectedGuards([AuthGuard()]);
-///
-/// // Now both AuthGuard and the local guards (if any) will run
-/// // before applying the redirect.
-/// ```
-///
-/// This ensures that redirect-only routes respect the same
-/// guard propagation rules as [ChildRoute], [ModuleRoute],
-/// and [ShellModuleRoute].
-extension RedirectRouteExtensions on RedirectRoute {
-  /// Returns a copy of this [RedirectRoute] with additional [inheritedGuards].
-  ///
-  /// The new route has the same [path], [name], and [redirect] callback,
-  /// but its [guards] list is extended to include both existing and inherited guards.
-  RedirectRoute withInjectedGuards(List<IGuard> inheritedGuards) =>
-      RedirectRoute(
-        path: path,
-        name: name,
-        redirect: redirect,
-        guards: [...inheritedGuards, ...guards],
-      );
 }
 
 /// Extension for [ShellModuleRoute] to support guard propagation.

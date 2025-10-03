@@ -20,7 +20,6 @@
   * `ModuleRoute`
   * `ShellModuleRoute`
   * `StatefulShellModuleRoute`
-  * `RedirectRoute`
 * 🔒 [Guards e propagateGuards](#-guards-e-propagateguards)
 * 🛠️ [Injeção de Dependência](#️-injeção-de-dependência)
 * ⏳ [AfterLayoutMixin](#-afterlayoutmixin)
@@ -142,33 +141,6 @@ StatefulShellModuleRoute(
     ModuleRoute(path: '/profile', module: ProfileModule()),
   ],
 )
-```
-
-### 🔹 `RedirectRoute`
-
-Rota para lidar com **aliases** ou **redirecionamentos puros**.
-
-```dart
-RedirectRoute(
-  path: '/old/:id',
-  redirect: (_, state) {
-    final id = state.pathParameters['id'];
-    return '/new/$id';
-  },
-)
-```
-
-✅ Vantagens:
-
-* Não cria widget na pilha.
-* Aplica redirect imediatamente.
-* Elimina loops em rotas alias.
-
-📊 **Diagrama simplificado:**
-
-```mermaid
-graph TD
-  A[/old/:id] -->|Redirect| B[/new/:id]
 ```
 
 ---

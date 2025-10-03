@@ -151,12 +151,6 @@ final class _BlockGuard implements IGuard {
       '/not-allowed';
 }
 
-final class _ChildBlockGuard implements IGuard {
-  @override
-  Future<String?> call(BuildContext context, GoRouterState state) async =>
-      '/denied';
-}
-
 final class _GuardA implements IGuard {
   @override
   Future<String?> call(BuildContext context, GoRouterState state) async =>
@@ -194,24 +188,6 @@ final class _GuardedChildModule extends Module {
   ];
 }
 
-final class _GuardedChildModuleWithRealPath extends Module {
-  @override
-  List<IRoute> routes() => [
-    ChildRoute(path: '/guarded', child: (_, _) => const SizedBox.shrink()),
-  ];
-}
-
-final class _ModuleWithGuardedChild extends Module {
-  @override
-  List<IRoute> routes() => [
-    ChildRoute(
-      path: '/',
-      guards: [_ChildBlockGuard()],
-      child: (_, _) => const Placeholder(),
-    ),
-  ];
-}
-
 final class _ModuleWithMultipleGuards extends Module {
   @override
   List<IRoute> routes() => [
@@ -219,16 +195,6 @@ final class _ModuleWithMultipleGuards extends Module {
       path: '/',
       guards: [_GuardA(), _GuardB()],
       child: (_, _) => const Placeholder(),
-    ),
-  ];
-}
-
-final class _StatefulShellWithChildGuardModule extends Module {
-  @override
-  List<IRoute> routes() => [
-    StatefulShellModuleRoute(
-      builder: (_, _, shell) => shell,
-      routes: [ModuleRoute(path: '/home', module: _ModuleWithGuardedChild())],
     ),
   ];
 }
@@ -251,21 +217,6 @@ final class _StatefulShellGuardedModule extends Module {
       routes: [
         ModuleRoute(path: '/home', module: _GuardedChildModule()),
         ModuleRoute(path: '/profile', module: _SimpleModule()),
-      ],
-    ),
-  ];
-}
-
-final class _StatefulShellGuardedModuleWithRealPath extends Module {
-  @override
-  List<IRoute> routes() => [
-    StatefulShellModuleRoute(
-      builder: (_, _, shell) => shell,
-      routes: [
-        ModuleRoute(
-          path: '/guarded',
-          module: _GuardedChildModuleWithRealPath(),
-        ),
       ],
     ),
   ];
