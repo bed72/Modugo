@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/modugo.dart';
+import 'package:modugo/src/routes/alias_route.dart';
 import 'package:modugo/src/transition.dart';
 
 import 'package:modugo/src/interfaces/router_interface.dart';
@@ -130,13 +131,28 @@ abstract class Module with IBinder, IRouter {
           .toList();
 
   List<GoRoute> _createChildRoutes() =>
-      routes()
-          .whereType<ChildRoute>()
-          .map(
-            (route) =>
-                _createChild(effectivePath: route.path!, childRoute: route),
-          )
-          .toList();
+      routes().expand((route) {
+        if (route is ChildRoute) {
+          return [_createChild(effectivePath: route.path!, childRoute: route)];
+        }
+
+        if (route is AliasRoute) {
+          final detination = routes().whereType<ChildRoute>().firstWhere(
+            (child) => child.path == route.destination,
+            orElse:
+                () =>
+                    throw ArgumentError(
+                      'AliasRoute points to ${route.alias}, but there is no corresponding Child Route.',
+                    ),
+          );
+
+          return [
+            _createChild(childRoute: detination, effectivePath: route.alias),
+          ];
+        }
+
+        return const <GoRoute>[];
+      }).toList();
 
   GoRoute _createChild({
     required String effectivePath,

@@ -20,6 +20,7 @@
   * `ModuleRoute`
   * `ShellModuleRoute`
   * `StatefulShellModuleRoute`
+  * `AliasRoute`
 * 🔒 [Guards e propagateGuards](#-guards-e-propagateguards)
 * 🛠️ [Injeção de Dependência](#️-injeção-de-dependência)
 * ⏳ [AfterLayoutMixin](#-afterlayoutmixin)
@@ -142,6 +143,100 @@ StatefulShellModuleRoute(
   ],
 )
 ```
+
+### 🔹 `AliasRoute`
+
+O `AliasRoute` é um tipo especial de rota que funciona como **um apelido (alias)** para uma `ChildRoute` já existente. Ele resolve o problema de URLs alternativas para a **mesma tela**, sem precisar duplicar lógica ou cair nos loops comuns de `RedirectRoute`.
+
+---
+
+#### 📌 Quando usar?
+
+* Para manter **compatibilidade retroativa** com URLs antigas.
+* Para expor uma mesma tela em **múltiplos caminhos semânticos** (ex: `/cart` e `/order`).
+
+---
+
+#### ✅ Exemplo simples
+
+```dart
+ChildRoute(
+  path: '/order/:id',
+  child: (_, state) => OrderPage(id: state.pathParameters['id']!),
+),
+
+AliasRoute(
+  alias: '/cart/:id',
+  destination: '/order/:id',
+),
+```
+
+➡️ Nesse caso, tanto `/order/123` quanto `/cart/123` vão renderizar a mesma tela `OrderPage`.
+
+---
+
+#### ⚠️ Limitações
+
+1. O `AliasRoute` **só funciona para `ChildRoute`**.
+
+   * Ele não pode apontar para `ModuleRoute` ou `ShellModuleRoute`.
+   * Essa limitação é intencional, pois módulos inteiros ou shells representam estruturas de navegação maiores e complexas.
+
+2. O alias precisa **apontar para uma `ChildRoute` existente dentro do mesmo módulo**.
+
+   * Caso contrário, será lançado um erro em tempo de configuração:
+
+     ```text
+     Alias Route points to /cart/:id, but there is no corresponding Child Route.
+     ```
+
+3. Não há suporte a alias encadeados (ex: um alias apontando para outro alias).
+
+---
+
+#### 🎯 Exemplo prático
+
+```dart
+final class ShopModule extends Module {
+  @override
+  List<IRoute> routes() => [
+    // rota canônica
+    ChildRoute(
+      path: '/product/:id',
+      child: (_, state) => ProductPage(id: state.pathParameters['id']!),
+    ),
+
+    // rota alternativa (alias)
+    AliasRoute(
+      alias: '/item/:id',
+      destination: '/product/:id',
+    ),
+  ];
+}
+```
+
+📊 **Fluxo de matching:**
+
+```mermaid
+graph TD
+  A[/item/42] --> B[AliasRoute /item/:id]
+  B --> C[ChildRoute /product/:id]
+  C --> D[ProductPage]
+```
+
+➡️ O usuário acessa `/item/42`, mas internamente o Modugo entrega o mesmo `ProductPage` de `/product/42`.
+
+---
+
+#### 💡 Vantagens sobre RedirectRoute
+
+* Evita **loops infinitos** comuns em redirecionamentos.
+* Mantém o histórico de navegação intacto (não "teleporta" o usuário para outra URL, apenas resolve a rota).
+
+---
+
+🔒 **Resumo:** Use `AliasRoute` para apelidos de `ChildRoute`. Se precisar de comportamento mais avançado (como autenticação ou lógica condicional), continue usando guards (`IGuard`) ou `ChildRoute` com cuidado.
+
 
 ---
 
