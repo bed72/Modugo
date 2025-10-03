@@ -142,7 +142,7 @@ abstract class Module with IBinder, IRouter {
             orElse:
                 () =>
                     throw ArgumentError(
-                      'AliasRoute points to ${route.alias}, but there is no corresponding Child Route.',
+                      'Alias Route points to ${route.alias}, but there is no corresponding Child Route.',
                     ),
           );
 
