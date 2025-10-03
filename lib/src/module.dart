@@ -138,16 +138,16 @@ abstract class Module with IBinder, IRouter {
 
         if (route is AliasRoute) {
           final detination = routes().whereType<ChildRoute>().firstWhere(
-            (child) => child.path == route.destination,
+            (child) => child.path == route.to,
             orElse:
                 () =>
                     throw ArgumentError(
-                      'Alias Route points to ${route.alias}, but there is no corresponding Child Route.',
+                      'Alias Route points to ${route.from}, but there is no corresponding Child Route.',
                     ),
           );
 
           return [
-            _createChild(childRoute: detination, effectivePath: route.alias),
+            _createChild(childRoute: detination, effectivePath: route.from),
           ];
         }
 

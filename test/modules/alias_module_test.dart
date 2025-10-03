@@ -77,7 +77,7 @@ final class _ModuleWithAlias extends Module {
   @override
   List<IRoute> routes() => [
     ChildRoute(path: '/original', child: (_, _) => const Text('Original')),
-    AliasRoute(alias: '/alias', destination: '/original'),
+    AliasRoute(from: '/alias', to: '/original'),
   ];
 }
 
@@ -85,8 +85,8 @@ final class _ModuleWithMultipleAliases extends Module {
   @override
   List<IRoute> routes() => [
     ChildRoute(path: '/original', child: (_, _) => const Text('Original')),
-    AliasRoute(alias: '/alias1', destination: '/original'),
-    AliasRoute(alias: '/alias2', destination: '/original'),
+    AliasRoute(from: '/alias1', to: '/original'),
+    AliasRoute(from: '/alias2', to: '/original'),
   ];
 }
 
@@ -98,15 +98,13 @@ final class _ModuleWithGuardedAlias extends Module {
       child: (_, _) => const Text('Protected'),
       guards: [_BlockGuard()],
     ),
-    AliasRoute(alias: '/alias', destination: '/protected'),
+    AliasRoute(from: '/alias', to: '/protected'),
   ];
 }
 
 final class _ModuleWithBrokenAlias extends Module {
   @override
-  List<IRoute> routes() => [
-    AliasRoute(alias: '/alias', destination: '/does-not-exist'),
-  ];
+  List<IRoute> routes() => [AliasRoute(from: '/alias', to: '/does-not-exist')];
 }
 
 final class _BlockGuard implements IGuard {

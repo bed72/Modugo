@@ -208,8 +208,8 @@ final class ShopModule extends Module {
 
     // rota alternativa (alias)
     AliasRoute(
-      alias: '/item/:id',
-      destination: '/product/:id',
+      from: '/item/:id',
+      to: '/product/:id',
     ),
   ];
 }
