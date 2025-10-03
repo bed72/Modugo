@@ -149,6 +149,7 @@ abstract class Module with IBinder, IRouter {
         return GoRoute(
           path: route.path,
           name: route.name,
+          pageBuilder: (_, _) => const NoOpPage(),
           redirect: (context, state) async {
             final location = state.uri.path;
 
@@ -438,4 +439,12 @@ abstract class Module with IBinder, IRouter {
 
     Logger.module('${targetBinder.runtimeType} binds registered');
   }
+}
+
+final class NoOpPage extends Page<void> {
+  const NoOpPage() : super(key: const ValueKey('noop'));
+
+  @override
+  Route<void> createRoute(BuildContext context) =>
+      PageRouteBuilder<void>(pageBuilder: (_, _, _) => const SizedBox.shrink());
 }
