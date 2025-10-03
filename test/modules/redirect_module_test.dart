@@ -101,6 +101,75 @@ void main() {
       expect(result, '/tab/new');
     });
   });
+
+  group('RedirectRoute loop prevention', () {
+    test('does not loop when redirect resolves to the same path', () async {
+      final module = _ModuleWithSelfRedirect();
+      final routes = module.configureRoutes();
+
+      final route = routes.whereType<GoRoute>().firstWhere(
+        (r) => r.path == '/cart/:id',
+      );
+
+      final state = StateWithParamsFake(path: '/cart/123');
+      final result = await route.redirect!(BuildContextFake(), state);
+
+      expect(
+        result,
+        isNull,
+        reason: 'Redirect to the same path must return null to avoid loop',
+      );
+    });
+
+    test('redirects to a new valid path when params are extracted', () async {
+      final module = _ModuleWithCartRedirect();
+      final routes = module.configureRoutes();
+
+      final route = routes.whereType<GoRoute>().firstWhere(
+        (r) => r.path == '/cart/:id',
+      );
+
+      final state = StateWithParamsFake(path: '/cart/123');
+      final result = await route.redirect!(BuildContextFake(), state);
+
+      expect(result, '/order/123');
+    });
+
+    test('returns null when redirect params are not matched', () async {
+      final module = _ModuleWithCartRedirect();
+      final routes = module.configureRoutes();
+
+      final route = routes.whereType<GoRoute>().firstWhere(
+        (r) => r.path == '/cart/:id',
+      );
+
+      final state = StateWithParamsFake(path: '/cart');
+      final result = await route.redirect!(BuildContextFake(), state);
+
+      expect(result, isNull);
+    });
+
+    test('multiple RedirectRoutes do not loop each other', () async {
+      final module = _ModuleWithMultipleRedirects();
+      final routes = module.configureRoutes();
+
+      final first = routes.whereType<GoRoute>().firstWhere(
+        (r) => r.path == '/cart/:id',
+      );
+
+      final second = routes.whereType<GoRoute>().firstWhere(
+        (r) => r.path == '/attachments/:id',
+      );
+
+      final state1 = StateWithParamsFake(path: '/cart/123');
+      final result1 = await first.redirect!(BuildContextFake(), state1);
+      expect(result1, '/order/123');
+
+      final state2 = StateWithParamsFake(path: '/attachments/555');
+      final result2 = await second.redirect!(BuildContextFake(), state2);
+      expect(result2, '/preview/555');
+    });
+  });
 }
 
 final class _ModuleWithRedirect extends Module {
@@ -175,4 +244,46 @@ final class AlwaysBlockGuard implements IGuard<String?> {
   @override
   Future<String?> call(BuildContext context, GoRouterState state) async =>
       '/blocked';
+}
+
+final class _ModuleWithSelfRedirect extends Module {
+  @override
+  List<IRoute> routes() => [
+    RedirectRoute(path: '/cart/:id', redirect: (_, state) => state.uri.path),
+  ];
+}
+
+final class _ModuleWithCartRedirect extends Module {
+  @override
+  List<IRoute> routes() => [
+    RedirectRoute(
+      path: '/cart/:id',
+      redirect: (_, state) {
+        final segments = state.uri.pathSegments;
+        if (segments.length < 2) return null;
+        final id = segments.last;
+        return '/order/$id';
+      },
+    ),
+  ];
+}
+
+final class _ModuleWithMultipleRedirects extends Module {
+  @override
+  List<IRoute> routes() => [
+    RedirectRoute(
+      path: '/cart/:id',
+      redirect: (_, state) {
+        final id = state.uri.pathSegments.lastOrNull;
+        return id == null ? null : '/order/$id';
+      },
+    ),
+    RedirectRoute(
+      path: '/attachments/:id',
+      redirect: (_, state) {
+        final id = state.uri.pathSegments.lastOrNull;
+        return id == null ? null : '/preview/$id';
+      },
+    ),
+  ];
 }
