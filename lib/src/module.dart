@@ -146,6 +146,7 @@ abstract class Module with IBinder, IRouter {
         return GoRoute(
           path: route.path,
           name: route.name,
+          pageBuilder: (_, _) => NoOpScreen(),
           redirect: (context, state) async {
             for (final guard in route.guards) {
               final result = await guard.call(context, state);
@@ -395,5 +396,14 @@ abstract class Module with IBinder, IRouter {
     _modulesRegistered.add(targetBinder.runtimeType);
 
     Logger.module('${targetBinder.runtimeType} binds registered');
+  }
+}
+
+final class NoOpScreen extends Page<void> {
+  NoOpScreen() : super(key: ValueKey('noop'));
+
+  @override
+  Route<void> createRoute(BuildContext context) {
+    throw FlutterError('NoOpScreem should never be built');
   }
 }
