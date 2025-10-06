@@ -1,3 +1,7 @@
+## [3.3.2] - 2025-10-06
+
+- Merge pull request #24 from bed72/MODUGO-170A
+
 ## [3.3.1] - 2025-09-26
 
 - Merge pull request #23 from bed72/loader
