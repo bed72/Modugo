@@ -166,8 +166,8 @@ ChildRoute(
 ),
 
 AliasRoute(
-  alias: '/cart/:id',
-  destination: '/order/:id',
+  from: '/cart/:id',
+  to: '/order/:id',
 ),
 ```
 

@@ -12,6 +12,22 @@ import 'package:modugo/src/events/event_channel.dart';
 
 import 'package:modugo/src/models/route_change_event_model.dart';
 
+/// A convenient global accessor for the configured [GoRouter] instance.
+///
+/// This getter simply forwards to [Modugo.routerConfig], providing
+/// a shorter and more readable entry point for navigation setup.
+///
+/// Example:
+/// ```dart
+/// MaterialApp.router(
+///   routerConfig: modugoRouter,
+/// );
+/// ```
+///
+/// It is safe to use **only after** calling [Modugo.configure] in `main()`.
+/// Accessing it before configuration will trigger an assertion error.
+GoRouter get modugoRouter => Modugo.routerConfig;
+
 /// Global key for the main [Navigator] used by Modugo.
 /// This key is used to access the navigator state globally,
 /// allowing for imperative navigation and other operations
