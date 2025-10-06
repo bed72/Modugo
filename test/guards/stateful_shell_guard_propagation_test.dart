@@ -16,6 +16,8 @@ import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
+import '../fakes/fakes.dart';
+
 void main() {
   test('injects parent guards into ChildRoute branch of StatefulShell', () {
     final parentGuards = [_FakeRedirectGuard('/login')];
@@ -82,16 +84,12 @@ void main() {
       var called = false;
 
       final guard = _VoidGuard(() => called = true);
-      await guard(_FakeCtx(), _FakeState());
+      await guard(BuildContextFake(), StateFake());
 
       expect(called, isTrue);
     },
   );
 }
-
-final class _FakeCtx extends Fake implements BuildContext {}
-
-final class _FakeState extends Fake implements GoRouterState {}
 
 final class _FakeAllowGuard implements IGuard<String?> {
   @override

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/modugo.dart';
+import 'package:modugo/src/routes/alias_route.dart';
 import 'package:modugo/src/transition.dart';
 
 import 'package:modugo/src/interfaces/router_interface.dart';
@@ -130,13 +131,28 @@ abstract class Module with IBinder, IRouter {
           .toList();
 
   List<GoRoute> _createChildRoutes() =>
-      routes()
-          .whereType<ChildRoute>()
-          .map(
-            (route) =>
-                _createChild(effectivePath: route.path!, childRoute: route),
-          )
-          .toList();
+      routes().expand((route) {
+        if (route is ChildRoute) {
+          return [_createChild(effectivePath: route.path!, childRoute: route)];
+        }
+
+        if (route is AliasRoute) {
+          final detination = routes().whereType<ChildRoute>().firstWhere(
+            (child) => child.path == route.to,
+            orElse:
+                () =>
+                    throw ArgumentError(
+                      'Alias Route points to ${route.from}, but there is no corresponding Child Route.',
+                    ),
+          );
+
+          return [
+            _createChild(childRoute: detination, effectivePath: route.from),
+          ];
+        }
+
+        return const <GoRoute>[];
+      }).toList();
 
   GoRoute _createChild({
     required String effectivePath,
@@ -154,9 +170,7 @@ abstract class Module with IBinder, IRouter {
           if (result != null) return result;
         }
 
-        return childRoute.redirect != null
-            ? await childRoute.redirect!(context, state)
-            : null;
+        return null;
       },
       builder: (context, state) {
         try {
@@ -189,7 +203,6 @@ abstract class Module with IBinder, IRouter {
     if (childRoute == null) return null;
 
     _validPath(childRoute.path!, 'ModuleRoute');
-
     return GoRoute(
       path: module.path!,
       routes: module.module.configureRoutes(),
@@ -212,14 +225,7 @@ abstract class Module with IBinder, IRouter {
           }
         }
 
-        if (module.redirect != null) {
-          final result = await module.redirect!(context, state);
-          if (result != null) return result;
-        }
-
-        return childRoute.redirect != null
-            ? await childRoute.redirect!(context, state)
-            : null;
+        return null;
       },
     );
   }
@@ -254,15 +260,9 @@ abstract class Module with IBinder, IRouter {
             observers: route.observers,
             navigatorKey: route.navigatorKey,
             parentNavigatorKey: route.parentNavigatorKey,
-            restorationScopeId: route.restorationScopeId,
             builder:
                 (context, state, child) =>
                     route.builder!(context, state, child),
-            redirect:
-                (context, state) async =>
-                    route.redirect != null
-                        ? await route.redirect!(context, state)
-                        : null,
             pageBuilder:
                 route.pageBuilder != null
                     ? (context, state, child) => _safePageBuilder(

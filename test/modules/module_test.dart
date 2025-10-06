@@ -12,7 +12,7 @@ import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
-import 'fakes/fakes.dart';
+import '../fakes/fakes.dart';
 
 void main() {
   group('Module route configuration', () {
@@ -30,7 +30,7 @@ void main() {
   });
 
   group('Module edge cases', () {
-    test('ModuleRoute with no "/" route does not throw', () async {
+    test('moduleRoute with no "/" route does not throw', () async {
       final module = _ModuleWithNoRootChild();
       await startModugoFake(module: module);
       final parent = _ParentModuleWithModuleRoute(child: module);
@@ -99,44 +99,21 @@ void main() {
   });
 
   group('ModuleRoute - guards and redirect precedence', () {
-    test('falls back to ModuleRoute.redirect if all redirect', () async {
-      final module = _SimpleChildModule();
+    test('module.redirect does not force childRoute.redirect', () async {
+      final module = _SimpleChildModuleWithRedirect();
+      final parent = _ParentModuleWithModuleRoute(child: module);
 
-      final guardedRoute = ModuleRoute(
-        module: module,
-        path: '/guarded',
-        redirect: (_, _) => '/fallback',
-      );
+      final route = ModuleRoute(module: module, path: '/guarded');
 
-      final parent = _CustomParentModule([guardedRoute]);
+      parent.routes().clear();
+      parent.routes().add(route);
 
       final routes = parent.configureRoutes();
-      final goRoute = routes.whereType<GoRoute>().firstWhere(
-        (r) => r.path == '/guarded',
-      );
+      final goRoute = routes.whereType<GoRoute>().first;
 
       final result = await goRoute.redirect!(BuildContextFake(), StateFake());
-      expect(result, '/fallback');
+      expect(result, isNull);
     });
-
-    test(
-      'uses ChildRoute.redirect only if redirect and module.redirect allow',
-      () async {
-        final module = _SimpleChildModuleWithRedirect();
-        final parent = _ParentModuleWithModuleRoute(child: module);
-
-        final route = ModuleRoute(module: module, path: '/guarded');
-
-        parent.routes().clear();
-        parent.routes().add(route);
-
-        final routes = parent.configureRoutes();
-        final goRoute = routes.whereType<GoRoute>().first;
-
-        final result = await goRoute.redirect!(BuildContextFake(), StateFake());
-        expect(result, '/child-redirect');
-      },
-    );
 
     test('returns null if guards allow and no redirects are defined', () async {
       final module = _SimpleChildModule();
@@ -155,7 +132,7 @@ void main() {
     });
   });
 
-  test('Module.configureRoutes throws ArgumentError on invalid path', () {
+  test('module.configureRoutes throws ArgumentError on invalid path', () {
     final module = _InvalidPathModule();
 
     expect(
@@ -261,15 +238,6 @@ final class _ParentModuleWithModuleRoute extends Module {
   List<IRoute> routes() => [ModuleRoute(path: '/child', module: child)];
 }
 
-final class _CustomParentModule extends Module {
-  final List<IRoute> customRoutes;
-
-  _CustomParentModule(this.customRoutes);
-
-  @override
-  List<IRoute> routes() => customRoutes;
-}
-
 final class _SimpleChildModule extends Module {
   @override
   List<IRoute> routes() => [
@@ -280,10 +248,6 @@ final class _SimpleChildModule extends Module {
 final class _SimpleChildModuleWithRedirect extends Module {
   @override
   List<IRoute> routes() => [
-    ChildRoute(
-      path: '/',
-      child: (_, _) => const Text('Page'),
-      redirect: (_, _) => '/child-redirect',
-    ),
+    ChildRoute(path: '/', child: (_, _) => const Text('Page')),
   ];
 }

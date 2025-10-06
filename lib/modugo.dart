@@ -18,6 +18,7 @@ export 'src/models/path_token_model.dart';
 export 'src/models/parameter_token_model.dart';
 export 'src/models/route_change_event_model.dart';
 
+export 'src/routes/alias_route.dart';
 export 'src/routes/child_route.dart';
 export 'src/routes/module_route.dart';
 export 'src/routes/compiler_route.dart';

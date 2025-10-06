@@ -1,8 +1,4 @@
-import 'dart:async';
-
 import 'package:flutter/widgets.dart';
-
-import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/interfaces/route_interface.dart';
@@ -16,7 +12,6 @@ import 'package:modugo/src/interfaces/route_interface.dart';
 /// You can also optionally:
 /// - assign a [name] for named navigation
 /// - optional [parentNavigatorKey]
-/// - add a [redirect] function to control access dynamically
 ///
 /// Example:
 /// ```dart
@@ -47,21 +42,20 @@ final class ModuleRoute implements IRoute {
   /// The navigator key of the parent (for nested navigator hierarchy).
   final GlobalKey<NavigatorState>? parentNavigatorKey;
 
-  /// Optional function that redirects the user to another path
-  /// before entering the module.
-  ///
-  /// Returning `null` allows access. Returning a string will redirect to that path.
-  final FutureOr<String?> Function(BuildContext context, GoRouterState state)?
-  redirect;
-
   /// Creates a [ModuleRoute] that links a [path] to a nested [module].
   const ModuleRoute({
     required this.module,
     this.name,
-    this.redirect,
     this.path = '/',
     this.parentNavigatorKey,
   });
+
+  @override
+  int get hashCode =>
+      path.hashCode ^
+      name.hashCode ^
+      module.hashCode ^
+      parentNavigatorKey.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -72,11 +66,4 @@ final class ModuleRoute implements IRoute {
           module == other.module &&
           runtimeType == other.runtimeType &&
           parentNavigatorKey == other.parentNavigatorKey;
-
-  @override
-  int get hashCode =>
-      path.hashCode ^
-      name.hashCode ^
-      module.hashCode ^
-      parentNavigatorKey.hashCode;
 }

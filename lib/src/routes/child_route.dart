@@ -20,7 +20,6 @@ import 'package:modugo/src/interfaces/route_interface.dart';
 /// - transition customization via [transition]
 /// - custom page composition via [pageBuilder]
 /// - exit guards via [onExit]
-/// - dynamic redirection via [redirect]
 ///
 /// Example:
 /// ```dart
@@ -69,12 +68,6 @@ final class ChildRoute implements IRoute {
   final Page<dynamic> Function(BuildContext context, GoRouterState state)?
   pageBuilder;
 
-  /// Optional function that returns a new route path for redirection.
-  ///
-  /// Return `null` to allow the route to continue.
-  final FutureOr<String?> Function(BuildContext context, GoRouterState state)?
-  redirect;
-
   /// Creates a [ChildRoute] with the required [path] and [child] builder.
   ///
   /// Additional behavior like transition, guard, or redirection can be configured via optional parameters.
@@ -82,7 +75,6 @@ final class ChildRoute implements IRoute {
     required this.child,
     this.name,
     this.onExit,
-    this.redirect,
     this.transition,
     this.path = '/',
     this.pageBuilder,

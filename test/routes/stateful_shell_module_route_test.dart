@@ -11,6 +11,8 @@ import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
+import '../fakes/fakes.dart';
+
 void main() {
   group('StatefulShellModuleRoute - equality and hashCode', () {
     test('should be equal when routes and builder match', () {
@@ -60,40 +62,6 @@ void main() {
   });
 
   test(
-    'StatefulShellModuleRoute applies guard redirect from ModuleRoute inside branch',
-    () async {
-      final module = _StatefulShellGuardedModule();
-
-      final routes = module.configureRoutes();
-      final shell = routes.whereType<StatefulShellRoute>().first;
-
-      final guardedBranch = shell.branches.first;
-      final guardedRoute = guardedBranch.routes.whereType<GoRoute>().first;
-
-      final redirectFn = guardedRoute.redirect!;
-      final result = await redirectFn(_FakeContext(), _FakeState());
-
-      expect(result, '/not-allowed');
-    },
-  );
-
-  test(
-    'applies redirect from ChildRoute with guards in StatefulShellModuleRoute',
-    () async {
-      final module = _StatefulShellWithChildGuardModule();
-
-      final routes = module.configureRoutes();
-      final shell = routes.whereType<StatefulShellRoute>().first;
-
-      final route = shell.branches.first.routes.whereType<GoRoute>().first;
-      final redirectFn = route.redirect!;
-      final result = await redirectFn(_FakeContext(), _FakeState());
-
-      expect(result, '/denied');
-    },
-  );
-
-  test(
     'only first guard result is respected in ChildRoute inside StatefulShell',
     () async {
       final module = _StatefulShellWithMultipleGuardsModule();
@@ -103,7 +71,7 @@ void main() {
 
       final route = shell.branches.first.routes.whereType<GoRoute>().first;
       final redirectFn = route.redirect!;
-      final result = await redirectFn(_FakeContext(), _FakeState());
+      final result = await redirectFn(BuildContextFake(), StateFake());
 
       expect(result, '/first');
     },
@@ -119,7 +87,10 @@ void main() {
 
       final guardedRoute =
           shell.branches.first.routes.whereType<GoRoute>().first;
-      final result = await guardedRoute.redirect!(_FakeContext(), _FakeState());
+      final result = await guardedRoute.redirect!(
+        BuildContextFake(),
+        StateFake(),
+      );
 
       expect(result, '/not-allowed');
     },
@@ -141,27 +112,6 @@ void main() {
     expect(a, equals(b));
   });
 
-  test(
-    'StatefulShellModuleRoute applies guard when ModuleRoute path is not "/"',
-    () async {
-      final module = _StatefulShellGuardedModuleWithRealPath();
-
-      final routes = module.configureRoutes();
-      final shell = routes.whereType<StatefulShellRoute>().first;
-
-      final guardedRoute = shell.branches.first.routes
-          .whereType<GoRoute>()
-          .firstWhere(
-            (_) => true,
-            orElse: () => throw TestFailure('No GoRoute found in first branch'),
-          );
-
-      final result = await guardedRoute.redirect!(_FakeContext(), _FakeState());
-
-      expect(result, '/not-allowed');
-    },
-  );
-
   group('StatefulShellModuleRoute - navigation key', () {
     test('toRoute generates StatefulShellRoute.indexedStack', () {
       final route = StatefulShellModuleRoute(
@@ -180,7 +130,6 @@ void main() {
       final route = StatefulShellModuleRoute(
         key: key,
         parentNavigatorKey: parentKey,
-        restorationScopeId: 'shell-scope',
         builder: (_, _, _) => const Placeholder(),
         routes: [
           ModuleRoute(path: '/', module: _DummyModule()),
@@ -190,7 +139,6 @@ void main() {
 
       expect(route.key, key);
       expect(route.parentNavigatorKey, parentKey);
-      expect(route.restorationScopeId, 'shell-scope');
     });
   });
 }
@@ -201,12 +149,6 @@ final class _BlockGuard implements IGuard {
   @override
   Future<String?> call(BuildContext context, GoRouterState state) async =>
       '/not-allowed';
-}
-
-final class _ChildBlockGuard implements IGuard {
-  @override
-  Future<String?> call(BuildContext context, GoRouterState state) async =>
-      '/denied';
 }
 
 final class _GuardA implements IGuard {
@@ -242,29 +184,6 @@ final class _GuardedChildModule extends Module {
       path: '/',
       guards: [_BlockGuard()],
       child: (_, _) => const Placeholder(),
-      redirect: (context, state) => '/not-allowed',
-    ),
-  ];
-}
-
-final class _GuardedChildModuleWithRealPath extends Module {
-  @override
-  List<IRoute> routes() => [
-    ChildRoute(
-      path: '/guarded',
-      child: (_, _) => const SizedBox.shrink(),
-      redirect: (context, state) => '/not-allowed',
-    ),
-  ];
-}
-
-final class _ModuleWithGuardedChild extends Module {
-  @override
-  List<IRoute> routes() => [
-    ChildRoute(
-      path: '/',
-      guards: [_ChildBlockGuard()],
-      child: (_, _) => const Placeholder(),
     ),
   ];
 }
@@ -276,16 +195,6 @@ final class _ModuleWithMultipleGuards extends Module {
       path: '/',
       guards: [_GuardA(), _GuardB()],
       child: (_, _) => const Placeholder(),
-    ),
-  ];
-}
-
-final class _StatefulShellWithChildGuardModule extends Module {
-  @override
-  List<IRoute> routes() => [
-    StatefulShellModuleRoute(
-      builder: (_, _, shell) => shell,
-      routes: [ModuleRoute(path: '/home', module: _ModuleWithGuardedChild())],
     ),
   ];
 }
@@ -311,39 +220,4 @@ final class _StatefulShellGuardedModule extends Module {
       ],
     ),
   ];
-}
-
-final class _StatefulShellGuardedModuleWithRealPath extends Module {
-  @override
-  List<IRoute> routes() => [
-    StatefulShellModuleRoute(
-      builder: (_, _, shell) => shell,
-      routes: [
-        ModuleRoute(
-          path: '/guarded',
-          module: _GuardedChildModuleWithRealPath(),
-        ),
-      ],
-    ),
-  ];
-}
-
-final class _FakeContext extends BuildContext {
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
-final class _FakeState extends GoRouterState {
-  _FakeState()
-    : super(
-        RouteConfiguration(
-          ValueNotifier(RoutingConfig(routes: [])),
-          navigatorKey: GlobalKey<NavigatorState>(),
-        ),
-        fullPath: '/',
-        uri: Uri.parse('/'),
-        matchedLocation: '/',
-        pathParameters: const {},
-        pageKey: const ValueKey('fake'),
-      );
 }

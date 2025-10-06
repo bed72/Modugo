@@ -16,9 +16,26 @@ FutureOr<GoRouter> startModugoFake({
   debugLogDiagnosticsGoRouter: debugLogDiagnostics,
 );
 
+final class BuildContextFake extends Fake implements BuildContext {}
+
 final class StateFake extends Fake implements GoRouterState {
   @override
   Uri get uri => Uri.parse('/home');
 }
 
-final class BuildContextFake extends Fake implements BuildContext {}
+final class StateWithParamsFake extends Fake implements GoRouterState {
+  StateWithParamsFake({
+    required String path,
+    Map<String, String> params = const {},
+  }) : _uri = Uri.parse(path),
+       _params = params;
+
+  final Uri _uri;
+  final Map<String, String> _params;
+
+  @override
+  Uri get uri => _uri;
+
+  @override
+  Map<String, String> get pathParameters => _params;
+}

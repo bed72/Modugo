@@ -20,7 +20,7 @@ import 'package:modugo/src/interfaces/route_interface.dart';
 /// Each branch maintains its own stateful navigation context.
 /// The shell provides:
 /// - a shared [key] for nested navigation
-/// - optional [restorationScopeId], and [parentNavigatorKey]
+/// - optional [parentNavigatorKey]
 ///
 /// Example:
 /// ```dart
@@ -40,9 +40,6 @@ final class StatefulShellModuleRoute implements IRoute {
   ///
   /// Each item represents a separate navigation stack.
   final List<IRoute> routes;
-
-  /// Optional ID used for state restoration (Flutter feature).
-  final String? restorationScopeId;
 
   /// Navigator key used to isolate navigation inside the shell.
   final GlobalKey<StatefulNavigationShellState>? key;
@@ -67,7 +64,6 @@ final class StatefulShellModuleRoute implements IRoute {
     required this.builder,
     this.key,
     this.parentNavigatorKey,
-    this.restorationScopeId,
   });
 
   /// Converts this module into a [RouteBase] for GoRouter.
@@ -109,9 +105,7 @@ final class StatefulShellModuleRoute implements IRoute {
                       if (result != null) return result;
                     }
 
-                    return route.redirect != null
-                        ? await route.redirect!(context, state)
-                        : null;
+                    return null;
                   },
                 ),
               ],
@@ -128,9 +122,15 @@ final class StatefulShellModuleRoute implements IRoute {
       builder: builder,
       branches: branches,
       parentNavigatorKey: parentNavigatorKey,
-      restorationScopeId: restorationScopeId,
     );
   }
+
+  @override
+  int get hashCode =>
+      Object.hashAll(routes) ^
+      builder.hashCode ^
+      key.hashCode ^
+      parentNavigatorKey.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -140,14 +140,5 @@ final class StatefulShellModuleRoute implements IRoute {
           listEquals(routes, other.routes) &&
           runtimeType == other.runtimeType &&
           key == other.key &&
-          restorationScopeId == other.restorationScopeId &&
           parentNavigatorKey == other.parentNavigatorKey;
-
-  @override
-  int get hashCode =>
-      Object.hashAll(routes) ^
-      builder.hashCode ^
-      key.hashCode ^
-      restorationScopeId.hashCode ^
-      parentNavigatorKey.hashCode;
 }

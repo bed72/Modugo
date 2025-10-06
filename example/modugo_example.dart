@@ -79,7 +79,7 @@ final class AppResolver {
   /// - Any singleton async registrations from GetIt/Modugo
   /// - Service initializations (e.g., SharedPreferences, Firebase, RemoteConfig)
   ///
-  /// The returned `Future<List<Future<void>>>` ensures that [ModugoLoaderWidget]
+  /// The returned `Future<void>?` ensures that [ModugoLoaderWidget]
   /// can await all necessary initializations.
   ///
   /// Example usage inside the loader:
