@@ -100,7 +100,7 @@ final class Modugo {
   static FutureOr<GoRouter> configure({
     required Module module,
     Object? initialExtra,
-    int redirectLimit = 5,
+    int redirectLimit = 2,
     bool requestFocus = true,
     String initialRoute = '/',
     String? restorationScopeId,
