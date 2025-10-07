@@ -20,22 +20,6 @@ import 'package:modugo/src/routes/compiler_route.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
-/// A convenient global accessor for the configured [GoRouter] instance.
-///
-/// This getter simply forwards to [Modugo.routerConfig], providing
-/// a shorter and more readable entry point for navigation setup.
-///
-/// Example:
-/// ```dart
-/// MaterialApp.router(
-///   routerConfig: modugoRouter,
-/// );
-/// ```
-///
-/// It is safe to use **only after** calling [Modugo.configure] in `main()`.
-/// Accessing it before configuration will trigger an assertion error.
-GoRouter get modugoRouter => Modugo.routerConfig;
-
 /// A set of module types that have been registered globally,
 /// used to ensure the same module is not bound more than once.
 final Set<Type> _modulesRegistered = {};
