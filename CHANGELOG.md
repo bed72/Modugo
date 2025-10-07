@@ -1,3 +1,7 @@
+## [3.3.3] - 2025-10-07
+
+- :fire: fix module
+
 ## [3.3.2] - 2025-10-06
 
 - Merge pull request #24 from bed72/MODUGO-170A
