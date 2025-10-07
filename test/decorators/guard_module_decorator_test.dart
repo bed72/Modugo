@@ -1,9 +1,10 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:modugo/src/mixins/binder_mixin.dart';
+
 import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/interfaces/route_interface.dart';
-import 'package:modugo/src/interfaces/binder_interface.dart';
 
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/routes/child_route.dart';

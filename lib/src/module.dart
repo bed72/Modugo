@@ -5,14 +5,11 @@ import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/logger.dart';
 
-import 'package:modugo/src/interfaces/router_interface.dart';
-import 'package:modugo/src/interfaces/binder_interface.dart';
+import 'package:modugo/src/mixins/binder_mixin.dart';
+import 'package:modugo/src/mixins/helper_mixin.dart';
+import 'package:modugo/src/mixins/router_mixin.dart';
 
-import 'package:modugo/src/routes/child_route.dart';
-import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/routes_factory.dart';
-import 'package:modugo/src/routes/shell_module_route.dart';
-import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 /// A set of module types that have been registered globally,
 /// used to ensure the same module is not bound more than once.
@@ -23,8 +20,8 @@ final Set<Type> _modulesRegistered = {};
 /// A [Module] defines:
 /// - [imports()]: other modules it depends on. The `binds()` of imported
 ///   modules are executed before the current module's `binds()`.
-/// - [routes()]: the route tree exposed by this module (e.g., [ChildRoute],
-///   [ModuleRoute], [ShellModuleRoute], [StatefulShellModuleRoute]).
+/// - [routes()]: the route tree exposed by this module (e.g., [child],
+///   [module], [shell], [statefulShell]).
 /// - [binds()]: registers the module's dependencies in [GetIt] (via [i]).
 ///
 /// Behavior:
@@ -50,7 +47,7 @@ final Set<Type> _modulesRegistered = {};
 ///
 ///   @override
 ///   List<IRoute> routes() => [
-///     ChildRoute(path: '/', child: (context, state) => const HomePage()),
+///     route(path: '/', child: (context, state) => const HomePage()),
 ///   ];
 ///
 ///   @override
@@ -61,7 +58,7 @@ final Set<Type> _modulesRegistered = {};
 ///   }
 /// }
 /// ```
-abstract class Module with IBinder, IRouter {
+abstract class Module with IBinder, IHelper, IRouter {
   /// Shortcut to access the global GetIt instance used for dependency injection.
   /// Provides direct access to registered services and singletons.
   GetIt get i => GetIt.instance;
@@ -108,18 +105,11 @@ abstract class Module with IBinder, IRouter {
   /// final routes = module.configureRoutes();
   /// ```
   List<RouteBase> configureRoutes() {
-    _configureBinders();
-    return routes().map<RouteBase>(RoutesFactory.from).toList();
-  }
+    final all = routes();
 
-  /// Clears all globally registered modules.
-  ///
-  /// Useful in tests to reset the registration state
-  /// and ensure isolated execution between test cases.
-  static void clearModules() {
-    _modulesRegistered.clear();
-
-    Logger.module('All registered modules cleared');
+    return all
+        .map<RouteBase>((route) => RoutesFactory.from(route, routes: all))
+        .toList();
   }
 
   /// Registers this module and all its imported modules recursively.
@@ -134,7 +124,7 @@ abstract class Module with IBinder, IRouter {
   ///
   /// [binder] Optional module to register explicitly. If `null`, the current
   ///   module (`this`) will be used.
-  void _configureBinders({IBinder? binder}) {
+  void configureBinders({IBinder? binder}) {
     final targetBinder = binder ?? this;
 
     if (_modulesRegistered.contains(targetBinder.runtimeType)) {
@@ -143,7 +133,7 @@ abstract class Module with IBinder, IRouter {
     }
 
     for (final imported in targetBinder.imports()) {
-      _configureBinders(binder: imported);
+      configureBinders(binder: imported);
     }
 
     targetBinder.binds();

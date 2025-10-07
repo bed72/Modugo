@@ -7,9 +7,8 @@ import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/transition.dart';
-
 import 'package:modugo/src/events/event_channel.dart';
-
+import 'package:modugo/src/extensions/module_extension.dart';
 import 'package:modugo/src/models/route_change_event_model.dart';
 
 /// A convenient global accessor for the configured [GoRouter] instance.
@@ -124,7 +123,7 @@ final class Modugo {
     _debugLogDiagnostics = debugLogDiagnostics;
     GoRouter.optionURLReflectsImperativeAPIs = true;
 
-    final routes = module.configureRoutes();
+    final routes = module.resolve();
 
     if (navigatorKey != null) modugoNavigatorKey = navigatorKey;
 

@@ -25,8 +25,8 @@ import 'package:modugo/src/interfaces/route_interface.dart';
 /// ```dart
 /// StatefulShellModuleRoute(
 ///   routes: [
-///     ModuleRoute(path: '/home', module: HomeModule()),
-///     ModuleRoute(path: '/profile', module: ProfileModule()),
+///     module(path: '/home', module: HomeModule()),
+///     module(path: '/profile', module: ProfileModule()),
 ///   ],
 ///   builder: (context, state, shell) {
 ///     return AppScaffold(navigationShell: shell);

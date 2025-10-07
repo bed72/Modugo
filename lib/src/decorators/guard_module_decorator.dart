@@ -5,9 +5,10 @@ import 'package:flutter/foundation.dart';
 import 'package:modugo/src/guard.dart';
 import 'package:modugo/src/module.dart';
 
+import 'package:modugo/src/mixins/binder_mixin.dart';
+
 import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/interfaces/route_interface.dart';
-import 'package:modugo/src/interfaces/binder_interface.dart';
 
 /// A wrapper [Module] that injects a list of [IGuard]s recursively into all routes.
 ///

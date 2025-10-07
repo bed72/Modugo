@@ -6,7 +6,7 @@ import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/transition.dart';
 
 import 'package:modugo/src/interfaces/route_interface.dart';
-
+import 'package:modugo/src/routes/alias_route.dart';
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/compiler_route.dart';
@@ -19,6 +19,7 @@ import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 /// It centralizes the construction logic for:
 /// - [ChildRoute]
 /// - [ModuleRoute]
+/// - [AliasRoute]
 /// - [ShellModuleRoute]
 /// - [StatefulShellModuleRoute]
 ///
@@ -27,7 +28,7 @@ final class RoutesFactory {
   const RoutesFactory._();
 
   /// Builds a [RouteBase] instance from the given [route].
-  static RouteBase from(IRoute route) {
+  static RouteBase from(IRoute route, {List<IRoute>? routes}) {
     switch (route) {
       case ChildRoute():
         return _child(route);
@@ -40,6 +41,9 @@ final class RoutesFactory {
 
       case StatefulShellModuleRoute():
         return _statefulShell(route);
+
+      case AliasRoute():
+        return _alias(route, routes ?? const []);
 
       default:
         throw UnsupportedError('Unsupported route type: $route');
@@ -58,7 +62,6 @@ final class RoutesFactory {
           final value = await guard(context, state);
           if (value != null) return value;
         }
-
         return null;
       },
       builder:
@@ -102,7 +105,6 @@ final class RoutesFactory {
             if (value != null) return value;
           }
         }
-
         return null;
       },
       builder:
@@ -111,6 +113,44 @@ final class RoutesFactory {
             label: 'ModuleRoute',
             build: () => child.child(context, state),
           ),
+    );
+  }
+
+  static GoRoute _alias(AliasRoute alias, List<IRoute> contextRoutes) {
+    final target = contextRoutes.whereType<ChildRoute>().firstWhere(
+      (route) => route.path == alias.to,
+      orElse:
+          () =>
+              throw ArgumentError(
+                'Alias target "${alias.to}" not found for alias "${alias.from}"',
+              ),
+    );
+
+    _validatePath(alias.from, 'AliasRoute');
+
+    return GoRoute(
+      path: alias.from,
+      redirect: (context, state) async {
+        for (final guard in target.guards) {
+          final value = await guard(context, state);
+          if (value != null) return value;
+        }
+        return null;
+      },
+      builder:
+          (context, state) => _safe(
+            state: state,
+            label: 'AliasRouteBuilder',
+            build: () => target.child(context, state),
+          ),
+      pageBuilder:
+          target.pageBuilder == null
+              ? (context, state) => _transition(context, state, target)
+              : (context, state) => _safe(
+                state: state,
+                label: 'AliasRoutePageBuilder',
+                build: () => target.pageBuilder!(context, state),
+              ),
     );
   }
 
@@ -204,7 +244,6 @@ final class RoutesFactory {
       Logger.error(
         'Error building $label for ${state.uri}: $exception\n$condition',
       );
-
       rethrow;
     }
   }
@@ -228,7 +267,6 @@ final class RoutesFactory {
       Logger.navigation('Valid path: ${value.pattern}');
     } catch (exception) {
       Logger.error('Invalid path in $type: $path → $exception');
-
       throw ArgumentError.value(
         path,
         'path',

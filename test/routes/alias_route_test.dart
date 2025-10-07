@@ -51,8 +51,8 @@ void main() {
         (route) => route.path == '/alias',
       );
 
-      final result = await alias.redirect!(BuildContextFake(), StateFake());
-      expect(result, '/blocked');
+      final value = await alias.redirect!(BuildContextFake(), StateFake());
+      expect(value, '/blocked');
     });
 
     test('alias preserves pageBuilder and transition from ChildRoute', () {
