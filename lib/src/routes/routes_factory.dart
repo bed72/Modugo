@@ -28,38 +28,51 @@ import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 final class RoutesFactory {
   const RoutesFactory._();
 
-  /// Builds all [RouteBase]s for the given list of [IRoute]s.
-  ///
-  /// Handles aliases, shells, and nested modules in a single pass.
-  static List<RouteBase> from(List<IRoute> routes) =>
-      routes.expand((route) => _from(route, routes)).toList();
+  static List<RouteBase> from(List<IRoute> routes) {
+    final childs = <GoRoute>[];
+    final modules = <GoRoute>[];
+    final shells = <RouteBase>[];
 
-  /// Builds one or more [RouteBase]s from a single [IRoute].
-  ///
-  /// This allows returning multiple routes (e.g. for alias sets).
-  static List<RouteBase> _from(IRoute route, List<IRoute> routes) {
-    switch (route) {
-      case ChildRoute():
-        return [_child(route)];
+    for (final route in routes) {
+      switch (route) {
+        case ChildRoute():
+          childs.add(_createChild(route));
+          break;
 
-      case ModuleRoute():
-        return [_module(route)];
+        case AliasRoute():
+          final allRoutes = routes.whereType<ChildRoute>().firstWhere(
+            (child) => child.path == route.to,
+            orElse:
+                () =>
+                    throw ArgumentError(
+                      'Alias ​​Route "${route.from}" points to "${route.to}", but there is no corresponding Child Route.',
+                    ),
+          );
+          childs.add(_createAlias(route, allRoutes));
+          break;
 
-      case ShellModuleRoute():
-        return [_shell(route)];
+        case ModuleRoute():
+          final module = _createModule(route);
+          if (module != null) modules.add(module);
+          break;
 
-      case StatefulShellModuleRoute():
-        return [_statefulShell(route)];
+        case ShellModuleRoute():
+          shells.add(_createShell(route));
+          break;
 
-      case AliasRoute():
-        return [_alias(route, routes)];
+        case StatefulShellModuleRoute():
+          shells.add(_createStatefulShell(route));
+          break;
 
-      default:
-        throw UnsupportedError('Unsupported route type: $route');
+        default:
+          throw UnsupportedError('Unsupported route type: $route');
+      }
     }
+
+    return [...shells, ...childs, ...modules];
   }
 
-  static GoRoute _child(ChildRoute route) {
+  static GoRoute _createChild(ChildRoute route) {
     _validatePath(route.path!, 'ChildRoute');
 
     return GoRoute(
@@ -90,16 +103,7 @@ final class RoutesFactory {
     );
   }
 
-  static GoRoute _alias(AliasRoute alias, List<IRoute> contextRoutes) {
-    final target = contextRoutes.whereType<ChildRoute>().firstWhere(
-      (child) => child.path == alias.to,
-      orElse:
-          () =>
-              throw ArgumentError(
-                'AliasRoute "${alias.from}" points to missing target "${alias.to}".',
-              ),
-    );
-
+  static GoRoute _createAlias(AliasRoute alias, ChildRoute target) {
     _validatePath(alias.from, 'AliasRoute');
 
     return GoRoute(
@@ -128,24 +132,22 @@ final class RoutesFactory {
     );
   }
 
-  static GoRoute _module(ModuleRoute route) {
-    final child = route.module.routes().whereType<ChildRoute>().firstOrNull;
+  static GoRoute? _createModule(ModuleRoute route) {
+    final module = route.module;
+    final first = module.routes().whereType<ChildRoute>().firstOrNull;
 
-    if (child == null) {
-      return GoRoute(path: route.path!, builder: (_, __) => const SizedBox());
-    }
+    if (first == null) return null;
 
-    _validatePath(child.path!, 'ModuleRoute');
+    _validatePath(first.path!, 'ModuleRoute');
 
     return GoRoute(
-      path: route.path!,
       name: route.name,
-      routes: route.module.configureRoutes(),
-      parentNavigatorKey: route.parentNavigatorKey ?? child.parentNavigatorKey,
+      path: route.path!,
+      routes: module.configureRoutes(),
+      parentNavigatorKey: route.parentNavigatorKey ?? first.parentNavigatorKey,
       redirect: (context, state) async {
-        if (route.module is GuardModuleDecorator) {
-          final decorator = route.module as GuardModuleDecorator;
-          for (final guard in decorator.guards) {
+        if (module is GuardModuleDecorator) {
+          for (final guard in module.guards) {
             final redirect = await guard(context, state);
             if (redirect != null) return redirect;
           }
@@ -156,13 +158,24 @@ final class RoutesFactory {
           (context, state) => _safe(
             state: state,
             label: 'ModuleRoute',
-            build: () => child.child(context, state),
+            build: () => first.child(context, state),
           ),
     );
   }
 
-  static ShellRoute _shell(ShellModuleRoute route) {
-    final routes = from(route.routes);
+  static ShellRoute _createShell(ShellModuleRoute route) {
+    final routes =
+        route.routes
+            .map(
+              (child) =>
+                  child is ModuleRoute
+                      ? _createModule(child)
+                      : child is ChildRoute
+                      ? _createChild(child)
+                      : null,
+            )
+            .whereType<RouteBase>()
+            .toList();
 
     return ShellRoute(
       routes: routes,
@@ -175,13 +188,15 @@ final class RoutesFactory {
               ? null
               : (context, state, child) => _safe(
                 state: state,
-                label: 'ShellRoute',
+                label: 'ShellRoutePageBuilder',
                 build: () => route.pageBuilder!(context, state, child),
               ),
     );
   }
 
-  static StatefulShellRoute _statefulShell(StatefulShellModuleRoute route) {
+  static StatefulShellRoute _createStatefulShell(
+    StatefulShellModuleRoute route,
+  ) {
     final branches =
         route.routes.asMap().entries.map((entry) {
           final index = entry.key;
@@ -197,7 +212,7 @@ final class RoutesFactory {
           if (child is ChildRoute) {
             return StatefulShellBranch(
               routes: [
-                _child(
+                _createChild(
                   ChildRoute(
                     child: child.child,
                     guards: child.guards,
