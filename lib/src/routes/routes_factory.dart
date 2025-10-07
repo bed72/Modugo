@@ -95,8 +95,8 @@ final class RoutesFactory {
     return GoRoute(
       path: route.path!,
       name: route.name,
+      routes: route.module.resolve(),
       parentNavigatorKey: route.parentNavigatorKey ?? child.parentNavigatorKey,
-      routes: route.module.configureRoutes(),
       redirect: (context, state) async {
         if (route.module is GuardModuleDecorator) {
           final decorator = route.module as GuardModuleDecorator;
@@ -182,8 +182,8 @@ final class RoutesFactory {
 
           if (child is ModuleRoute) {
             return StatefulShellBranch(
+              routes: child.module.resolve(),
               navigatorKey: child.parentNavigatorKey,
-              routes: child.module.configureRoutes(),
             );
           }
 

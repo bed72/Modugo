@@ -107,8 +107,8 @@ mixin IHelper {
   /// module('/auth', AuthModule());
   /// ```
   ModuleRoute module({
+    required String path,
     required Module module,
-    String? path,
     String? name,
     GlobalKey<NavigatorState>? parentNavigatorKey,
   }) => ModuleRoute(

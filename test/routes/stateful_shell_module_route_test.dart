@@ -67,7 +67,7 @@ void main() {
     () async {
       final module = _StatefulShellWithMultipleGuardsModule();
 
-      final routes = module.configureRoutes();
+      final routes = module.resolve();
       final shell = routes.whereType<StatefulShellRoute>().first;
 
       final route = shell.branches.first.routes.whereType<GoRoute>().first;
@@ -83,7 +83,7 @@ void main() {
     () async {
       final module = _StatefulShellGuardedModule();
 
-      final routes = module.configureRoutes();
+      final routes = module.resolve();
       final shell = routes.whereType<StatefulShellRoute>().first;
 
       final guardedRoute =

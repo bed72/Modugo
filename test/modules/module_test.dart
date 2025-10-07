@@ -15,26 +15,26 @@ import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 void main() {
   group('Module - route creation', () {
-    test('configureRoutes returns valid RouteBase list', () {
+    test('resolve returns valid RouteBase list', () {
       final module = _SimpleModule();
-      final routes = module.configureRoutes();
+      final routes = module.resolve();
 
       expect(routes.every((r) => r is RouteBase), isTrue);
       expect(routes.isNotEmpty, isTrue);
     });
 
-    test('configureRoutes handles complex module structures', () {
+    test('resolve handles complex module structures', () {
       final module = _ComplexModule();
-      final routes = module.configureRoutes();
+      final routes = module.resolve();
 
       expect(routes.whereType<ShellRoute>().isNotEmpty, isTrue);
       expect(routes.whereType<StatefulShellRoute>().isNotEmpty, isTrue);
     });
 
-    test('configureRoutes throws ArgumentError for invalid path', () {
+    test('resolve throws ArgumentError for invalid path', () {
       final module = _InvalidPathModule();
 
-      expect(() => module.configureRoutes(), throwsA(isA<ArgumentError>()));
+      expect(() => module.resolve(), throwsA(isA<ArgumentError>()));
     });
   });
 }

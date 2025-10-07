@@ -104,9 +104,10 @@ abstract class Module with IBinder, IHelper, IRouter {
   /// ```dart
   /// final routes = module.configureRoutes();
   /// ```
-  List<RouteBase> configureRoutes() {
-    final all = routes();
+  List<RouteBase> resolve() {
+    _binders();
 
+    final all = routes();
     return all
         .map<RouteBase>((route) => RoutesFactory.from(route, routes: all))
         .toList();
@@ -124,7 +125,7 @@ abstract class Module with IBinder, IHelper, IRouter {
   ///
   /// [binder] Optional module to register explicitly. If `null`, the current
   ///   module (`this`) will be used.
-  void configureBinders({IBinder? binder}) {
+  void _binders({IBinder? binder}) {
     final targetBinder = binder ?? this;
 
     if (_modulesRegistered.contains(targetBinder.runtimeType)) {
@@ -133,7 +134,7 @@ abstract class Module with IBinder, IHelper, IRouter {
     }
 
     for (final imported in targetBinder.imports()) {
-      configureBinders(binder: imported);
+      _binders(binder: imported);
     }
 
     targetBinder.binds();
