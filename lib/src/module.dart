@@ -104,13 +104,10 @@ abstract class Module with IBinder, IHelper, IRouter {
   /// ```dart
   /// final routes = module.configureRoutes();
   /// ```
-  List<RouteBase> resolve() {
-    _binders();
+  List<RouteBase> configureRoutes() {
+    _configureBinders();
 
-    final all = routes();
-    return all
-        .map<RouteBase>((route) => RoutesFactory.from(route, routes: all))
-        .toList();
+    return RoutesFactory.from(routes());
   }
 
   /// Registers this module and all its imported modules recursively.
@@ -125,7 +122,7 @@ abstract class Module with IBinder, IHelper, IRouter {
   ///
   /// [binder] Optional module to register explicitly. If `null`, the current
   ///   module (`this`) will be used.
-  void _binders({IBinder? binder}) {
+  void _configureBinders({IBinder? binder}) {
     final targetBinder = binder ?? this;
 
     if (_modulesRegistered.contains(targetBinder.runtimeType)) {
@@ -134,7 +131,7 @@ abstract class Module with IBinder, IHelper, IRouter {
     }
 
     for (final imported in targetBinder.imports()) {
-      _binders(binder: imported);
+      _configureBinders(binder: imported);
     }
 
     targetBinder.binds();

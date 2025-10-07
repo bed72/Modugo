@@ -14,7 +14,7 @@ void main() {
   group('Module with AliasRoute', () {
     test('creates GoRoute for alias pointing to valid ChildRoute', () {
       final module = _ModuleWithAlias();
-      final routes = module.resolve();
+      final routes = module.configureRoutes();
 
       final alias = routes.whereType<GoRoute>().firstWhere(
         (route) => route.path == '/alias',
@@ -26,7 +26,7 @@ void main() {
 
     test('multiple aliases can point to the same ChildRoute', () {
       final module = _ModuleWithMultipleAliases();
-      final routes = module.resolve();
+      final routes = module.configureRoutes();
 
       final alias1 = routes.whereType<GoRoute>().firstWhere(
         (route) => route.path == '/alias1',
@@ -41,7 +41,7 @@ void main() {
 
     test('alias respects ChildRoute guards', () async {
       final module = _ModuleWithGuardedAlias();
-      final routes = module.resolve();
+      final routes = module.configureRoutes();
 
       final alias = routes.whereType<GoRoute>().firstWhere(
         (route) => route.path == '/alias',
@@ -53,12 +53,12 @@ void main() {
 
     test('throws ArgumentError if alias points to non-existent ChildRoute', () {
       final module = _ModuleWithBrokenAlias();
-      expect(() => module.resolve(), throwsArgumentError);
+      expect(() => module.configureRoutes(), throwsArgumentError);
     });
 
     test('child and alias coexist in routes', () {
       final module = _ModuleWithAlias();
-      final routes = module.resolve();
+      final routes = module.configureRoutes();
 
       final child = routes.whereType<GoRoute>().firstWhere(
         (route) => route.path == '/original',

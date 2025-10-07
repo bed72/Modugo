@@ -16,7 +16,7 @@ void main() {
   group('AliasRoute', () {
     test('creates GoRoute from alias pointing to a ChildRoute', () {
       final module = _AliasModule();
-      final routes = module.resolve();
+      final routes = module.configureRoutes();
 
       final aliasRoute = routes.whereType<GoRoute>().firstWhere(
         (route) => route.path == '/alias',
@@ -28,7 +28,7 @@ void main() {
 
     test('multiple aliases pointing to same ChildRoute', () {
       final module = _MultiAliasModule();
-      final routes = module.resolve();
+      final routes = module.configureRoutes();
 
       final alias1 = routes.whereType<GoRoute>().firstWhere(
         (route) => route.path == '/alias1',
@@ -45,7 +45,7 @@ void main() {
 
     test('alias respects ChildRoute guards', () async {
       final module = _GuardedAliasModule();
-      final routes = module.resolve();
+      final routes = module.configureRoutes();
 
       final alias = routes.whereType<GoRoute>().firstWhere(
         (route) => route.path == '/alias',
@@ -57,7 +57,7 @@ void main() {
 
     test('alias preserves pageBuilder and transition from ChildRoute', () {
       final module = _CustomPageAliasModule();
-      final routes = module.resolve();
+      final routes = module.configureRoutes();
 
       final alias = routes.whereType<GoRoute>().firstWhere(
         (route) => route.path == '/alias',
@@ -69,7 +69,7 @@ void main() {
     test('throws ArgumentError if target ChildRoute does not exist', () {
       final module = _BrokenAliasModule();
 
-      expect(() => module.resolve(), throwsArgumentError);
+      expect(() => module.configureRoutes(), throwsArgumentError);
     });
   });
 }

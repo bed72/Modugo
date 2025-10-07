@@ -17,7 +17,7 @@ void main() {
   group('Module - route creation', () {
     test('resolve returns valid RouteBase list', () {
       final module = _SimpleModule();
-      final routes = module.resolve();
+      final routes = module.configureRoutes();
 
       expect(routes.every((r) => r is RouteBase), isTrue);
       expect(routes.isNotEmpty, isTrue);
@@ -25,7 +25,7 @@ void main() {
 
     test('resolve handles complex module structures', () {
       final module = _ComplexModule();
-      final routes = module.resolve();
+      final routes = module.configureRoutes();
 
       expect(routes.whereType<ShellRoute>().isNotEmpty, isTrue);
       expect(routes.whereType<StatefulShellRoute>().isNotEmpty, isTrue);
@@ -34,7 +34,7 @@ void main() {
     test('resolve throws ArgumentError for invalid path', () {
       final module = _InvalidPathModule();
 
-      expect(() => module.resolve(), throwsA(isA<ArgumentError>()));
+      expect(() => module.configureRoutes(), throwsA(isA<ArgumentError>()));
     });
   });
 }
