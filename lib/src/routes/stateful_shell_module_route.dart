@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/routes/child_route.dart';
-import 'package:modugo/src/routes/module_route.dart';
 
 import 'package:modugo/src/interfaces/route_interface.dart';
 
@@ -66,79 +65,20 @@ final class StatefulShellModuleRoute implements IRoute {
     this.parentNavigatorKey,
   });
 
-  /// Converts this module into a [RouteBase] for GoRouter.
-  ///
-  /// This method configures each branch individually. It supports:
-  /// - [ModuleRoute]: will call `configureRoutes` internally
-  /// - [ChildRoute]: will wrap into a [GoRoute] inside a single-branch shell
-  ///
-  /// Throws:
-  /// - [UnsupportedError] if a route is not a [ModuleRoute] or [ChildRoute].
-  RouteBase toRoute({required String path}) {
-    final branches =
-        routes.asMap().entries.map((entry) {
-          final index = entry.key;
-          final route = entry.value;
-
-          if (route is ModuleRoute) {
-            return StatefulShellBranch(
-              navigatorKey: route.parentNavigatorKey,
-              routes: route.module.configureRoutes(),
-            );
-          }
-
-          if (route is ChildRoute) {
-            return StatefulShellBranch(
-              routes: [
-                GoRoute(
-                  builder: route.child,
-                  name: route.name ?? 'branch_$index',
-                  path: route.path!.isEmpty ? '/' : route.path!,
-                  pageBuilder:
-                      route.pageBuilder != null
-                          ? (context, state) =>
-                              route.pageBuilder!(context, state)
-                          : null,
-                  redirect: (context, state) async {
-                    for (final guard in route.guards) {
-                      final result = await guard(context, state);
-                      if (result != null) return result;
-                    }
-
-                    return null;
-                  },
-                ),
-              ],
-            );
-          }
-
-          throw UnsupportedError(
-            'Unsupported route type in StatefulShellModuleRoute: ${route.runtimeType}',
-          );
-        }).toList();
-
-    return StatefulShellRoute.indexedStack(
-      key: key,
-      builder: builder,
-      branches: branches,
-      parentNavigatorKey: parentNavigatorKey,
-    );
-  }
-
   @override
   int get hashCode =>
       Object.hashAll(routes) ^
-      builder.hashCode ^
       key.hashCode ^
+      builder.hashCode ^
       parentNavigatorKey.hashCode;
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is StatefulShellModuleRoute &&
+          key == other.key &&
           builder == other.builder &&
           listEquals(routes, other.routes) &&
           runtimeType == other.runtimeType &&
-          key == other.key &&
           parentNavigatorKey == other.parentNavigatorKey;
 }

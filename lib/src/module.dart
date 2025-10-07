@@ -1,22 +1,16 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:get_it/get_it.dart';
-import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/logger.dart';
-import 'package:modugo/src/modugo.dart';
-import 'package:modugo/src/routes/alias_route.dart';
-import 'package:modugo/src/transition.dart';
 
 import 'package:modugo/src/interfaces/router_interface.dart';
 import 'package:modugo/src/interfaces/binder_interface.dart';
 
-import 'package:modugo/src/decorators/guard_module_decorator.dart';
-
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
-import 'package:modugo/src/routes/compiler_route.dart';
+import 'package:modugo/src/routes/routes_factory.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
@@ -114,224 +108,18 @@ abstract class Module with IBinder, IRouter {
   /// final routes = module.configureRoutes();
   /// ```
   List<RouteBase> configureRoutes() {
-    _register();
-
-    final childRoutes = _createChildRoutes();
-    final shellRoutes = _createShellRoutes();
-    final moduleRoutes = _createModuleRoutes();
-
-    return [...shellRoutes, ...childRoutes, ...moduleRoutes];
+    _configureBinders();
+    return routes().map<RouteBase>(RoutesFactory.from).toList();
   }
 
-  List<GoRoute> _createModuleRoutes() =>
-      routes()
-          .whereType<ModuleRoute>()
-          .map((module) => _createModule(module: module))
-          .whereType<GoRoute>()
-          .toList();
+  /// Clears all globally registered modules.
+  ///
+  /// Useful in tests to reset the registration state
+  /// and ensure isolated execution between test cases.
+  static void clearModules() {
+    _modulesRegistered.clear();
 
-  List<GoRoute> _createChildRoutes() =>
-      routes().expand((route) {
-        if (route is ChildRoute) {
-          return [_createChild(effectivePath: route.path!, childRoute: route)];
-        }
-
-        if (route is AliasRoute) {
-          final detination = routes().whereType<ChildRoute>().firstWhere(
-            (child) => child.path == route.to,
-            orElse:
-                () =>
-                    throw ArgumentError(
-                      'Alias Route points to ${route.from}, but there is no corresponding Child Route.',
-                    ),
-          );
-
-          return [
-            _createChild(childRoute: detination, effectivePath: route.from),
-          ];
-        }
-
-        return const <GoRoute>[];
-      }).toList();
-
-  GoRoute _createChild({
-    required String effectivePath,
-    required ChildRoute childRoute,
-  }) {
-    _validPath(childRoute.path!, 'ChildRoute');
-
-    return GoRoute(
-      path: effectivePath,
-      name: childRoute.name,
-      parentNavigatorKey: childRoute.parentNavigatorKey,
-      redirect: (context, state) async {
-        for (final guard in childRoute.guards) {
-          final result = await guard.call(context, state);
-          if (result != null) return result;
-        }
-
-        return null;
-      },
-      builder: (context, state) {
-        try {
-          return childRoute.child(context, state);
-        } catch (exception, stack) {
-          Logger.error('Error building route ${state.uri}: $exception\n$stack');
-
-          rethrow;
-        }
-      },
-      pageBuilder:
-          childRoute.pageBuilder != null
-              ? (context, state) => _safePageBuilder(
-                state: state,
-                label: 'child page',
-                build: () => childRoute.pageBuilder!(context, state),
-              )
-              : (context, state) => _buildCustomTransitionPage(
-                context,
-                state: state,
-                route: childRoute,
-              ),
-    );
-  }
-
-  GoRoute? _createModule({required ModuleRoute module}) {
-    final childRoute =
-        module.module.routes().whereType<ChildRoute>().firstOrNull;
-
-    if (childRoute == null) return null;
-
-    _validPath(childRoute.path!, 'ModuleRoute');
-    return GoRoute(
-      path: module.path!,
-      routes: module.module.configureRoutes(),
-      name: module.name?.isNotEmpty == true ? module.name : null,
-      parentNavigatorKey:
-          module.parentNavigatorKey ?? childRoute.parentNavigatorKey,
-      builder:
-          (context, state) => _buildModuleChild(
-            context,
-            state: state,
-            module: module,
-            route: childRoute,
-          ),
-      redirect: (context, state) async {
-        if (module.module is GuardModuleDecorator) {
-          final decorator = module.module as GuardModuleDecorator;
-          for (final guard in decorator.guards) {
-            final result = await guard(context, state);
-            if (result != null) return result;
-          }
-        }
-
-        return null;
-      },
-    );
-  }
-
-  List<RouteBase> _createShellRoutes() {
-    final shellRoutes = <RouteBase>[];
-
-    for (final route in routes()) {
-      if (route is ShellModuleRoute) {
-        final innerRoutes =
-            route.routes
-                .map((routeOrModule) {
-                  if (routeOrModule is ChildRoute) {
-                    _validPath(routeOrModule.path!, 'ShellModuleRoute');
-
-                    return _createChild(
-                      childRoute: routeOrModule,
-                      effectivePath: routeOrModule.path!,
-                    );
-                  }
-
-                  return routeOrModule is ModuleRoute
-                      ? _createModule(module: routeOrModule)
-                      : null;
-                })
-                .whereType<RouteBase>()
-                .toList();
-
-        shellRoutes.add(
-          ShellRoute(
-            routes: innerRoutes,
-            observers: route.observers,
-            navigatorKey: route.navigatorKey,
-            parentNavigatorKey: route.parentNavigatorKey,
-            builder:
-                (context, state, child) =>
-                    route.builder!(context, state, child),
-            pageBuilder:
-                route.pageBuilder != null
-                    ? (context, state, child) => _safePageBuilder(
-                      state: state,
-                      label: 'shell page',
-                      build: () => route.pageBuilder!(context, state, child),
-                    )
-                    : null,
-          ),
-        );
-      }
-
-      if (route is StatefulShellModuleRoute) {
-        shellRoutes.add(route.toRoute(path: '/'));
-      }
-    }
-
-    return shellRoutes;
-  }
-
-  Widget _buildModuleChild(
-    BuildContext context, {
-    required ModuleRoute module,
-    required GoRouterState state,
-    ChildRoute? route,
-  }) => route?.child(context, state) ?? Placeholder();
-
-  Page<void> _buildCustomTransitionPage(
-    BuildContext context, {
-    required ChildRoute route,
-    required GoRouterState state,
-  }) => CustomTransitionPage(
-    key: state.pageKey,
-    child: route.child(context, state),
-    transitionsBuilder: Transition.builder(
-      config: () {},
-      type: route.transition ?? Modugo.getDefaultTransition,
-    ),
-  );
-
-  /// Validates a path for correct syntax using [CompilerRoute].
-  void _validPath(String path, String type) {
-    try {
-      final value = CompilerRoute(path);
-      Logger.navigation('Valid path: ${value.pattern}');
-    } catch (exception) {
-      Logger.error('Invalid path in $type: $path → $exception');
-      throw ArgumentError.value(
-        path,
-        'path',
-        'Invalid path syntax in $type: $exception',
-      );
-    }
-  }
-
-  T _safePageBuilder<T>({
-    required String label,
-    required T Function() build,
-    required GoRouterState state,
-  }) {
-    try {
-      return build();
-    } catch (exception, stack) {
-      Logger.error(
-        'Error building $label for ${state.uri}: $exception\n$stack',
-      );
-
-      rethrow;
-    }
+    Logger.module('All registered modules cleared');
   }
 
   /// Registers this module and all its imported modules recursively.
@@ -346,7 +134,7 @@ abstract class Module with IBinder, IRouter {
   ///
   /// [binder] Optional module to register explicitly. If `null`, the current
   ///   module (`this`) will be used.
-  void _register({IBinder? binder}) {
+  void _configureBinders({IBinder? binder}) {
     final targetBinder = binder ?? this;
 
     if (_modulesRegistered.contains(targetBinder.runtimeType)) {
@@ -355,7 +143,7 @@ abstract class Module with IBinder, IRouter {
     }
 
     for (final imported in targetBinder.imports()) {
-      _register(binder: imported);
+      _configureBinders(binder: imported);
     }
 
     targetBinder.binds();

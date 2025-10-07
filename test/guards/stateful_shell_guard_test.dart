@@ -7,12 +7,14 @@ import 'package:modugo/src/module.dart';
 
 import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/interfaces/route_interface.dart';
-
 import 'package:modugo/src/decorators/guard_module_decorator.dart';
 
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
+import 'package:modugo/src/routes/routes_factory.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
+
+import '../fakes/fakes.dart';
 
 void main() {
   test(
@@ -25,14 +27,12 @@ void main() {
         ],
       );
 
-      final route = shell.toRoute(path: '/') as StatefulShellRoute;
+      final route = RoutesFactory.from(shell) as StatefulShellRoute;
       final branch = route.branches.first;
       final goRoute = branch.routes.first as GoRoute;
 
-      final result = await goRoute.redirect!(
-        _FakeBuildContext(),
-        _FakeGoState(),
-      );
+      final result = await goRoute.redirect!(BuildContextFake(), StateFake());
+
       expect(result, '/login');
     },
   );
@@ -47,14 +47,12 @@ void main() {
         ],
       );
 
-      final route = shell.toRoute(path: '/') as StatefulShellRoute;
+      final route = RoutesFactory.from(shell) as StatefulShellRoute;
       final branch = route.branches.first;
       final goRoute = branch.routes.first as GoRoute;
 
-      final result = await goRoute.redirect!(
-        _FakeBuildContext(),
-        _FakeGoState(),
-      );
+      final result = await goRoute.redirect!(BuildContextFake(), StateFake());
+
       expect(result, isNull);
     },
   );
@@ -75,11 +73,12 @@ void main() {
       ],
     );
 
-    final route = shell.toRoute(path: '/') as StatefulShellRoute;
+    final route = RoutesFactory.from(shell) as StatefulShellRoute;
     final branch = route.branches.first;
     final goRoute = branch.routes.first as GoRoute;
 
-    final result = await goRoute.redirect!(_FakeBuildContext(), _FakeGoState());
+    final result = await goRoute.redirect!(BuildContextFake(), StateFake());
+
     expect(result, '/login');
   });
 
@@ -92,18 +91,18 @@ void main() {
       ],
     );
 
-    final route = shell.toRoute(path: '/') as StatefulShellRoute;
+    final route = RoutesFactory.from(shell) as StatefulShellRoute;
 
     final feedRoute = route.branches[0].routes.first as GoRoute;
     final chatRoute = route.branches[1].routes.first as GoRoute;
 
     final feedResult = await feedRoute.redirect!(
-      _FakeBuildContext(),
-      _FakeGoState(),
+      BuildContextFake(),
+      StateFake(),
     );
     final chatResult = await chatRoute.redirect!(
-      _FakeBuildContext(),
-      _FakeGoState(),
+      BuildContextFake(),
+      StateFake(),
     );
 
     expect(chatResult, isNull);
@@ -111,9 +110,8 @@ void main() {
   });
 }
 
-final class _FakeGoState extends Fake implements GoRouterState {}
-
-final class _FakeBuildContext extends Fake implements BuildContext {}
+ChildRoute _child(String path, {List<IGuard> guards = const []}) =>
+    ChildRoute(path: path, guards: guards, child: (_, _) => const SizedBox());
 
 final class _RedirectGuard implements IGuard<String?> {
   final String redirectTo;
@@ -137,6 +135,3 @@ final class _FakeModule extends Module {
   @override
   List<IRoute> routes() => _routes;
 }
-
-ChildRoute _child(String path, {List<IGuard> guards = const []}) =>
-    ChildRoute(path: path, guards: guards, child: (_, _) => const SizedBox());

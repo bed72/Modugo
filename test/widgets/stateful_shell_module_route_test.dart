@@ -7,6 +7,7 @@ import 'package:modugo/src/interfaces/route_interface.dart';
 
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
+import 'package:modugo/src/routes/routes_factory.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 void main() {
@@ -37,7 +38,7 @@ void main() {
     );
 
     expect(
-      () => shellRoute.toRoute(path: '/'),
+      () => RoutesFactory.from(shellRoute),
       throwsA(isA<UnsupportedError>()),
     );
   });
@@ -97,7 +98,7 @@ void main() {
 
     final router = GoRouter(
       initialLocation: '/',
-      routes: [route.toRoute(path: '')],
+      routes: [RoutesFactory.from(route)],
     );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
@@ -183,7 +184,7 @@ void main() {
     final router = GoRouter(
       initialLocation: '/',
       errorBuilder: (_, _) => const Text('ERRO NA ROTA'),
-      routes: [shellRoute.toRoute(path: '')],
+      routes: [RoutesFactory.from(shellRoute)],
     );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
@@ -221,7 +222,7 @@ void main() {
     final router = GoRouter(
       initialLocation: '/',
       errorBuilder: (_, _) => const Text('ERRO NA ROTA'),
-      routes: [shellRoute.toRoute(path: '')],
+      routes: [RoutesFactory.from(shellRoute)],
     );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
