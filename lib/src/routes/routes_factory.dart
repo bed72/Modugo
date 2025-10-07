@@ -31,15 +31,8 @@ final class RoutesFactory {
   /// Builds all [RouteBase]s for the given list of [IRoute]s.
   ///
   /// Handles aliases, shells, and nested modules in a single pass.
-  static List<RouteBase> from(List<IRoute> routes) {
-    final allRoutes = <RouteBase>[];
-
-    for (final route in routes) {
-      allRoutes.addAll(_from(route, routes));
-    }
-
-    return allRoutes;
-  }
+  static List<RouteBase> from(List<IRoute> routes) =>
+      routes.expand((route) => _from(route, routes)).toList();
 
   /// Builds one or more [RouteBase]s from a single [IRoute].
   ///
