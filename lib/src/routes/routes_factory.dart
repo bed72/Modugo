@@ -46,10 +46,6 @@ final class RoutesFactory {
     }
   }
 
-  // --------------------------
-  // 🧱 Internal builders
-  // --------------------------
-
   static GoRoute _child(ChildRoute route) {
     _validatePath(route.path!, 'ChildRoute');
 
@@ -72,13 +68,13 @@ final class RoutesFactory {
             build: () => route.child(context, state),
           ),
       pageBuilder:
-          route.pageBuilder != null
-              ? (context, state) => _safe(
+          route.pageBuilder == null
+              ? (context, state) => _transition(context, state, route)
+              : (context, state) => _safe(
                 state: state,
                 label: 'ChildRoutePageBuilder',
                 build: () => route.pageBuilder!(context, state),
-              )
-              : (context, state) => _transition(context, state, route),
+              ),
     );
   }
 
@@ -128,13 +124,13 @@ final class RoutesFactory {
       parentNavigatorKey: route.parentNavigatorKey,
       builder: (context, state, child) => route.builder!(context, state, child),
       pageBuilder:
-          route.pageBuilder != null
-              ? (context, state, child) => _safe(
+          route.pageBuilder == null
+              ? null
+              : (context, state, child) => _safe(
                 state: state,
                 label: 'ShellRoute',
                 build: () => route.pageBuilder!(context, state, child),
-              )
-              : null,
+              ),
     );
   }
 
@@ -196,10 +192,6 @@ final class RoutesFactory {
       parentNavigatorKey: route.parentNavigatorKey,
     );
   }
-
-  // --------------------------
-  // 🛠 Helpers
-  // --------------------------
 
   static T _safe<T>({
     required String label,
