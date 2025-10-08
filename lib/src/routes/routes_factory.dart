@@ -408,14 +408,18 @@ final class RoutesFactory {
     BuildContext context,
     GoRouterState state,
     ChildRoute route,
-  ) => CustomTransitionPage(
-    key: state.pageKey,
-    child: route.child(context, state),
-    transitionsBuilder: Transition.builder(
-      config: () {},
-      type: route.transition ?? Modugo.getDefaultTransition,
-    ),
-  );
+  ) {
+    final child = route.child(context, state);
+
+    return CustomTransitionPage(
+      child: child,
+      key: state.pageKey,
+      transitionsBuilder: Transition.builder(
+        config: () {},
+        type: route.transition ?? Modugo.getDefaultTransition,
+      ),
+    );
+  }
 
   static void _validatePath(String path, String type) {
     try {
