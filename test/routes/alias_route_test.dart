@@ -23,7 +23,7 @@ void main() {
       );
 
       expect(aliasRoute.path, '/alias');
-      expect(aliasRoute.builder, isNotNull);
+      expect(aliasRoute.pageBuilder, isNotNull);
     });
 
     test('multiple aliases pointing to same ChildRoute', () {
@@ -39,8 +39,8 @@ void main() {
 
       expect(alias1.path, '/alias1');
       expect(alias2.path, '/alias2');
-      expect(alias1.builder, isNotNull);
-      expect(alias2.builder, isNotNull);
+      expect(alias1.pageBuilder, isNotNull);
+      expect(alias2.pageBuilder, isNotNull);
     });
 
     test('alias respects ChildRoute guards', () async {

@@ -20,8 +20,10 @@ void main() {
         (r) => r.path == '/alias',
       );
 
-      final widget = alias.builder!(BuildContextFake(), StateFake());
-      expect(widget, isA<Text>());
+      final page = alias.pageBuilder!(BuildContextFake(), StateFake());
+
+      expect(page, isA<CustomTransitionPage>());
+      expect((page as CustomTransitionPage).child, isA<Text>());
     });
 
     test('multiple aliases can point to the same ChildRoute', () {
@@ -35,8 +37,8 @@ void main() {
         (r) => r.path == '/alias2',
       );
 
-      expect(alias1.builder, isNotNull);
-      expect(alias2.builder, isNotNull);
+      expect(alias1.pageBuilder, isNotNull);
+      expect(alias2.pageBuilder, isNotNull);
     });
 
     test('alias respects ChildRoute guards', () async {

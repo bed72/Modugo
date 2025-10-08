@@ -79,15 +79,15 @@ void main() {
   });
 
   group('Module bind lifecycle', () {
-    test('registers binds before builder is called', () async {
+    test('registers binds before pageBuilder is called', () async {
       final module = _RootModule();
       await startModugoFake(module: module);
       final routes = module.configureRoutes();
 
       final goRoute = routes.whereType<GoRoute>().first;
-      final widget = goRoute.builder!(BuildContextFake(), StateFake());
+      final page = goRoute.pageBuilder!(BuildContextFake(), StateFake());
 
-      expect(widget, isA<Widget>());
+      expect(page, isA<Page>());
     });
 
     test('configureRoutes returns all route types', () {

@@ -4,6 +4,9 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:modugo/src/logger.dart';
+import 'package:modugo/src/transition.dart';
+
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 
@@ -91,14 +94,9 @@ final class StatefulShellModuleRoute implements IRoute {
             return StatefulShellBranch(
               routes: [
                 GoRoute(
-                  builder: route.child,
                   name: route.name ?? 'branch_$index',
+                  parentNavigatorKey: route.parentNavigatorKey,
                   path: route.path!.isEmpty ? '/' : route.path!,
-                  pageBuilder:
-                      route.pageBuilder != null
-                          ? (context, state) =>
-                              route.pageBuilder!(context, state)
-                          : null,
                   redirect: (context, state) async {
                     for (final guard in route.guards) {
                       final result = await guard(context, state);
@@ -106,6 +104,25 @@ final class StatefulShellModuleRoute implements IRoute {
                     }
 
                     return null;
+                  },
+                  pageBuilder: (context, state) {
+                    try {
+                      return route.pageBuilder != null
+                          ? route.pageBuilder!(context, state)
+                          : CustomTransitionPage(
+                            key: state.pageKey,
+                            child: route.child(context, state),
+                            transitionsBuilder: Transition.builder(
+                              config: () {},
+                              type: route.transition ?? TypeTransition.fade,
+                            ),
+                          );
+                    } catch (exception, stack) {
+                      Logger.error(
+                        'Error building StatefulShell branch (${route.path}): $exception\n$stack',
+                      );
+                      rethrow;
+                    }
                   },
                 ),
               ],

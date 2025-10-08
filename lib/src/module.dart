@@ -172,50 +172,39 @@ abstract class Module with IBinder, IRouter {
 
         return null;
       },
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         try {
-          return childRoute.child(context, state);
-        } catch (exception, stack) {
-          Logger.error('Error building route ${state.uri}: $exception\n$stack');
+          final page =
+              childRoute.pageBuilder != null
+                  ? childRoute.pageBuilder!(context, state)
+                  : _buildCustomTransitionPage(
+                    context,
+                    state: state,
+                    route: childRoute,
+                  );
 
+          return page;
+        } catch (exception, stack) {
+          Logger.error('Error building page ${state.uri}: $exception\n$stack');
           rethrow;
         }
       },
-      pageBuilder:
-          childRoute.pageBuilder != null
-              ? (context, state) => _safePageBuilder(
-                state: state,
-                label: 'child page',
-                build: () => childRoute.pageBuilder!(context, state),
-              )
-              : (context, state) => _buildCustomTransitionPage(
-                context,
-                state: state,
-                route: childRoute,
-              ),
     );
   }
 
   GoRoute? _createModule({required ModuleRoute module}) {
     final childRoute =
         module.module.routes().whereType<ChildRoute>().firstOrNull;
-
     if (childRoute == null) return null;
 
     _validPath(childRoute.path!, 'ModuleRoute');
+
     return GoRoute(
       path: module.path!,
-      routes: module.module.configureRoutes(),
       name: module.name?.isNotEmpty == true ? module.name : null,
+      routes: module.module.configureRoutes(),
       parentNavigatorKey:
           module.parentNavigatorKey ?? childRoute.parentNavigatorKey,
-      builder:
-          (context, state) => _buildModuleChild(
-            context,
-            state: state,
-            module: module,
-            route: childRoute,
-          ),
       redirect: (context, state) async {
         if (module.module is GuardModuleDecorator) {
           final decorator = module.module as GuardModuleDecorator;
@@ -224,8 +213,27 @@ abstract class Module with IBinder, IRouter {
             if (result != null) return result;
           }
         }
-
         return null;
+      },
+      pageBuilder: (context, state) {
+        try {
+          module.module.configureRoutes();
+          final child = childRoute.child(context, state);
+
+          return CustomTransitionPage(
+            child: child,
+            key: state.pageKey,
+            transitionsBuilder: Transition.builder(
+              config: () {},
+              type: childRoute.transition ?? Modugo.getDefaultTransition,
+            ),
+          );
+        } catch (exception, stack) {
+          Logger.error(
+            'Error building ModuleRoute (${module.path!}): $exception\n$stack',
+          );
+          rethrow;
+        }
       },
     );
   }
@@ -237,18 +245,17 @@ abstract class Module with IBinder, IRouter {
       if (route is ShellModuleRoute) {
         final innerRoutes =
             route.routes
-                .map((routeOrModule) {
-                  if (routeOrModule is ChildRoute) {
-                    _validPath(routeOrModule.path!, 'ShellModuleRoute');
-
+                .map((child) {
+                  if (child is ChildRoute) {
+                    _validPath(child.path!, 'ShellModuleRoute');
                     return _createChild(
-                      childRoute: routeOrModule,
-                      effectivePath: routeOrModule.path!,
+                      childRoute: child,
+                      effectivePath: child.path!,
                     );
                   }
 
-                  return routeOrModule is ModuleRoute
-                      ? _createModule(module: routeOrModule)
+                  return child is ModuleRoute
+                      ? _createModule(module: child)
                       : null;
                 })
                 .whereType<RouteBase>()
@@ -260,9 +267,17 @@ abstract class Module with IBinder, IRouter {
             observers: route.observers,
             navigatorKey: route.navigatorKey,
             parentNavigatorKey: route.parentNavigatorKey,
-            builder:
-                (context, state, child) =>
-                    route.builder!(context, state, child),
+            builder: (context, state, child) {
+              try {
+                return route.builder!(context, state, child);
+              } catch (exception, stack) {
+                Logger.error(
+                  'Error building ShellModuleRoute (${route.runtimeType}): $exception\n$stack',
+                );
+                rethrow;
+              }
+            },
+
             pageBuilder:
                 route.pageBuilder != null
                     ? (context, state, child) => _safePageBuilder(
@@ -283,13 +298,6 @@ abstract class Module with IBinder, IRouter {
     return shellRoutes;
   }
 
-  Widget _buildModuleChild(
-    BuildContext context, {
-    required ModuleRoute module,
-    required GoRouterState state,
-    ChildRoute? route,
-  }) => route?.child(context, state) ?? Placeholder();
-
   Page<void> _buildCustomTransitionPage(
     BuildContext context, {
     required ChildRoute route,
@@ -303,7 +311,6 @@ abstract class Module with IBinder, IRouter {
     ),
   );
 
-  /// Validates a path for correct syntax using [CompilerRoute].
   void _validPath(String path, String type) {
     try {
       final value = CompilerRoute(path);
