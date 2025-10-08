@@ -17,19 +17,117 @@ import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/decorators/guard_module_decorator.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
-/// Factory responsible for converting [IRoute] lists into [RouteBase]s for GoRouter.
+/// A centralized factory responsible for building GoRouter-compatible [RouteBase] objects
+/// from Modugo's declarative [IRoute] definitions.
 ///
-/// It centralizes all route creation logic for:
-/// - [ChildRoute]
-/// - [ModuleRoute]
-/// - [AliasRoute]
-/// - [ShellModuleRoute]
-/// - [StatefulShellModuleRoute]
+/// The [RoutesFactory] acts as the bridge between Modugo’s modular route layer and
+/// Flutter’s native navigation system ([GoRouter]). It converts high-level route
+/// declarations such as [ChildRoute], [ModuleRoute], [AliasRoute], [ShellModuleRoute],
+/// and [StatefulShellModuleRoute] into valid [GoRoute] and [ShellRoute] configurations.
 ///
-/// Supports contextual resolution: aliases, nested modules, and shells.
+/// ### 🧩 Responsibilities
+/// - Compiles and validates all modular routes before building the router.
+/// - Applies guards, redirects, and transition animations automatically.
+/// - Handles nested module composition and alias mapping seamlessly.
+/// - Ensures consistency and safety across all route types using [_safe] and [_safeAsync].
+///
+/// ### 🛠️ How It Works
+/// Each type of [IRoute] is transformed using a dedicated builder:
+/// - [_createChild] → Builds a single [GoRoute] from a [ChildRoute].
+/// - [_createAlias] → Creates an alias that redirects to another [ChildRoute].
+/// - [_createModule] → Builds a [GoRoute] that represents an entire [Module].
+/// - [_createShell] → Composes a modular [ShellRoute] for persistent UIs (e.g., bottom bars).
+/// - [_createStatefulShell] → Builds a [StatefulShellRoute] for branch-based navigation.
+///
+/// The resulting [RouteBase] objects are combined into a single list for GoRouter.
+///
+/// ### 🧠 Safety & Error Handling
+/// - All route builders are wrapped in [_safe] or [_safeAsync], ensuring consistent
+///   error logging via [Logger.error] without losing stack traces.
+/// - Paths are validated with [_validatePath] using [CompilerRoute], guaranteeing
+///   syntactic integrity of route patterns.
+/// - When route definitions are invalid or unsupported, the factory throws descriptive
+///   exceptions ([ArgumentError], [StateError], or [UnsupportedError]).
+///
+/// ### 🧭 Example
+/// ```dart
+/// final routes = RoutesFactory.from([
+///   ChildRoute(path: '/home', child: (_, __) => const HomePage()),
+///   ModuleRoute(path: '/auth', module: AuthModule()),
+///   ShellModuleRoute(
+///     builder: (_, __, child) => Scaffold(body: child),
+///     routes: [
+///       ChildRoute(path: '/a', child: (_, __) => const APage()),
+///       ChildRoute(path: '/b', child: (_, __) => const BPage()),
+///     ],
+///   ),
+/// ]);
+///
+/// final router = GoRouter(routes: routes);
+/// ```
+///
+/// ### ⚠️ Notes
+/// - [ModuleRoute] instances must define at least one [ChildRoute].
+/// - Aliases must point to an existing [ChildRoute] within the same context.
+/// - Guards and redirects are executed in order; returning `null` continues navigation.
+///
+/// In short, this class guarantees that every route defined in Modugo’s modular
+/// structure is validated, guarded, and ready for use within Flutter’s [GoRouter].
 final class RoutesFactory {
   const RoutesFactory._();
 
+  /// Converts a list of Modugo [IRoute] definitions into a flattened list of
+  /// GoRouter-compatible [RouteBase] objects.
+  ///
+  /// This is the main entry point of the [RoutesFactory]. It scans each provided
+  /// modular route and delegates the creation process to the correct specialized
+  /// builder based on the route type.
+  ///
+  /// ### 🧩 Responsibilities
+  /// - Iterates through all [IRoute] instances declared in a [Module].
+  /// - Detects the route subtype and calls its corresponding internal builder:
+  ///   - [_createChild] → for [ChildRoute] instances.
+  ///   - [_createAlias] → for [AliasRoute] instances.
+  ///   - [_createModule] → for [ModuleRoute] instances.
+  ///   - [_createShell] → for [ShellModuleRoute] containers.
+  ///   - [_createStatefulShell] → for [StatefulShellModuleRoute] branches.
+  /// - Collects and merges the generated [RouteBase]s into a single ordered list.
+  ///
+  /// ### 🧠 Return Order
+  /// The method enforces a specific ordering to maintain navigation consistency:
+  /// 1. **Shell routes** ([ShellModuleRoute], [StatefulShellModuleRoute])
+  ///    — define structural UI layers or persistent navigation containers.
+  /// 2. **Child routes** ([ChildRoute], [AliasRoute])
+  ///    — represent concrete leaf pages.
+  /// 3. **Module routes** ([ModuleRoute])
+  ///    — represent nested modular route groups.
+  ///
+  /// This ensures that shell-based layouts are registered before leaf or module routes,
+  /// preserving the correct parent-child navigation hierarchy in [GoRouter].
+  ///
+  /// ### ⚠️ Error Handling
+  /// Throws an [UnsupportedError] if the provided [IRoute] type is not recognized
+  /// or supported by the factory.
+  ///
+  /// ### 🧭 Example
+  /// ```dart
+  /// final routes = RoutesFactory.from([
+  ///   ChildRoute(path: '/home', child: (_, __) => const HomePage()),
+  ///   ModuleRoute(path: '/auth', module: AuthModule()),
+  ///   ShellModuleRoute(
+  ///     builder: (_, __, child) => AppShell(child: child),
+  ///     routes: [
+  ///       ChildRoute(path: '/feed', child: (_, __) => const FeedPage()),
+  ///     ],
+  ///   ),
+  /// ]);
+  ///
+  /// final router = GoRouter(routes: routes);
+  /// ```
+  ///
+  /// Returns:
+  /// A single, flattened [List] of [RouteBase] objects ready for
+  /// consumption by [GoRouter].
   static List<RouteBase> from(List<IRoute> routes) {
     final childs = <GoRoute>[];
     final modules = <GoRoute>[];
