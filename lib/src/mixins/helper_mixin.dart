@@ -80,18 +80,18 @@ mixin IHelper {
   /// route('/home', child: (_, _) => const HomePage());
   /// ```
   ChildRoute child({
-    required String path,
     required Widget Function(BuildContext, GoRouterState) child,
     String? name,
+    String? path,
     TypeTransition? transition,
     List<IGuard> guards = const [],
     GlobalKey<NavigatorState>? parentNavigatorKey,
     Page<dynamic> Function(BuildContext, GoRouterState)? pageBuilder,
   }) => ChildRoute(
-    path: path,
     name: name,
     child: child,
     guards: guards,
+    path: path ?? '/',
     transition: transition,
     pageBuilder: pageBuilder,
     parentNavigatorKey: parentNavigatorKey,
@@ -107,14 +107,14 @@ mixin IHelper {
   /// module('/auth', AuthModule());
   /// ```
   ModuleRoute module({
-    required String path,
     required Module module,
     String? name,
+    String? path,
     GlobalKey<NavigatorState>? parentNavigatorKey,
   }) => ModuleRoute(
-    path: path,
     name: name,
     module: module,
+    path: path ?? '/',
     parentNavigatorKey: parentNavigatorKey,
   );
 

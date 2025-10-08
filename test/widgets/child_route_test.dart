@@ -18,8 +18,8 @@ void main() {
       initialLocation: '/home',
       routes: [
         GoRoute(
+          path: childRoute.path,
           name: childRoute.name,
-          path: childRoute.path!,
           builder: childRoute.child,
         ),
       ],

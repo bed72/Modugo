@@ -159,11 +159,11 @@ final class RoutesFactory {
   }
 
   static GoRoute _createChild(ChildRoute route) {
-    _validatePath(route.path!, 'ChildRoute');
+    _validatePath(route.path, 'ChildRoute');
 
     return GoRoute(
+      path: route.path,
       name: route.name,
-      path: route.path!,
       parentNavigatorKey: route.parentNavigatorKey,
       redirect: (context, state) async {
         for (final guard in route.guards) {
@@ -238,11 +238,11 @@ final class RoutesFactory {
       );
     }
 
-    _validatePath(first.path!, 'ModuleRoute');
+    _validatePath(first.path, 'ModuleRoute');
 
     return GoRoute(
+      path: route.path,
       name: route.name,
-      path: route.path!,
       routes: module.configureRoutes(),
       parentNavigatorKey: route.parentNavigatorKey ?? first.parentNavigatorKey,
       redirect: (context, state) async {
@@ -335,8 +335,8 @@ final class RoutesFactory {
                     transition: child.transition,
                     pageBuilder: child.pageBuilder,
                     name: child.name ?? 'branch_$index',
+                    path: child.path.isEmpty ? '/' : child.path,
                     parentNavigatorKey: child.parentNavigatorKey,
-                    path: child.path!.isEmpty ? '/' : child.path!,
                   ),
                 ),
               ],
