@@ -183,17 +183,17 @@ void main() {
       );
     });
 
-    test('safe builder catches errors in build and rethrows', () {
+    test('safe pageBuilder catches errors in build and rethrows', () {
       final route = ChildRoute(
         path: '/',
-        child: (_, _) => throw Exception('Boom'),
+        child: (_, __) => throw Exception('Boom'),
       );
 
       final routes = RoutesFactory.from([route]).first as GoRoute;
 
       expect(
-        () => routes.builder!(BuildContextFake(), StateFake()),
-        throwsException,
+        () => routes.pageBuilder!(BuildContextFake(), StateFake()),
+        throwsA(isA<Exception>()),
       );
     });
 

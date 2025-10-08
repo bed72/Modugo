@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
@@ -167,33 +165,27 @@ final class RoutesFactory {
       name: route.name,
       path: route.path!,
       parentNavigatorKey: route.parentNavigatorKey,
-      redirect:
-          (context, state) async => _safeAsync(
-            label: 'ChildRouteRedirect',
-            state: state,
-            build: () async {
-              for (final guard in route.guards) {
-                final safety = await guard(context, state);
-                if (safety != null) return safety;
-              }
+      redirect: (context, state) async {
+        for (final guard in route.guards) {
+          final safety = await guard(context, state);
+          if (safety != null) return safety;
+        }
 
-              return null;
-            },
-          ),
-      builder:
-          (context, state) => _safe(
-            state: state,
-            label: 'ChildRouteBuilder',
-            build: () => route.child(context, state),
-          ),
-      pageBuilder:
-          route.pageBuilder == null
-              ? (context, state) => _transition(context, state, route)
-              : (context, state) => _safe(
-                state: state,
-                label: 'ChildRoutePageBuilder',
-                build: () => route.pageBuilder!(context, state),
-              ),
+        return null;
+      },
+      pageBuilder: (context, state) {
+        try {
+          return route.pageBuilder != null
+              ? route.pageBuilder!(context, state)
+              : _transition(context, state, route);
+        } catch (exception, stack) {
+          Logger.error(
+            'Error building ChildRoute (${route.path}): $exception\n$stack',
+          );
+
+          rethrow;
+        }
+      },
     );
   }
 
@@ -211,34 +203,27 @@ final class RoutesFactory {
 
     return GoRoute(
       path: alias.from,
-      redirect:
-          (context, state) async => _safeAsync(
-            state: state,
-            label: 'AliasRouteRedirect',
-            build: () async {
-              for (final guard in target.guards) {
-                final safety = await guard(context, state);
-                if (safety != null) return safety;
-              }
+      redirect: (context, state) async {
+        for (final guard in target.guards) {
+          final safety = await guard(context, state);
+          if (safety != null) return safety;
+        }
 
-              return null;
-            },
-          ),
+        return null;
+      },
+      pageBuilder: (context, state) {
+        try {
+          return target.pageBuilder != null
+              ? target.pageBuilder!(context, state)
+              : _transition(context, state, target);
+        } catch (exception, stack) {
+          Logger.error(
+            'Error building AliasRoute (${alias.from}): $exception\n$stack',
+          );
 
-      builder:
-          (context, state) => _safe(
-            state: state,
-            label: 'AliasRouteBuilder',
-            build: () => target.child(context, state),
-          ),
-      pageBuilder:
-          target.pageBuilder == null
-              ? (context, state) => _transition(context, state, target)
-              : (context, state) => _safe(
-                state: state,
-                label: 'AliasRoutePageBuilder',
-                build: () => target.pageBuilder!(context, state),
-              ),
+          rethrow;
+        }
+      },
     );
   }
 
@@ -249,8 +234,7 @@ final class RoutesFactory {
     if (first == null) {
       throw StateError(
         'ModuleRoute "${route.name ?? module.runtimeType}" '
-        'does not define any ChildRoute. Each Module must have at least one ChildRoute '
-        'to determine its initial builder.',
+        'must contain at least one ChildRoute.',
       );
     }
 
@@ -261,41 +245,47 @@ final class RoutesFactory {
       path: route.path!,
       routes: module.configureRoutes(),
       parentNavigatorKey: route.parentNavigatorKey ?? first.parentNavigatorKey,
-      redirect:
-          (context, state) async => _safeAsync(
-            state: state,
-            label: 'ModuleRouteRedirect',
-            build: () async {
-              if (module is GuardModuleDecorator) {
-                for (final guard in module.guards) {
-                  final safety = await guard(context, state);
-                  if (safety != null) return safety;
-                }
-              }
+      redirect: (context, state) async {
+        if (module is GuardModuleDecorator) {
+          for (final guard in module.guards) {
+            final safety = await guard(context, state);
+            if (safety != null) return safety;
+          }
+        }
 
-              return null;
-            },
-          ),
-      builder:
-          (context, state) => _safe(
-            state: state,
-            label: 'ModuleRoute',
-            build: () => first.child(context, state),
-          ),
+        return null;
+      },
+      pageBuilder: (context, state) {
+        try {
+          final child = first.child(context, state);
+
+          return CustomTransitionPage(
+            child: child,
+            key: state.pageKey,
+            transitionsBuilder: Transition.builder(
+              config: () {},
+              type: first.transition ?? Modugo.getDefaultTransition,
+            ),
+          );
+        } catch (exception, stack) {
+          Logger.error(
+            'Error building ModuleRoute (${route.path}): $exception\n$stack',
+          );
+
+          rethrow;
+        }
+      },
     );
   }
 
   static ShellRoute _createShell(ShellModuleRoute route) {
     final routes =
         route.routes
-            .map(
-              (child) =>
-                  child is ModuleRoute
-                      ? _createModule(child)
-                      : child is ChildRoute
-                      ? _createChild(child)
-                      : null,
-            )
+            .map((iRoute) {
+              if (iRoute is ChildRoute) return _createChild(iRoute);
+              if (iRoute is ModuleRoute) return _createModule(iRoute);
+              return null;
+            })
             .whereType<RouteBase>()
             .toList();
 
@@ -304,20 +294,19 @@ final class RoutesFactory {
       observers: route.observers,
       navigatorKey: route.navigatorKey,
       parentNavigatorKey: route.parentNavigatorKey,
-      builder:
-          (context, state, child) => _safe(
-            state: state,
-            label: 'ShellRouteBuilder',
-            build: () => route.builder!(context, state, child),
-          ),
+      builder: (context, state, child) {
+        try {
+          return route.builder!(context, state, child);
+        } catch (exception, stack) {
+          Logger.error('Error building ShellModuleRoute: $exception\n$stack');
+          rethrow;
+        }
+      },
       pageBuilder:
           route.pageBuilder == null
               ? null
-              : (context, state, child) => _safe(
-                state: state,
-                label: 'ShellRoutePageBuilder',
-                build: () => route.pageBuilder!(context, state, child),
-              ),
+              : (context, state, child) =>
+                  route.pageBuilder!(context, state, child),
     );
   }
 
@@ -379,22 +368,6 @@ final class RoutesFactory {
   }) {
     try {
       return build();
-    } catch (exception, stack) {
-      Logger.error(
-        'Error building $label for ${state.uri}: $exception\n$stack',
-      );
-
-      rethrow;
-    }
-  }
-
-  static FutureOr<T> _safeAsync<T>({
-    required String label,
-    required GoRouterState state,
-    required FutureOr<T> Function() build,
-  }) async {
-    try {
-      return await build();
     } catch (exception, stack) {
       Logger.error(
         'Error building $label for ${state.uri}: $exception\n$stack',
