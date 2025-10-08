@@ -173,24 +173,16 @@ final class RoutesFactory {
 
         return null;
       },
-      pageBuilder: (context, state) {
-        try {
-          return route.pageBuilder != null
-              ? route.pageBuilder!(context, state)
-              : _transition(context, state, route);
-        } catch (exception, stack) {
-          Logger.error(
-            'Error building ChildRoute (${route.path}): $exception\n$stack',
-          );
-
-          rethrow;
-        }
-      },
+      pageBuilder:
+          (context, state) =>
+              route.pageBuilder != null
+                  ? route.pageBuilder!(context, state)
+                  : _transition(context: context, state: state, route: route),
     );
   }
 
   static GoRoute _createAlias(AliasRoute alias, List<IRoute> routes) {
-    final target = routes.whereType<ChildRoute>().firstWhere(
+    final route = routes.whereType<ChildRoute>().firstWhere(
       (child) => child.path == alias.to,
       orElse:
           () =>
@@ -204,26 +196,18 @@ final class RoutesFactory {
     return GoRoute(
       path: alias.from,
       redirect: (context, state) async {
-        for (final guard in target.guards) {
+        for (final guard in route.guards) {
           final safety = await guard(context, state);
           if (safety != null) return safety;
         }
 
         return null;
       },
-      pageBuilder: (context, state) {
-        try {
-          return target.pageBuilder != null
-              ? target.pageBuilder!(context, state)
-              : _transition(context, state, target);
-        } catch (exception, stack) {
-          Logger.error(
-            'Error building AliasRoute (${alias.from}): $exception\n$stack',
-          );
-
-          rethrow;
-        }
-      },
+      pageBuilder:
+          (context, state) =>
+              route.pageBuilder != null
+                  ? route.pageBuilder!(context, state)
+                  : _transition(context: context, state: state, route: route),
     );
   }
 
@@ -257,16 +241,9 @@ final class RoutesFactory {
       },
       pageBuilder: (context, state) {
         try {
-          final child = first.child(context, state);
+          final widget = first.child(context, state);
 
-          return CustomTransitionPage(
-            child: child,
-            key: state.pageKey,
-            transitionsBuilder: Transition.builder(
-              config: () {},
-              type: first.transition ?? Modugo.getDefaultTransition,
-            ),
-          );
+          return _transition(context: context, state: state, widget: widget);
         } catch (exception, stack) {
           Logger.error(
             'Error building ModuleRoute (${route.path}): $exception\n$stack',
@@ -352,45 +329,18 @@ final class RoutesFactory {
       key: route.key,
       branches: branches,
       parentNavigatorKey: route.parentNavigatorKey,
-      builder:
-          (context, state, shell) => _safe(
-            state: state,
-            label: 'StatefulShellRouteBuilder',
-            build: () => route.builder(context, state, shell),
-          ),
-    );
-  }
+      pageBuilder: (context, state, shell) {
+        try {
+          final widget = route.builder(context, state, shell);
 
-  static T _safe<T>({
-    required String label,
-    required T Function() build,
-    required GoRouterState state,
-  }) {
-    try {
-      return build();
-    } catch (exception, stack) {
-      Logger.error(
-        'Error building $label for ${state.uri}: $exception\n$stack',
-      );
-
-      rethrow;
-    }
-  }
-
-  static Page<void> _transition(
-    BuildContext context,
-    GoRouterState state,
-    ChildRoute route,
-  ) {
-    final child = route.child(context, state);
-
-    return CustomTransitionPage(
-      child: child,
-      key: state.pageKey,
-      transitionsBuilder: Transition.builder(
-        config: () {},
-        type: route.transition ?? Modugo.getDefaultTransition,
-      ),
+          return _transition(context: context, state: state, widget: widget);
+        } catch (exception, stack) {
+          Logger.error(
+            'Error building StatefulShellModuleRoute (${route.runtimeType}): $exception\n$stack',
+          );
+          rethrow;
+        }
+      },
     );
   }
 
@@ -406,5 +356,38 @@ final class RoutesFactory {
         'Invalid syntax in $type: $exception',
       );
     }
+  }
+
+  static Page<void> _transition({
+    required BuildContext context,
+    required GoRouterState state,
+    Widget? widget,
+    ChildRoute? route,
+  }) {
+    final child = widget ?? route?.child(context, state);
+
+    if (child == null) {
+      final name = route?.name ?? 'UnknownRoute';
+      final path = route?.path ?? state.uri.toString();
+      final message = '''
+        [RoutesFactory] Failed to build transition page.
+        Path: "$path"
+        Route: "$name"
+        Both the provided [widget] and [route.child] returned null.
+        Ensure that the route defines a valid builder or child widget.
+      ''';
+
+      Logger.error(message);
+      throw StateError(message);
+    }
+
+    return CustomTransitionPage(
+      key: state.pageKey,
+      child: child,
+      transitionsBuilder: Transition.builder(
+        config: () {},
+        type: route?.transition ?? Modugo.getDefaultTransition,
+      ),
+    );
   }
 }
