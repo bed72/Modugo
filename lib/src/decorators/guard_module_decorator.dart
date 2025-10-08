@@ -33,12 +33,12 @@ final class GuardModuleDecorator extends Module {
   @override
   List<IBinder> imports() => _module.imports();
 
-  @override
-  List<IRoute> routes() =>
-      propagateGuards(guards: _guards, routes: _module.routes());
-
   /// Overrides [runtimeType] returning the decorated [Module.runtimeType]
   /// This allows us to execute [Module.binds] for each decorated [Module]
   @override
   Type get runtimeType => _module.runtimeType;
+
+  @override
+  List<IRoute> routes() =>
+      propagateGuards(guards: _guards, routes: _module.routes());
 }

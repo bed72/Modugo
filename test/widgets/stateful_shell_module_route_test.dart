@@ -38,7 +38,7 @@ void main() {
     );
 
     expect(
-      () => RoutesFactory.from(shellRoute),
+      () => RoutesFactory.from([shellRoute]),
       throwsA(isA<UnsupportedError>()),
     );
   });
@@ -96,10 +96,7 @@ void main() {
       ],
     );
 
-    final router = GoRouter(
-      initialLocation: '/',
-      routes: [RoutesFactory.from(route)],
-    );
+    final router = GoRouter(initialLocation: '/', routes: [routeOf(route)]);
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
     await tester.pumpAndSettle();
@@ -184,7 +181,7 @@ void main() {
     final router = GoRouter(
       initialLocation: '/',
       errorBuilder: (_, _) => const Text('ERRO NA ROTA'),
-      routes: [RoutesFactory.from(shellRoute)],
+      routes: [routeOf(shellRoute)],
     );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
@@ -222,7 +219,7 @@ void main() {
     final router = GoRouter(
       initialLocation: '/',
       errorBuilder: (_, _) => const Text('ERRO NA ROTA'),
-      routes: [RoutesFactory.from(shellRoute)],
+      routes: [routeOf(shellRoute)],
     );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
@@ -237,9 +234,23 @@ void main() {
     expect(find.text('Shell UI'), findsOneWidget);
     expect(find.text('Inner Page'), findsOneWidget);
   });
+
+  testWidgets('RoutesFactory generates StatefulShellRoute.indexedStack', (
+    tester,
+  ) async {
+    final route = StatefulShellModuleRoute(
+      builder: (_, _, _) => const Placeholder(),
+      routes: [ModuleRoute(path: '/', module: _DummyModule())],
+    );
+
+    final result = routeOf(route);
+    expect(result, isA<StatefulShellRoute>());
+  });
 }
 
 final class _UnsupportedRoute implements IRoute {}
+
+RouteBase routeOf(IRoute route) => RoutesFactory.from([route]).first;
 
 final class _DummyModule extends Module {
   @override

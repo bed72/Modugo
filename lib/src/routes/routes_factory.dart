@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
@@ -37,35 +39,23 @@ final class RoutesFactory {
       switch (route) {
         case ChildRoute():
           childs.add(_createChild(route));
-          break;
 
         case AliasRoute():
-          final allRoutes = routes.whereType<ChildRoute>().firstWhere(
-            (child) => child.path == route.to,
-            orElse:
-                () =>
-                    throw ArgumentError(
-                      'Alias ​​Route "${route.from}" points to "${route.to}", but there is no corresponding Child Route.',
-                    ),
-          );
-          childs.add(_createAlias(route, allRoutes));
-          break;
+          childs.add(_createAlias(route, routes));
 
         case ModuleRoute():
-          final module = _createModule(route);
-          if (module != null) modules.add(module);
-          break;
+          modules.add(_createModule(route));
 
         case ShellModuleRoute():
           shells.add(_createShell(route));
-          break;
 
         case StatefulShellModuleRoute():
           shells.add(_createStatefulShell(route));
-          break;
 
-        default:
-          throw UnsupportedError('Unsupported route type: $route');
+        case _:
+          throw UnsupportedError(
+            'Unsupported route type: ${route.runtimeType}',
+          );
       }
     }
 
@@ -76,16 +66,22 @@ final class RoutesFactory {
     _validatePath(route.path!, 'ChildRoute');
 
     return GoRoute(
-      path: route.path!,
       name: route.name,
+      path: route.path!,
       parentNavigatorKey: route.parentNavigatorKey,
-      redirect: (context, state) async {
-        for (final guard in route.guards) {
-          final redirect = await guard(context, state);
-          if (redirect != null) return redirect;
-        }
-        return null;
-      },
+      redirect:
+          (context, state) async => _safeAsync(
+            label: 'ChildRouteRedirect',
+            state: state,
+            build: () async {
+              for (final guard in route.guards) {
+                final safety = await guard(context, state);
+                if (safety != null) return safety;
+              }
+
+              return null;
+            },
+          ),
       builder:
           (context, state) => _safe(
             state: state,
@@ -103,18 +99,34 @@ final class RoutesFactory {
     );
   }
 
-  static GoRoute _createAlias(AliasRoute alias, ChildRoute target) {
+  static GoRoute _createAlias(AliasRoute alias, List<IRoute> routes) {
+    final target = routes.whereType<ChildRoute>().firstWhere(
+      (child) => child.path == alias.to,
+      orElse:
+          () =>
+              throw ArgumentError(
+                'Alias "${alias.from}" points to "${alias.to}", but no matching ChildRoute was found.',
+              ),
+    );
+
     _validatePath(alias.from, 'AliasRoute');
 
     return GoRoute(
       path: alias.from,
-      redirect: (context, state) async {
-        for (final guard in target.guards) {
-          final redirect = await guard(context, state);
-          if (redirect != null) return redirect;
-        }
-        return null;
-      },
+      redirect:
+          (context, state) async => _safeAsync(
+            state: state,
+            label: 'AliasRouteRedirect',
+            build: () async {
+              for (final guard in target.guards) {
+                final safety = await guard(context, state);
+                if (safety != null) return safety;
+              }
+
+              return null;
+            },
+          ),
+
       builder:
           (context, state) => _safe(
             state: state,
@@ -132,11 +144,17 @@ final class RoutesFactory {
     );
   }
 
-  static GoRoute? _createModule(ModuleRoute route) {
+  static GoRoute _createModule(ModuleRoute route) {
     final module = route.module;
     final first = module.routes().whereType<ChildRoute>().firstOrNull;
 
-    if (first == null) return null;
+    if (first == null) {
+      throw StateError(
+        'ModuleRoute "${route.name ?? module.runtimeType}" '
+        'does not define any ChildRoute. Each Module must have at least one ChildRoute '
+        'to determine its initial builder.',
+      );
+    }
 
     _validatePath(first.path!, 'ModuleRoute');
 
@@ -145,15 +163,21 @@ final class RoutesFactory {
       path: route.path!,
       routes: module.configureRoutes(),
       parentNavigatorKey: route.parentNavigatorKey ?? first.parentNavigatorKey,
-      redirect: (context, state) async {
-        if (module is GuardModuleDecorator) {
-          for (final guard in module.guards) {
-            final redirect = await guard(context, state);
-            if (redirect != null) return redirect;
-          }
-        }
-        return null;
-      },
+      redirect:
+          (context, state) async => _safeAsync(
+            state: state,
+            label: 'ModuleRouteRedirect',
+            build: () async {
+              if (module is GuardModuleDecorator) {
+                for (final guard in module.guards) {
+                  final safety = await guard(context, state);
+                  if (safety != null) return safety;
+                }
+              }
+
+              return null;
+            },
+          ),
       builder:
           (context, state) => _safe(
             state: state,
@@ -182,7 +206,12 @@ final class RoutesFactory {
       observers: route.observers,
       navigatorKey: route.navigatorKey,
       parentNavigatorKey: route.parentNavigatorKey,
-      builder: (context, state, child) => route.builder!(context, state, child),
+      builder:
+          (context, state, child) => _safe(
+            state: state,
+            label: 'ShellRouteBuilder',
+            build: () => route.builder!(context, state, child),
+          ),
       pageBuilder:
           route.pageBuilder == null
               ? null
@@ -235,20 +264,44 @@ final class RoutesFactory {
     return StatefulShellRoute.indexedStack(
       key: route.key,
       branches: branches,
-      builder: route.builder,
       parentNavigatorKey: route.parentNavigatorKey,
+      builder:
+          (context, state, shell) => _safe(
+            state: state,
+            label: 'StatefulShellRouteBuilder',
+            build: () => route.builder(context, state, shell),
+          ),
     );
   }
 
   static T _safe<T>({
     required String label,
-    required GoRouterState state,
     required T Function() build,
+    required GoRouterState state,
   }) {
     try {
       return build();
-    } catch (e, s) {
-      Logger.error('Error building $label for ${state.uri}: $e\n$s');
+    } catch (exception, stack) {
+      Logger.error(
+        'Error building $label for ${state.uri}: $exception\n$stack',
+      );
+
+      rethrow;
+    }
+  }
+
+  static FutureOr<T> _safeAsync<T>({
+    required String label,
+    required GoRouterState state,
+    required FutureOr<T> Function() build,
+  }) async {
+    try {
+      return await build();
+    } catch (exception, stack) {
+      Logger.error(
+        'Error building $label for ${state.uri}: $exception\n$stack',
+      );
+
       rethrow;
     }
   }
@@ -269,10 +322,14 @@ final class RoutesFactory {
   static void _validatePath(String path, String type) {
     try {
       final compiler = CompilerRoute(path);
-      Logger.navigation('Valid path: ${compiler.pattern}');
-    } catch (e) {
-      Logger.error('Invalid path in $type: $path → $e');
-      throw ArgumentError.value(path, 'path', 'Invalid syntax in $type: $e');
+      Logger.navigation('[$type] Valid path: ${compiler.pattern}');
+    } catch (exception) {
+      Logger.error('Invalid path in $type: $path → $exception');
+      throw ArgumentError.value(
+        path,
+        'path',
+        'Invalid syntax in $type: $exception',
+      );
     }
   }
 }

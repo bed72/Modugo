@@ -58,7 +58,10 @@ void main() {
         builder: (_, _, _) => const Placeholder(),
       );
 
-      expect(() => RoutesFactory.from(route), throwsA(isA<UnsupportedError>()));
+      expect(
+        () => RoutesFactory.from([route]),
+        throwsA(isA<UnsupportedError>()),
+      );
     });
   });
 
@@ -120,9 +123,10 @@ void main() {
         routes: [ModuleRoute(path: '/', module: _DummyModule())],
       );
 
-      final result = RoutesFactory.from(route);
+      final result = RoutesFactory.from([route]);
 
-      expect(result, isA<StatefulShellRoute>());
+      expect(result, hasLength(1));
+      expect(result.first, isA<StatefulShellRoute>());
     });
 
     test('builds StatefulShellModuleRoute with correct config', () {
@@ -147,7 +151,7 @@ void main() {
 
 final class _UnsupportedRoute implements IRoute {}
 
-final class _BlockGuard implements IGuard {
+final class _BlockGuard implements IGuard<String?> {
   @override
   Future<String?> call(BuildContext context, GoRouterState state) async =>
       '/not-allowed';

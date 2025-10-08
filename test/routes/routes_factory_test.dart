@@ -11,6 +11,7 @@ import 'package:modugo/src/decorators/guard_module_decorator.dart';
 
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
+import 'package:modugo/src/routes/alias_route.dart';
 import 'package:modugo/src/routes/routes_factory.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
@@ -26,9 +27,10 @@ void main() {
         child: (_, _) => const Placeholder(),
       );
 
-      final result = RoutesFactory.from(route);
-      expect(result, isA<GoRoute>());
-      expect((result as GoRoute).path, '/home');
+      final result = RoutesFactory.from([route]);
+      expect(result, hasLength(1));
+      expect(result.first, isA<GoRoute>());
+      expect((result.first as GoRoute).path, '/home');
     });
 
     test('applies guard redirect in ChildRoute', () async {
@@ -38,7 +40,7 @@ void main() {
         child: (_, _) => const Placeholder(),
       );
 
-      final goRoute = RoutesFactory.from(route) as GoRoute;
+      final goRoute = RoutesFactory.from([route]).first as GoRoute;
       final redirect = await goRoute.redirect!(BuildContextFake(), StateFake());
 
       expect(redirect, '/login');
@@ -51,8 +53,8 @@ void main() {
         child: (_, _) => const Placeholder(),
       );
 
-      final goRoute = RoutesFactory.from(route) as GoRoute;
-      final redirect = await goRoute.redirect!(BuildContextFake(), StateFake());
+      final routes = RoutesFactory.from([route]).first as GoRoute;
+      final redirect = await routes.redirect!(BuildContextFake(), StateFake());
 
       expect(redirect, isNull);
     });
@@ -61,9 +63,16 @@ void main() {
       final module = _DummyModule();
       final route = ModuleRoute(path: '/mod', module: module);
 
-      final result = RoutesFactory.from(route);
-      expect(result, isA<GoRoute>());
-      expect((result as GoRoute).path, '/mod');
+      final result = RoutesFactory.from([route]);
+      expect(result.first, isA<GoRoute>());
+      expect((result.first as GoRoute).path, '/mod');
+    });
+
+    test('throws StateError when ModuleRoute has no ChildRoute', () {
+      final module = _EmptyModule();
+      final route = ModuleRoute(path: '/empty', module: module);
+
+      expect(() => RoutesFactory.from([route]), throwsA(isA<StateError>()));
     });
 
     test('applies GuardModuleDecorator redirect', () async {
@@ -73,11 +82,37 @@ void main() {
       );
 
       final route = ModuleRoute(path: '/mod', module: guardedModule);
-      final goRoute = RoutesFactory.from(route) as GoRoute;
+      final routes = RoutesFactory.from([route]).first as GoRoute;
 
-      final redirect = await goRoute.redirect!(BuildContextFake(), StateFake());
+      final redirect = await routes.redirect!(BuildContextFake(), StateFake());
 
       expect(redirect, '/blocked');
+    });
+
+    test('creates AliasRoute pointing to existing ChildRoute', () async {
+      final target = ChildRoute(
+        path: '/target',
+        guards: [_RedirectGuard('/alias-login')],
+        child: (_, _) => const Text('Target'),
+      );
+      final alias = AliasRoute(from: '/alias', to: '/target');
+
+      final result = RoutesFactory.from([target, alias]);
+      expect(result, hasLength(2));
+
+      final aliasRoute = result[1] as GoRoute;
+      expect(aliasRoute.path, '/alias');
+
+      final redirect = await aliasRoute.redirect!(
+        BuildContextFake(),
+        StateFake(),
+      );
+      expect(redirect, '/alias-login');
+    });
+
+    test('throws ArgumentError for invalid AliasRoute target', () {
+      final alias = AliasRoute(from: '/alias', to: '/missing');
+      expect(() => RoutesFactory.from([alias]), throwsA(isA<ArgumentError>()));
     });
 
     test('creates ShellRoute with nested routes', () {
@@ -89,10 +124,10 @@ void main() {
         ],
       );
 
-      final result = RoutesFactory.from(shell);
-      expect(result, isA<ShellRoute>());
+      final result = RoutesFactory.from([shell]);
+      expect(result.first, isA<ShellRoute>());
 
-      final shellRoute = result as ShellRoute;
+      final shellRoute = result.first as ShellRoute;
       expect(shellRoute.routes.length, 2);
     });
 
@@ -105,10 +140,10 @@ void main() {
         ],
       );
 
-      final result = RoutesFactory.from(shell);
-      expect(result, isA<StatefulShellRoute>());
+      final result = RoutesFactory.from([shell]);
+      expect(result.first, isA<StatefulShellRoute>());
 
-      final shellRoute = result as StatefulShellRoute;
+      final shellRoute = result.first as StatefulShellRoute;
       expect(shellRoute.branches.length, 2);
     });
 
@@ -121,8 +156,8 @@ void main() {
         ],
       );
 
-      final result = RoutesFactory.from(shell);
-      final route = result as StatefulShellRoute;
+      final result = RoutesFactory.from([shell]);
+      final route = result.first as StatefulShellRoute;
 
       expect(route.branches.length, 2);
       expect(route.branches.first.routes.first, isA<GoRoute>());
@@ -130,8 +165,10 @@ void main() {
 
     test('throws for unsupported IRoute type', () {
       final fake = _UnsupportedRoute();
-
-      expect(() => RoutesFactory.from(fake), throwsA(isA<UnsupportedError>()));
+      expect(
+        () => RoutesFactory.from([fake]),
+        throwsA(isA<UnsupportedError>()),
+      );
     });
 
     test('throws ArgumentError on invalid path', () {
@@ -140,7 +177,10 @@ void main() {
         child: (_, _) => const Placeholder(),
       );
 
-      expect(() => RoutesFactory.from(invalid), throwsA(isA<ArgumentError>()));
+      expect(
+        () => RoutesFactory.from([invalid]),
+        throwsA(isA<ArgumentError>()),
+      );
     });
 
     test('safe builder catches errors in build and rethrows', () {
@@ -149,10 +189,24 @@ void main() {
         child: (_, _) => throw Exception('Boom'),
       );
 
-      final goRoute = RoutesFactory.from(route) as GoRoute;
+      final routes = RoutesFactory.from([route]).first as GoRoute;
 
       expect(
-        () => goRoute.builder!(BuildContextFake(), StateFake()),
+        () => routes.builder!(BuildContextFake(), StateFake()),
+        throwsException,
+      );
+    });
+
+    test('safeAsync catches async errors in guards', () async {
+      final route = ChildRoute(
+        path: '/',
+        guards: [_AsyncErrorGuard()],
+        child: (_, _) => const Placeholder(),
+      );
+
+      final routes = RoutesFactory.from([route]).first as GoRoute;
+      expect(
+        () async => await routes.redirect!(BuildContextFake(), StateFake()),
         throwsException,
       );
     });
@@ -160,6 +214,11 @@ void main() {
 }
 
 final class _UnsupportedRoute implements IRoute {}
+
+final class _EmptyModule extends Module {
+  @override
+  List<IRoute> routes() => [];
+}
 
 final class _RedirectGuard implements IGuard<String?> {
   final String redirect;
@@ -172,6 +231,14 @@ final class _RedirectGuard implements IGuard<String?> {
 final class _AllowGuard implements IGuard<String?> {
   @override
   FutureOr<String?> call(BuildContext context, GoRouterState state) => null;
+}
+
+final class _AsyncErrorGuard implements IGuard<String?> {
+  @override
+  Future<String?> call(BuildContext context, GoRouterState state) async {
+    await Future.delayed(const Duration(milliseconds: 10));
+    throw Exception('Guard failed');
+  }
 }
 
 final class _DummyModule extends Module {
