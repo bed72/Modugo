@@ -7,9 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/transition.dart';
-
 import 'package:modugo/src/events/event_channel.dart';
-
 import 'package:modugo/src/models/route_change_event_model.dart';
 
 /// A convenient global accessor for the configured [GoRouter] instance.

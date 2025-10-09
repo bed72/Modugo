@@ -15,7 +15,7 @@
 * 🏗️ [Estrutura de Projeto](#️-estrutura-de-projeto)
 * ▶️ [Primeiros Passos](#️-primeiros-passos)
 * 🧭 [Navegação](#-navegação)
-
+  * `Construtor Declarativo`
   * `ChildRoute`
   * `ModuleRoute`
   * `ShellModuleRoute`
@@ -98,53 +98,190 @@ Future<void> main() async {
 
 ## 🧭 Navegação
 
-### 🔹 `ChildRoute`
+### 🧩 Construtor Declarativo de Rotas do Modugo
+
+O **Modugo** introduz uma API limpa e declarativa para criar rotas dentro do seu `Module`. Ele elimina a repetição de código ao definir rotas, tornando a configuração dos módulos mais expressiva, legível e consistente.
+
+---
+
+### 🚀 Visão Geral
+
+Tradicionalmente, você definia rotas do Modugo assim:
 
 ```dart
-ChildRoute(
+List<IRoute> routes() => [
+  ChildRoute(path: '/', child: (_, _) => const HomePage()),
+  ModuleRoute(path: '/auth', module: AuthModule()),
+];
+```
+
+De forma `declarativa`, você pode escrever:
+
+```dart
+List<IRoute> routes() => [
+  route('/', child: (_, _) => const HomePage()),
+  module('/auth', AuthModule()),
+];
+```
+
+Dessa forma melhoramos a experiência de desenvolvimento sem alterar nenhuma lógica interna do `Modugo`.
+
+---
+
+### 🧱 Métodos Disponíveis
+
+#### `route()` — Cria uma ChildRoute
+
+Use para rotas simples que apontam diretamente para um widget.
+
+```dart
+route(
+  '/',
+  child: (_, _) => const HomePage(),
+  guards: [AuthGuard()],
+  transition: TypeTransition.fade,
+);
+```
+
+#### `module()` — Cria uma ModuleRoute
+
+Conecta submódulos, permitindo uma arquitetura modular e hierárquica.
+
+```dart
+module('/auth', AuthModule());
+```
+
+#### `alias()` — Cria uma AliasRoute
+
+Permite criar apelidos (caminhos alternativos) para rotas existentes sem duplicar lógica.
+
+```dart
+alias(from: '/cart/:id', to: '/order/:id');
+```
+
+Isso faz com que `/cart/:id` e `/order/:id` apontem para a mesma tela.
+
+#### `shell()` — Cria uma ShellModuleRoute
+
+Agrupa várias rotas sob um layout ou container compartilhado (ex: abas, menus laterais).
+
+```dart
+shell(
+  builder: (_, _, child) => AppScaffold(child: child),
+  routes: [
+    route('/feed', child: (_, _) => const FeedPage()),
+    route('/settings', child: (_, _) => const SettingsPage()),
+  ],
+);
+```
+
+#### `statefulShell()` — Cria uma StatefulShellModuleRoute
+
+Usado para estruturas com abas ou navegação inferior onde cada aba mantém seu próprio histórico de navegação.
+
+```dart
+statefulShell(
+  builder: (_, _, shell) => BottomBarWidget(shell: shell),
+  routes: [
+    module('/home', HomeModule()),
+    module('/profile', ProfileModule()),
+  ],
+);
+```
+
+---
+
+### 💡 Exemplo Completo de Módulo
+
+```dart
+final class AppModule extends Module {
+  @override
+  List<IRoute> routes() => [
+    route('/', child: (_, _) => const HomePage()),
+    module('/auth', AuthModule()),
+    alias(from: '/cart/:id', to: '/order/:id'),
+    shell(
+      builder: (_, _, child) => MainShell(child: child),
+      routes: [
+        route('/dashboard', child: (_, _) => const DashboardPage()),
+        route('/settings', child: (_, _) => const SettingsPage()),
+      ],
+    ),
+    statefulShell(
+      builder: (_, _, shell) => BottomBarWidget(shell: shell),
+      routes: [
+        module('/feed', FeedModule()),
+        module('/profile', ProfileModule()),
+      ],
+    ),
+  ];
+}
+```
+
+---
+
+## 📚 Resumo
+
+| Helper            | Retorna                    | Uso Principal                       |
+| ----------------- | -------------------------- | ----------------------------------- |
+| `route()`         | `ChildRoute`               | Telas simples                       |
+| `module()`        | `ModuleRoute`              | Submódulos                          |
+| `alias()`         | `AliasRoute`               | Caminhos alternativos               |
+| `shell()`         | `ShellModuleRoute`         | Containers e layouts compartilhados |
+| `statefulShell()` | `StatefulShellModuleRoute` | Navegação com múltiplas pilhas      |
+
+---
+
+✨ Desta forma transformamos suas definições de rota em uma DSL fluente e legível — mantendo seus módulos Modugo elegantes e escaláveis.
+
+
+### 🔹 `route() -> ChildRoute`
+
+```dart
+route(
   path: '/home',
   child: (_, _) => const HomePage(),
 )
 ```
 
-### 🔹 `ModuleRoute`
+### 🔹 `module() -> ModuleRoute`
 
 ```dart
-ModuleRoute(
+module(
   path: '/profile',
   module: ProfileModule(),
 )
 ```
 
-### 🔹 `ShellModuleRoute`
+### 🔹 `shell() -> ShellModuleRoute`
 
 Útil para criar áreas de navegação em **parte da tela**, como menus ou abas.
 
 ```dart
-ShellModuleRoute(
+shell(
   builder: (context, state, child) => Scaffold(body: child),
   routes: [
-    ChildRoute(path: '/user', child: (_, _) => const UserPage()),
-    ChildRoute(path: '/config', child: (_, _) => const ConfigPage()),
+    route(path: '/user', child: (_, _) => const UserPage()),
+    route(path: '/config', child: (_, _) => const ConfigPage()),
   ],
 )
 ```
 
-### 🔹 `StatefulShellModuleRoute`
+### 🔹 `statefulShell() -> StatefulShellModuleRoute`
 
 Ideal para apps com **BottomNavigationBar** ou abas preservando estado.
 
 ```dart
-StatefulShellModuleRoute(
+statefulShell(
   builder: (context, state, shell) => BottomBarWidget(shell: shell),
   routes: [
-    ModuleRoute(path: '/', module: HomeModule()),
-    ModuleRoute(path: '/profile', module: ProfileModule()),
+    module(path: '/', module: HomeModule()),
+    module(path: '/profile', module: ProfileModule()),
   ],
 )
 ```
 
-### 🔹 `AliasRoute`
+### 🔹 `alias() -> AliasRoute`
 
 O `AliasRoute` é um tipo especial de rota que funciona como **um apelido (alias)** para uma `ChildRoute` já existente. Ele resolve o problema de URLs alternativas para a **mesma tela**, sem precisar duplicar lógica ou cair nos loops comuns de `RedirectRoute`.
 
@@ -160,12 +297,12 @@ O `AliasRoute` é um tipo especial de rota que funciona como **um apelido (alias
 #### ✅ Exemplo simples
 
 ```dart
-ChildRoute(
+child(
   path: '/order/:id',
   child: (_, state) => OrderPage(id: state.pathParameters['id']!),
 ),
 
-AliasRoute(
+alias(
   from: '/cart/:id',
   to: '/order/:id',
 ),
@@ -201,27 +338,18 @@ final class ShopModule extends Module {
   @override
   List<IRoute> routes() => [
     // rota canônica
-    ChildRoute(
+    child(
       path: '/product/:id',
       child: (_, state) => ProductPage(id: state.pathParameters['id']!),
     ),
 
     // rota alternativa (alias)
-    AliasRoute(
+    alias(
       from: '/item/:id',
       to: '/product/:id',
     ),
   ];
 }
-```
-
-📊 **Fluxo de matching:**
-
-```mermaid
-graph TD
-  A[/item/42] --> B[AliasRoute /item/:id]
-  B --> C[ChildRoute /product/:id]
-  C --> D[ProductPage]
 ```
 
 ➡️ O usuário acessa `/item/42`, mas internamente o Modugo entrega o mesmo `ProductPage` de `/product/42`.
@@ -248,27 +376,12 @@ Você pode proteger rotas com `IGuard` ou aplicar guardas de forma recursiva usa
 List<IRoute> routes() => propagateGuards(
   guards: [AuthGuard()],
   routes: [
-    ModuleRoute(path: '/', module: HomeModule()),
+    module(path: '/', module: HomeModule()),
   ],
 );
 ```
 
 ✅ Com isso, todos os filhos de `HomeModule` herdam automaticamente o guard.
-
-📊 **Fluxo de execução:**
-
-```mermaid
-graph TD
-  A[ModuleRoute Pai] --> B[ChildRoute 1]
-  A --> C[ChildRoute 2]
-  A --> D[ModuleRoute Filho]
-  style A fill:#f96
-  style B fill:#bbf
-  style C fill:#bbf
-  style D fill:#bbf
-```
-
----
 
 ## 🛠️ Injeção de Dependência
 
@@ -286,14 +399,21 @@ final class HomeModule extends Module {
 Acesse com:
 
 ```dart
-final repo = i.get<ServiceRepository>();
+final repository = i.get<ServiceRepository>();
 ```
 
 Ou via contexto:
 
 ```dart
-final repo = context.read<ServiceRepository>();
+final repository = context.read<ServiceRepository>();
 ```
+
+Ou via Modugo:
+
+```dart
+final repository = Modugo.i.get<ServiceRepository>();
+```
+
 
 ---
 
@@ -309,7 +429,7 @@ class MyScreen extends StatefulWidget {
   State<MyScreen> createState() => _MyScreenState();
 }
 
-class _MyScreenState extends State<MyScreen> with AfterLayoutMixin {
+class _MyScreenState extends State<MyScreen> with AfterLayout {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(body: Center(child: Text('Hello World')));

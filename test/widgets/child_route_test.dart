@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:modugo/modugo.dart';
+import 'package:modugo/src/routes/child_route.dart';
 
 void main() {
   testWidgets('ChildRoute builds widget correctly through GoRouter', (
@@ -18,8 +18,8 @@ void main() {
       initialLocation: '/home',
       routes: [
         GoRoute(
+          path: childRoute.path,
           name: childRoute.name,
-          path: childRoute.path!,
           builder: childRoute.child,
         ),
       ],

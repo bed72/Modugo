@@ -5,9 +5,10 @@ import 'package:flutter/foundation.dart';
 import 'package:modugo/src/guard.dart';
 import 'package:modugo/src/module.dart';
 
+import 'package:modugo/src/mixins/binder_mixin.dart';
+
 import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/interfaces/route_interface.dart';
-import 'package:modugo/src/interfaces/binder_interface.dart';
 
 /// A wrapper [Module] that injects a list of [IGuard]s recursively into all routes.
 ///
@@ -32,12 +33,12 @@ final class GuardModuleDecorator extends Module {
   @override
   List<IBinder> imports() => _module.imports();
 
-  @override
-  List<IRoute> routes() =>
-      propagateGuards(guards: _guards, routes: _module.routes());
-
   /// Overrides [runtimeType] returning the decorated [Module.runtimeType]
   /// This allows us to execute [Module.binds] for each decorated [Module]
   @override
   Type get runtimeType => _module.runtimeType;
+
+  @override
+  List<IRoute> routes() =>
+      propagateGuards(guards: _guards, routes: _module.routes());
 }

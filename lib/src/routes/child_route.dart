@@ -32,8 +32,7 @@ import 'package:modugo/src/interfaces/route_interface.dart';
 @immutable
 final class ChildRoute implements IRoute {
   /// The relative path of this route, e.g. `'/'` or `'/product/:id'`.
-  /// If not passed or null the default value is '/'
-  final String? path;
+  final String path;
 
   /// Optional name to support named navigation.
   final String? name;
@@ -72,11 +71,11 @@ final class ChildRoute implements IRoute {
   ///
   /// Additional behavior like transition, guard, or redirection can be configured via optional parameters.
   const ChildRoute({
+    required this.path,
     required this.child,
     this.name,
     this.onExit,
     this.transition,
-    this.path = '/',
     this.pageBuilder,
     this.guards = const [],
     this.parentNavigatorKey,

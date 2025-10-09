@@ -7,6 +7,7 @@ import 'package:modugo/src/interfaces/route_interface.dart';
 
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
+import 'package:modugo/src/routes/routes_factory.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 void main() {
@@ -37,7 +38,7 @@ void main() {
     );
 
     expect(
-      () => shellRoute.toRoute(path: '/'),
+      () => RoutesFactory.from([shellRoute]),
       throwsA(isA<UnsupportedError>()),
     );
   });
@@ -95,10 +96,7 @@ void main() {
       ],
     );
 
-    final router = GoRouter(
-      initialLocation: '/',
-      routes: [route.toRoute(path: '')],
-    );
+    final router = GoRouter(initialLocation: '/', routes: [routeOf(route)]);
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
     await tester.pumpAndSettle();
@@ -183,7 +181,7 @@ void main() {
     final router = GoRouter(
       initialLocation: '/',
       errorBuilder: (_, _) => const Text('ERRO NA ROTA'),
-      routes: [shellRoute.toRoute(path: '')],
+      routes: [routeOf(shellRoute)],
     );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
@@ -221,7 +219,7 @@ void main() {
     final router = GoRouter(
       initialLocation: '/',
       errorBuilder: (_, _) => const Text('ERRO NA ROTA'),
-      routes: [shellRoute.toRoute(path: '')],
+      routes: [routeOf(shellRoute)],
     );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
@@ -236,9 +234,23 @@ void main() {
     expect(find.text('Shell UI'), findsOneWidget);
     expect(find.text('Inner Page'), findsOneWidget);
   });
+
+  testWidgets('RoutesFactory generates StatefulShellRoute.indexedStack', (
+    tester,
+  ) async {
+    final route = StatefulShellModuleRoute(
+      builder: (_, _, _) => const Placeholder(),
+      routes: [ModuleRoute(path: '/', module: _DummyModule())],
+    );
+
+    final result = routeOf(route);
+    expect(result, isA<StatefulShellRoute>());
+  });
 }
 
 final class _UnsupportedRoute implements IRoute {}
+
+RouteBase routeOf(IRoute route) => RoutesFactory.from([route]).first;
 
 final class _DummyModule extends Module {
   @override

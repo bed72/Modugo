@@ -17,11 +17,13 @@ void main() {
       final routes = module.configureRoutes();
 
       final alias = routes.whereType<GoRoute>().firstWhere(
-        (r) => r.path == '/alias',
+        (route) => route.path == '/alias',
       );
 
-      final widget = alias.builder!(BuildContextFake(), StateFake());
-      expect(widget, isA<Text>());
+      final page = alias.pageBuilder!(BuildContextFake(), StateFake());
+
+      expect(page, isA<CustomTransitionPage>());
+      expect((page as CustomTransitionPage).child, isA<Text>());
     });
 
     test('multiple aliases can point to the same ChildRoute', () {
@@ -29,14 +31,14 @@ void main() {
       final routes = module.configureRoutes();
 
       final alias1 = routes.whereType<GoRoute>().firstWhere(
-        (r) => r.path == '/alias1',
+        (route) => route.path == '/alias1',
       );
       final alias2 = routes.whereType<GoRoute>().firstWhere(
-        (r) => r.path == '/alias2',
+        (route) => route.path == '/alias2',
       );
 
-      expect(alias1.builder, isNotNull);
-      expect(alias2.builder, isNotNull);
+      expect(alias1.pageBuilder, isNotNull);
+      expect(alias2.pageBuilder, isNotNull);
     });
 
     test('alias respects ChildRoute guards', () async {
@@ -44,11 +46,11 @@ void main() {
       final routes = module.configureRoutes();
 
       final alias = routes.whereType<GoRoute>().firstWhere(
-        (r) => r.path == '/alias',
+        (route) => route.path == '/alias',
       );
 
-      final result = await alias.redirect!(BuildContextFake(), StateFake());
-      expect(result, '/blocked');
+      final value = await alias.redirect!(BuildContextFake(), StateFake());
+      expect(value, '/blocked');
     });
 
     test('throws ArgumentError if alias points to non-existent ChildRoute', () {
@@ -61,10 +63,10 @@ void main() {
       final routes = module.configureRoutes();
 
       final child = routes.whereType<GoRoute>().firstWhere(
-        (r) => r.path == '/original',
+        (route) => route.path == '/original',
       );
       final alias = routes.whereType<GoRoute>().firstWhere(
-        (r) => r.path == '/alias',
+        (route) => route.path == '/alias',
       );
 
       expect(child, isNotNull);

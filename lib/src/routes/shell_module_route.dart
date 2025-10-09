@@ -11,15 +11,15 @@ import 'package:modugo/src/interfaces/route_interface.dart';
 ///
 /// The shell provides:
 /// - a shared [navigatorKey] for nested navigation
-/// - optional [observers], [restorationScopeId], and [parentNavigatorKey]
+/// - optional [observers] and [parentNavigatorKey]
 /// - a [builder] or [pageBuilder] to render a common UI container
 ///
 /// Example:
 /// ```dart
 /// ShellModuleRoute(
 ///   routes: [
-///     ModuleRoute(path: '/home', module: HomeModule()),
-///     ModuleRoute(path: '/profile', module: ProfileModule()),
+///     module(path: '/home', module: HomeModule()),
+///     module(path: '/profile', module: ProfileModule()),
 ///   ],
 ///   builder: (context, state, child) {
 ///     return AppScaffold(child: child);
