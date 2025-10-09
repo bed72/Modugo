@@ -87,4 +87,42 @@ extension ContextInjectionExtension on BuildContext {
     type: type,
     instanceName: instanceName,
   );
+
+  /// Asynchronously retrieves a registered dependency of type [T] from [GetIt].
+  ///
+  /// This method is used to access dependencies that were registered
+  /// asynchronously via `registerSingletonAsync`, `registerLazySingletonAsync`,
+  /// or similar async bindings.
+  ///
+  /// It awaits the dependency resolution before returning the instance,
+  /// ensuring that the dependency is fully initialized.
+  ///
+  /// ### Parameters
+  /// - [param1]: Optional. The first positional parameter for factories requiring arguments.
+  /// - [param2]: Optional. The second positional parameter for factories requiring arguments.
+  /// - [type]: Optional. The specific type to retrieve when multiple types are registered.
+  /// - [instanceName]: Optional. The named registration identifier.
+  ///
+  /// ### Returns
+  /// A [Future] that completes with the resolved instance of type [T].
+  ///
+  /// ### Example
+  /// ```dart
+  /// final service = await context.readAsync<MyService>();
+  /// ```
+  ///
+  /// ### Notes
+  /// - This should only be used when the dependency was registered asynchronously.
+  /// - For synchronous dependencies, prefer using [read] instead.
+  Future<T> readAsync<T extends Object>({
+    dynamic param1,
+    dynamic param2,
+    Type? type,
+    String? instanceName,
+  }) => GetIt.I.getAsync<T>(
+    param1: param1,
+    param2: param2,
+    type: type,
+    instanceName: instanceName,
+  );
 }
