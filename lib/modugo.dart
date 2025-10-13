@@ -4,7 +4,7 @@ export 'src/module.dart';
 export 'src/modugo.dart';
 export 'src/transition.dart';
 
-export 'src/events/event_channel.dart';
+export 'src/events/event.dart';
 
 export 'src/mixins/binder_mixin.dart';
 export 'src/mixins/helper_mixin.dart';
@@ -13,7 +13,7 @@ export 'src/mixins/after_layout_mixin.dart';
 
 export 'src/widgets/modugo_loader_widget.dart';
 
-export 'src/interfaces/event_interface.dart';
+export 'src/mixins/event_mixin.dart';
 export 'src/interfaces/guard_interface.dart';
 export 'src/interfaces/route_interface.dart';
 

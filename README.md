@@ -473,11 +473,11 @@ final class MyEvent {
   MyEvent(this.message);
 }
 
-EventChannel.on<MyEvent>((event) {
+Event.on<MyEvent>((event) {
   print(event.message);
 });
 
-EventChannel.emit(MyEvent('Olá Modugo!'));
+Event.emit(MyEvent('Olá Modugo!'));
 ```
 
 ---

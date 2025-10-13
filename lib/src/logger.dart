@@ -1,108 +1,66 @@
 // coverage:ignore-file
 
+import 'dart:developer' as developer;
 import 'package:modugo/src/modugo.dart';
 
-import 'package:talker_logger/talker_logger.dart';
-
-/// A singleton logger utility used internally by Modugo to emit
-/// diagnostic messages during development or debugging.
+/// A simple, dependency-free logger used internally by Modugo.
 ///
-/// This logger is backed by the `talker_logger` package and uses
-/// custom color schemes and tags for better visibility.
+/// This version replaces `talker_logger` by leveraging Dart’s built-in
+/// [developer.log] API. It preserves the same static API and log levels.
 ///
-/// Logging is only enabled when [Modugo.debugLogDiagnostics] is set to `true`.
-/// This ensures that logs are omitted in production environments.
-///
-/// Example usage:
-/// ```dart
-/// ModugoLogger.info('Module initialized');
-/// ModugoLogger.error('Failed to resolve dependency');
-/// ```
+/// Logs are emitted only when [Modugo.debugLogDiagnostics] is `true`.
 final class Logger {
-  /// Internal logger instance from `talker_logger`.
-  late final TalkerLogger _logger;
+  Logger._();
 
-  /// Singleton instance of [Logger].
-  static final Logger _instance = Logger._internal();
+  static const String _defaultTag = 'MODUGO';
 
-  /// Factory constructor returning the singleton instance.
-  factory Logger() => _instance;
+  /// Logs an informational message.
+  static void information(String message, {String tag = _defaultTag}) =>
+      _log(message, level: 'INFO', tag: tag);
 
-  /// Internal constructor that initializes the [TalkerLogger]
-  /// with custom visual settings and log levels.
-  Logger._internal() {
-    _logger = TalkerLogger(
-      settings: TalkerLoggerSettings(
-        maxLineWidth: 80,
-        enableColors: true,
-        defaultTitle: 'MODUGO',
-        colors: {
-          LogLevel.info: AnsiPen()..blue(),
-          LogLevel.error: AnsiPen()..red(),
-          LogLevel.debug: AnsiPen()..green(),
-          LogLevel.verbose: AnsiPen()..gray(),
-          LogLevel.critical: AnsiPen()..cyan(),
-          LogLevel.warning: AnsiPen()..yellow(),
-        },
-      ),
-    );
-  }
+  /// Logs a debug message.
+  static void debug(String message, {String tag = _defaultTag}) =>
+      _log(message, level: 'DEBUG', tag: tag);
 
-  /// Logs an error message with a red highlight.
-  static void error(String message, {String tag = 'ERROR'}) =>
-      _log(message, tag: tag, level: LogLevel.error);
+  /// Logs an error message.
+  static void error(String message, {String tag = _defaultTag}) =>
+      _log(message, level: 'ERROR', tag: tag);
 
-  /// Logs a warning message with a yellow highlight.
-  static void warn(String message, {String tag = 'WARNING'}) =>
-      _log(message, tag: tag, level: LogLevel.warning);
+  /// Logs a warning message.
+  static void warn(String message, {String tag = _defaultTag}) =>
+      _log(message, level: 'WARN', tag: tag);
 
-  /// Logs a debug message related to module logic.
-  static void module(String message, {String tag = 'MODULE'}) =>
-      _log(message, tag: tag, level: LogLevel.critical);
-
-  /// Logs a debug message related to disposal logic.
-  static void dispose(String message, {String tag = 'DISPOSE'}) =>
-      _log(message, tag: tag, level: LogLevel.debug);
-
-  /// Logs a debug message related to dependency injection.
-  static void injection(String message, {String tag = 'INJECT'}) =>
-      _log(message, tag: tag, level: LogLevel.debug);
-
-  /// Logs an informational message with a blue highlight.
-  static void information(String message, {String tag = 'INFORMATION'}) =>
-      _log(message, tag: tag, level: LogLevel.info);
-
-  /// Logs a debug message related to navigation logic.
+  /// Logs navigation-related messages.
   static void navigation(String message, {String tag = 'NAVIGATION'}) =>
-      _log(message, tag: tag, level: LogLevel.debug);
+      _log(message, level: 'NAVIGATION', tag: tag);
 
-  /// Returns the current time formatted as `HH:mm:ss`.
-  static String _now() {
-    final now = DateTime.now();
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    return '${twoDigits(now.hour)}:${twoDigits(now.minute)}:${twoDigits(now.second)}';
-  }
+  /// Logs module-related messages.
+  static void module(String message, {String tag = 'MODULE'}) =>
+      _log(message, level: 'MODULE', tag: tag);
 
-  /// Logs a message with the given [level] and [tag], optionally prefixed with a timestamp.
-  ///
-  /// This method respects the [Modugo.debugLogDiagnostics] flag and will
-  /// skip logging if the flag is set to `false`.
+  /// Logs dependency injection messages.
+  static void injection(String message, {String tag = 'INJECT'}) =>
+      _log(message, level: 'INJECT', tag: tag);
+
+  /// Logs disposal messages.
+  static void dispose(String message, {String tag = 'DISPOSE'}) =>
+      _log(message, level: 'DISPOSE', tag: tag);
+
+  /// Internal log method that prints messages only in debug mode.
   static void _log(
     String message, {
-    String tag = '',
-    LogLevel level = LogLevel.info,
+    required String level,
+    required String tag,
   }) {
     if (!Modugo.debugLogDiagnostics) return;
 
-    final fullMessage = '[${_now()}] [$tag] $message';
+    final now = DateTime.now();
+    final formattedTime =
+        '${now.hour.toString().padLeft(2, '0')}:'
+        '${now.minute.toString().padLeft(2, '0')}:'
+        '${now.second.toString().padLeft(2, '0')}';
 
-    final _ = switch (level) {
-      LogLevel.info => _instance._logger.info(fullMessage),
-      LogLevel.debug => _instance._logger.debug(fullMessage),
-      LogLevel.error => _instance._logger.error(fullMessage),
-      LogLevel.warning => _instance._logger.warning(fullMessage),
-      LogLevel.critical => _instance._logger.critical(fullMessage),
-      _ => _instance._logger.info(fullMessage),
-    };
+    final formatted = '[$formattedTime][$level][$tag] $message';
+    developer.log(formatted, name: _defaultTag);
   }
 }
