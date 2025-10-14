@@ -272,6 +272,104 @@ void main() {
 
     expect(find.text('Add'), findsOneWidget);
   });
+
+  group('StatefulShellModuleRoute - path composition', () {
+    testWidgets(
+      'ModuleRoute(path: "/bed") should prefix internal routes correctly',
+      (tester) async {
+        final shell = StatefulShellModuleRoute(
+          builder: (_, _, shell) => shell,
+          routes: [ModuleRoute(path: '/bed', module: _DummyProductsModule())],
+        );
+
+        final routes = RoutesFactory.from([shell]);
+        expect(routes.first, isA<StatefulShellRoute>());
+
+        final statefulShell = routes.first as StatefulShellRoute;
+        final branchRoutes =
+            statefulShell.branches.first.routes.whereType<GoRoute>().toList();
+
+        expect(branchRoutes[0].path, equals('/bed/product'));
+        expect(branchRoutes[1].path, equals('/bed/product/add'));
+      },
+    );
+
+    testWidgets('ModuleRoute(path: "/") should not prefix internal routes', (
+      tester,
+    ) async {
+      final shell = StatefulShellModuleRoute(
+        builder: (_, _, shell) => shell,
+        routes: [ModuleRoute(path: '/', module: _DummyProductsModule())],
+      );
+
+      final routes = RoutesFactory.from([shell]);
+      final statefulShell = routes.first as StatefulShellRoute;
+      final branchRoutes =
+          statefulShell.branches.first.routes.whereType<GoRoute>().toList();
+
+      expect(branchRoutes[0].path, equals('/product'));
+      expect(branchRoutes[1].path, equals('/product/add'));
+    });
+
+    testWidgets('ModuleRoute(path: "/bed/") should normalize trailing slash', (
+      tester,
+    ) async {
+      final shell = StatefulShellModuleRoute(
+        builder: (_, _, shell) => shell,
+        routes: [ModuleRoute(path: '/bed/', module: _DummyProductsModule())],
+      );
+
+      final routes = RoutesFactory.from([shell]);
+      final statefulShell = routes.first as StatefulShellRoute;
+      final branchRoutes =
+          statefulShell.branches.first.routes.whereType<GoRoute>().toList();
+
+      expect(branchRoutes[0].path, equals('/bed/product'));
+      expect(branchRoutes[1].path, equals('/bed/product/add'));
+    });
+
+    testWidgets(
+      'ModuleRoute(path: "/") with ChildRoute(path: "/") should produce a valid root path',
+      (tester) async {
+        final shell = StatefulShellModuleRoute(
+          builder: (_, _, shell) => shell,
+          routes: [ModuleRoute(path: '/', module: _ProductModule())],
+        );
+
+        final routes = RoutesFactory.from([shell]);
+        final statefulShell = routes.first as StatefulShellRoute;
+        final branchRoutes =
+            statefulShell.branches.first.routes.whereType<GoRoute>().toList();
+
+        expect(branchRoutes[0].path, equals('/'));
+        expect(branchRoutes[1].path, equals('/:name/dp/:webcode'));
+      },
+    );
+
+    testWidgets('Should navigate successfully using prefixed paths', (
+      tester,
+    ) async {
+      final shell = StatefulShellModuleRoute(
+        builder: (_, _, shell) => shell,
+        routes: [ModuleRoute(path: '/bed', module: _DummyProductsModule())],
+      );
+
+      final router = GoRouter(
+        routes: RoutesFactory.from([shell]),
+        initialLocation: '/bed/product',
+      );
+
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Product'), findsOneWidget);
+
+      router.go('/bed/product/add');
+      await tester.pumpAndSettle();
+
+      expect(find.text('Add'), findsOneWidget);
+    });
+  });
 }
 
 final class _UnsupportedRoute implements IRoute {}
