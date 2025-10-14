@@ -308,9 +308,11 @@ final class RoutesFactory {
                           : child.path;
 
                   final subpath =
-                      route.path.startsWith('/')
-                          ? route.path
-                          : '/${route.path}';
+                      route.path == '/'
+                          ? ''
+                          : (route.path.startsWith('/')
+                              ? route.path
+                              : '/${route.path}');
 
                   final composed = '$prefix$subpath';
 
