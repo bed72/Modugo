@@ -302,24 +302,11 @@ final class RoutesFactory {
                 module.map((route) {
                   if (route is! GoRoute) return route;
 
-                  final prefix =
-                      child.path.endsWith('/')
-                          ? child.path.substring(0, child.path.length - 1)
-                          : child.path;
-
-                  final subpath =
-                      route.path == '/'
-                          ? ''
-                          : (route.path.startsWith('/')
-                              ? route.path
-                              : '/${route.path}');
-
-                  final composed = '$prefix$subpath';
-
-                  _validatePath(composed, 'StatefulShellModuleRoute');
-                  Logger.navigation(
-                    '[StatefulShellModuleRoute] composed: $composed',
+                  final composed = _normalizeComposedPath(
+                    child.path,
+                    route.path,
                   );
+                  _validatePath(composed, 'StatefulShellModuleRoute');
 
                   return GoRoute(
                     path: composed,
@@ -394,6 +381,21 @@ final class RoutesFactory {
         'Invalid syntax in $type: $exception',
       );
     }
+  }
+
+  static String _normalizeComposedPath(String parent, String child) {
+    if (parent == '/' || parent.isEmpty) {
+      if (child.isEmpty) return '/';
+      return child.startsWith('/') ? child : '/$child';
+    }
+
+    final prefix =
+        parent.endsWith('/') ? parent.substring(0, parent.length - 1) : parent;
+
+    if (child == '/' || child.isEmpty) return prefix;
+
+    final subpath = child.startsWith('/') ? child : '/$child';
+    return '$prefix$subpath';
   }
 
   static Page<void> _transition({
