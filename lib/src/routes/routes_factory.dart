@@ -296,23 +296,60 @@ final class RoutesFactory {
           final child = entry.value;
 
           if (child is ModuleRoute) {
+            final module = child.module.configureRoutes();
+
+            final routes =
+                module.map((route) {
+                  if (route is! GoRoute) return route;
+
+                  final prefix =
+                      child.path.endsWith('/')
+                          ? child.path.substring(0, child.path.length - 1)
+                          : child.path;
+
+                  final subpath =
+                      route.path.startsWith('/')
+                          ? route.path
+                          : '/${route.path}';
+
+                  final composed = '$prefix$subpath';
+
+                  _validatePath(composed, 'StatefulShellModuleRoute');
+                  Logger.navigation(
+                    '[StatefulShellModuleRoute] composed: $composed',
+                  );
+
+                  return GoRoute(
+                    path: composed,
+                    name: route.name,
+                    routes: route.routes,
+                    redirect: route.redirect,
+                    pageBuilder: route.pageBuilder,
+                    parentNavigatorKey:
+                        route.parentNavigatorKey ?? child.parentNavigatorKey,
+                  );
+                }).toList();
+
             return StatefulShellBranch(
-              routes: child.module.configureRoutes(),
+              routes: routes,
               navigatorKey: child.parentNavigatorKey,
             );
           }
 
           if (child is ChildRoute) {
+            final path = child.path.isEmpty ? '/' : child.path;
+            _validatePath(path, 'StatefulShellModuleRoute');
+
             return StatefulShellBranch(
               routes: [
                 _createChild(
                   ChildRoute(
+                    path: path,
                     child: child.child,
                     guards: child.guards,
                     transition: child.transition,
                     pageBuilder: child.pageBuilder,
                     name: child.name ?? 'branch_$index',
-                    path: child.path.isEmpty ? '/' : child.path,
                     parentNavigatorKey: child.parentNavigatorKey,
                   ),
                 ),
@@ -332,7 +369,6 @@ final class RoutesFactory {
       pageBuilder: (context, state, shell) {
         try {
           final widget = route.builder(context, state, shell);
-
           return _transition(context: context, state: state, widget: widget);
         } catch (exception, stack) {
           Logger.error(

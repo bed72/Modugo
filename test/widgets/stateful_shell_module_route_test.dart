@@ -246,6 +246,32 @@ void main() {
     final result = routeOf(route);
     expect(result, isA<StatefulShellRoute>());
   });
+
+  testWidgets('Should build a working navigation tree with prefixed paths', (
+    tester,
+  ) async {
+    final shell = StatefulShellModuleRoute(
+      builder: (_, _, shell) => shell,
+      routes: [ModuleRoute(path: '/bed', module: _DummyProductsModule())],
+    );
+
+    final router = GoRouter(
+      routes: RoutesFactory.from([shell]),
+      initialLocation: '/bed/product',
+    );
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('Product'), findsOneWidget);
+    expect(find.text('Add'), findsNothing);
+
+    router.go('/bed/product/add');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Add'), findsOneWidget);
+  });
 }
 
 final class _UnsupportedRoute implements IRoute {}
@@ -260,6 +286,22 @@ final class _DummyModule extends Module {
       path: '/shell/page',
       child: (_, _) => const Text('Inner Page'),
     ),
+  ];
+}
+
+final class _DummyPage extends StatelessWidget {
+  final String label;
+  const _DummyPage(this.label);
+
+  @override
+  Widget build(BuildContext context) => Text(label);
+}
+
+final class _DummyProductsModule extends Module {
+  @override
+  List<IRoute> routes() => [
+    ChildRoute(path: '/product', child: (_, _) => const _DummyPage('Product')),
+    ChildRoute(path: '/product/add', child: (_, _) => const _DummyPage('Add')),
   ];
 }
 
