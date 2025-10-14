@@ -18,43 +18,35 @@ final class Logger {
   static const _defaultTag = 'MODUGO';
 
   /// Logs informational messages (blue).
-  static void information(String message, {String tag = _defaultTag}) =>
-      _log(message, level: 'INFO', tag: tag);
+  static void information(String message) => _log(message, level: 'INFO');
 
   /// Logs debug messages (green).
-  static void debug(String message, {String tag = _defaultTag}) =>
-      _log(message, level: 'DEBUG', tag: tag);
+  static void debug(String message) => _log(message, level: 'DEBUG');
 
   /// Logs warning messages (yellow).
-  static void warn(String message, {String tag = _defaultTag}) =>
-      _log(message, level: 'WARN', tag: tag);
+  static void warn(String message) => _log(message, level: 'WARN');
 
   /// Logs error messages (red).
-  static void error(String message, {String tag = _defaultTag}) =>
-      _log(message, level: 'ERROR', tag: tag);
+  static void error(String message) => _log(message, level: 'ERROR');
 
   /// Logs module-specific messages (cyan).
   static void module(String message, {String tag = 'MODULE'}) =>
-      _log(message, level: 'MODULE', tag: tag);
+      _log(message, level: 'MODULE');
 
   /// Logs dependency injection messages (green).
   static void injection(String message, {String tag = 'INJECT'}) =>
-      _log(message, level: 'INJECT', tag: tag);
+      _log(message, level: 'INJECT');
 
   /// Logs disposal messages (gray).
   static void dispose(String message, {String tag = 'DISPOSE'}) =>
-      _log(message, level: 'DISPOSE', tag: tag);
+      _log(message, level: 'DISPOSE');
 
   /// Logs navigation messages (cyan).
   static void navigation(String message, {String tag = 'NAVIGATION'}) =>
-      _log(message, level: 'NAVIGATION', tag: tag);
+      _log(message, level: 'NAVIGATION');
 
   /// Internal logging method with ANSI colors and DevTools support.
-  static void _log(
-    String message, {
-    required String level,
-    required String tag,
-  }) {
+  static void _log(String message, {required String level}) {
     if (!Modugo.debugLogDiagnostics) return;
 
     final now = DateTime.now();
@@ -63,7 +55,7 @@ final class Logger {
         '${now.minute.toString().padLeft(2, '0')}:'
         '${now.second.toString().padLeft(2, '0')}';
 
-    final formatted = '[$formattedTime][$level][$tag] $message';
+    final formatted = '[$formattedTime][$level] $message';
 
     // ANSI colors
     const red = '\x1B[31m';
@@ -75,25 +67,23 @@ final class Logger {
     const yellow = '\x1B[33m';
 
     final color = switch (level) {
+      'INFO' => blue,
       'ERROR' => red,
       'WARN' => yellow,
-      'INFO' => blue,
       'DEBUG' => green,
-      'INJECT' => green,
       'MODULE' => cyan,
-      'NAVIGATION' => cyan,
       'DISPOSE' => gray,
+      'INJECT' => green,
+      'NAVIGATION' => cyan,
       _ => reset,
     };
 
-    // Print colorized message to terminal (safe for CLI/IDE)
     try {
       stdout.writeln('$color$formatted$reset');
     } catch (_) {
       // In environments without stdout (e.g. web), silently ignore
     }
 
-    // Also send to Dart DevTools logging view
     developer.log(formatted, name: _defaultTag);
   }
 }
