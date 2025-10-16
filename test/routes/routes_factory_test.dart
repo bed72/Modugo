@@ -220,7 +220,7 @@ final class _EmptyModule extends Module {
   List<IRoute> routes() => [];
 }
 
-final class _RedirectGuard implements IGuard<String?> {
+final class _RedirectGuard implements IGuard {
   final String redirect;
   _RedirectGuard(this.redirect);
 
@@ -228,12 +228,12 @@ final class _RedirectGuard implements IGuard<String?> {
   FutureOr<String?> call(BuildContext context, GoRouterState state) => redirect;
 }
 
-final class _AllowGuard implements IGuard<String?> {
+final class _AllowGuard implements IGuard {
   @override
   FutureOr<String?> call(BuildContext context, GoRouterState state) => null;
 }
 
-final class _AsyncErrorGuard implements IGuard<String?> {
+final class _AsyncErrorGuard implements IGuard {
   @override
   Future<String?> call(BuildContext context, GoRouterState state) async {
     await Future.delayed(const Duration(milliseconds: 10));

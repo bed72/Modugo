@@ -124,12 +124,12 @@ void main() {
   );
 }
 
-final class _FakeAllowGuard implements IGuard<String?> {
+final class _FakeAllowGuard implements IGuard {
   @override
   FutureOr<String?> call(BuildContext context, GoRouterState state) => null;
 }
 
-final class _FakeRedirectGuard implements IGuard<String?> {
+final class _FakeRedirectGuard implements IGuard {
   final String to;
   _FakeRedirectGuard(this.to);
 

@@ -99,7 +99,7 @@ void main() {
   );
 }
 
-final class _FakeRedirectGuard implements IGuard<String?> {
+final class _FakeRedirectGuard implements IGuard {
   final String to;
   _FakeRedirectGuard(this.to);
 

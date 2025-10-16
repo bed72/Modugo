@@ -151,7 +151,7 @@ void main() {
 
 final class _UnsupportedRoute implements IRoute {}
 
-final class _BlockGuard implements IGuard<String?> {
+final class _BlockGuard implements IGuard {
   @override
   Future<String?> call(BuildContext context, GoRouterState state) async =>
       '/not-allowed';

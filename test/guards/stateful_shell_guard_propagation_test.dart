@@ -79,7 +79,7 @@ void main() {
   });
 
   test(
-    'IGuard<void> returns void (treated as null) and can do side-effects',
+    'IGuard returns void (treated as null) and can do side-effects',
     () async {
       var called = false;
 
@@ -91,22 +91,24 @@ void main() {
   );
 }
 
-final class _FakeAllowGuard implements IGuard<String?> {
+final class _FakeAllowGuard implements IGuard {
   @override
   FutureOr<String?> call(BuildContext context, GoRouterState state) => null;
 }
 
-final class _VoidGuard implements IGuard<void> {
+final class _VoidGuard implements IGuard {
   final void Function() onCall;
   _VoidGuard(this.onCall);
 
   @override
-  FutureOr<void> call(BuildContext context, GoRouterState state) {
+  FutureOr<String?> call(BuildContext context, GoRouterState state) {
     onCall();
+
+    return null;
   }
 }
 
-final class _FakeRedirectGuard implements IGuard<String?> {
+final class _FakeRedirectGuard implements IGuard {
   final String to;
   _FakeRedirectGuard(this.to);
 
