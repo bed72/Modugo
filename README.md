@@ -21,7 +21,7 @@
   * `ShellModuleRoute`
   * `StatefulShellModuleRoute`
   * `AliasRoute`
-* 🔒 [Guards e propagateGuards](#-guards-e-propagateguards)
+* 🔒 [Guards](#-guards-e-propagateguards)
 * 🛠️ [Injeção de Dependência](#️-injeção-de-dependência)
 * ⏳ [AfterLayoutMixin](#-afterlayoutmixin)
 * 🔎 [Regex e Matching](#-regex-e-matching)
@@ -365,23 +365,85 @@ final class ShopModule extends Module {
 
 🔒 **Resumo:** Use `AliasRoute` para apelidos de `ChildRoute`. Se precisar de comportamento mais avançado (como autenticação ou lógica condicional), continue usando guards (`IGuard`) ou `ChildRoute` com cuidado.
 
+## 🔒 Guards — Protegendo suas rotas com IGuard
+
+Os **Guards** no Modugo permitem controlar o acesso a rotas com base em condições lógicas, como autenticação, papéis de usuário ou verificações de sessão. Eles são executados **antes** do carregamento da rota e podem redirecionar o usuário conforme necessário.
 
 ---
 
-## 🔒 Guards e propagateGuards
+### 🧩 Exemplo básico de Guard
 
-Você pode proteger rotas com `IGuard` ou aplicar guardas de forma recursiva usando `propagateGuards`.
+```dart
+final class CustomGuard implements IGuard {
+  final IRepository _repository;
+
+  CustomGuard({required IRepository repository}) : _repository = repository;
+
+  @override
+  FutureOr<String?> call(BuildContext context, GoRouterState state) async {
+    final data = await _repository.call();
+
+    return data == null ? '/welcome' : null;
+  }
+}
+```
+
+Neste exemplo:
+
+* O guard implementa a interface `IGuard`.
+* O método `call` é executado antes de entrar na rota.
+* Retornar uma **string** redireciona o usuário para outro caminho.
+* Retornar **null** permite o acesso normalmente.
+
+### 🚀 Aplicando Guards em rotas
+
+Você pode aplicar guards diretamente nas rotas usando o parâmetro `guards`:
+
+```dart
+child(
+  '/',
+  child: (_, _) => const HomePage(),
+  guards: [CustomGuard(repository: i.get<Repository>())],
+);
+```
+➡️ Este parâmetro está disponível apenas para `child`.
+
+### 🌀 propagateGuards — Propagando Guards para submódulos
+
+Quando você deseja aplicar um guard de forma **recursiva** para todos os filhos de um módulo, use `propagateGuards`:
 
 ```dart
 List<IRoute> routes() => propagateGuards(
-  guards: [AuthGuard()],
+  guards: [CustomGuard(repository: i.get<Repository>())],
   routes: [
     module(path: '/', module: HomeModule()),
   ],
 );
 ```
 
-✅ Com isso, todos os filhos de `HomeModule` herdam automaticamente o guard.
+✅ Assim, todas as rotas internas de `HomeModule` herdam automaticamente o guard.
+
+### 🔐 Comportamento interno
+
+Os guards no Modugo seguem esta **ordem de execução**:
+
+1. **Guards da rota atual** são executados primeiro.
+2. Se todos retornarem `null`, a navegação prossegue.
+3. Se algum retornar uma `String`, ocorre um **redirect** para esse caminho.
+4. Caso a rota contenha um `redirect` próprio, ele será avaliado **após** os guards.
+
+### ⚙️ Vantagens dos Guards
+
+* Evitam navegação não autorizada.
+* Permitem lógica condicional antes da renderização da página.
+* Suportam dependências injetadas pelo Modugo (`i.get()` ou `context.read()`).
+
+### 💡 Dica
+
+Guards são executados **de forma assíncrona**, permitindo validações complexas como chamadas a APIs, verificações em cache ou consultas ao banco local.
+
+---
+
 
 ## 🛠️ Injeção de Dependência
 
