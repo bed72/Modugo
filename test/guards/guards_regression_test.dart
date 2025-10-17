@@ -3,9 +3,10 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:modugo/src/mixins/binder_mixin.dart';
+
 import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/interfaces/route_interface.dart';
-import 'package:modugo/src/interfaces/binder_interface.dart';
 
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/extensions/guard_extension.dart';
@@ -98,7 +99,7 @@ void main() {
   );
 }
 
-final class _FakeRedirectGuard implements IGuard<String?> {
+final class _FakeRedirectGuard implements IGuard {
   final String to;
   _FakeRedirectGuard(this.to);
 

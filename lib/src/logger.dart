@@ -1,108 +1,89 @@
 // coverage:ignore-file
 
+import 'dart:io' show stdout;
+import 'dart:developer' as developer;
+
 import 'package:modugo/src/modugo.dart';
 
-import 'package:talker_logger/talker_logger.dart';
-
-/// A singleton logger utility used internally by Modugo to emit
-/// diagnostic messages during development or debugging.
+/// A dependency-free logger for Modugo.
 ///
-/// This logger is backed by the `talker_logger` package and uses
-/// custom color schemes and tags for better visibility.
+/// Prints colored logs to the console and sends structured log
+/// messages to the Dart DevTools console via [developer.log].
 ///
-/// Logging is only enabled when [Modugo.debugLogDiagnostics] is set to `true`.
-/// This ensures that logs are omitted in production environments.
-///
-/// Example usage:
-/// ```dart
-/// ModugoLogger.info('Module initialized');
-/// ModugoLogger.error('Failed to resolve dependency');
-/// ```
+/// Works across Flutter Mobile, Web, and Desktop.
+/// Logs appear only when [Modugo.debugLogDiagnostics] is `true`.
 final class Logger {
-  /// Internal logger instance from `talker_logger`.
-  late final TalkerLogger _logger;
+  Logger._();
 
-  /// Singleton instance of [Logger].
-  static final Logger _instance = Logger._internal();
+  static const _defaultTag = 'MODUGO';
 
-  /// Factory constructor returning the singleton instance.
-  factory Logger() => _instance;
+  /// Logs informational messages (blue).
+  static void information(String message) => _log(message, level: 'INFO');
 
-  /// Internal constructor that initializes the [TalkerLogger]
-  /// with custom visual settings and log levels.
-  Logger._internal() {
-    _logger = TalkerLogger(
-      settings: TalkerLoggerSettings(
-        maxLineWidth: 80,
-        enableColors: true,
-        defaultTitle: 'MODUGO',
-        colors: {
-          LogLevel.info: AnsiPen()..blue(),
-          LogLevel.error: AnsiPen()..red(),
-          LogLevel.debug: AnsiPen()..green(),
-          LogLevel.verbose: AnsiPen()..gray(),
-          LogLevel.critical: AnsiPen()..cyan(),
-          LogLevel.warning: AnsiPen()..yellow(),
-        },
-      ),
-    );
-  }
+  /// Logs debug messages (green).
+  static void debug(String message) => _log(message, level: 'DEBUG');
 
-  /// Logs an error message with a red highlight.
-  static void error(String message, {String tag = 'ERROR'}) =>
-      _log(message, tag: tag, level: LogLevel.error);
+  /// Logs warning messages (yellow).
+  static void warn(String message) => _log(message, level: 'WARN');
 
-  /// Logs a warning message with a yellow highlight.
-  static void warn(String message, {String tag = 'WARNING'}) =>
-      _log(message, tag: tag, level: LogLevel.warning);
+  /// Logs error messages (red).
+  static void error(String message) => _log(message, level: 'ERROR');
 
-  /// Logs a debug message related to module logic.
+  /// Logs module-specific messages (cyan).
   static void module(String message, {String tag = 'MODULE'}) =>
-      _log(message, tag: tag, level: LogLevel.critical);
+      _log(message, level: 'MODULE');
 
-  /// Logs a debug message related to disposal logic.
-  static void dispose(String message, {String tag = 'DISPOSE'}) =>
-      _log(message, tag: tag, level: LogLevel.debug);
-
-  /// Logs a debug message related to dependency injection.
+  /// Logs dependency injection messages (green).
   static void injection(String message, {String tag = 'INJECT'}) =>
-      _log(message, tag: tag, level: LogLevel.debug);
+      _log(message, level: 'INJECT');
 
-  /// Logs an informational message with a blue highlight.
-  static void information(String message, {String tag = 'INFORMATION'}) =>
-      _log(message, tag: tag, level: LogLevel.info);
+  /// Logs disposal messages (gray).
+  static void dispose(String message, {String tag = 'DISPOSE'}) =>
+      _log(message, level: 'DISPOSE');
 
-  /// Logs a debug message related to navigation logic.
+  /// Logs navigation messages (cyan).
   static void navigation(String message, {String tag = 'NAVIGATION'}) =>
-      _log(message, tag: tag, level: LogLevel.debug);
+      _log(message, level: 'NAVIGATION');
 
-  /// Returns the current time formatted as `HH:mm:ss`.
-  static String _now() {
-    final now = DateTime.now();
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    return '${twoDigits(now.hour)}:${twoDigits(now.minute)}:${twoDigits(now.second)}';
-  }
-
-  /// Logs a message with the given [level] and [tag], optionally prefixed with a timestamp.
-  ///
-  /// This method respects the [Modugo.debugLogDiagnostics] flag and will
-  /// skip logging if the flag is set to `false`.
-  static void _log(
-    String message, {
-    String tag = '',
-    LogLevel level = LogLevel.info,
-  }) {
+  /// Internal logging method with ANSI colors and DevTools support.
+  static void _log(String message, {required String level}) {
     if (!Modugo.debugLogDiagnostics) return;
 
-    final fullMessage = '[${_now()}] [$tag] $message';
+    final now = DateTime.now();
+    final formattedTime =
+        '${now.hour.toString().padLeft(2, '0')}:'
+        '${now.minute.toString().padLeft(2, '0')}:'
+        '${now.second.toString().padLeft(2, '0')}';
 
-    final _ = switch (level) {
-      LogLevel.info => _instance._logger.info(fullMessage),
-      LogLevel.debug => _instance._logger.debug(fullMessage),
-      LogLevel.error => _instance._logger.error(fullMessage),
-      LogLevel.warning => _instance._logger.warning(fullMessage),
-      LogLevel.critical => _instance._logger.critical(fullMessage),
-      _ => _instance._logger.info(fullMessage),
+    final formatted = '[$formattedTime][$level] $message';
+
+    // ANSI colors
+    const red = '\x1B[31m';
+    const blue = '\x1B[34m';
+    const reset = '\x1B[0m';
+    const cyan = '\x1B[36m';
+    const gray = '\x1B[90m';
+    const green = '\x1B[32m';
+    const yellow = '\x1B[33m';
+
+    final color = switch (level) {
+      'INFO' => blue,
+      'ERROR' => red,
+      'WARN' => yellow,
+      'DEBUG' => green,
+      'MODULE' => cyan,
+      'DISPOSE' => gray,
+      'INJECT' => green,
+      'NAVIGATION' => cyan,
+      _ => reset,
     };
+
+    try {
+      stdout.writeln('$color$formatted$reset');
+    } catch (_) {
+      // In environments without stdout (e.g. web), silently ignore
+    }
+
+    developer.log(formatted, name: _defaultTag);
   }
 }

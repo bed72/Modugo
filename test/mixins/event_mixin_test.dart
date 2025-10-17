@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/module.dart';
-import 'package:modugo/src/events/event_channel.dart';
+import 'package:modugo/src/events/event.dart';
 
-import 'package:modugo/src/interfaces/event_interface.dart';
+import 'package:modugo/src/mixins/event_mixin.dart';
 
 void main() {
   group('IEvent Tests', () {
@@ -22,26 +22,33 @@ void main() {
 
       module2.initState();
 
-      EventChannel.emit(_EventMock('Hello'));
+      await Future<void>.delayed(Duration.zero);
+
+      Event.emit(_EventMock('Hello'));
 
       await completer.future;
-
       expect(completer.isCompleted, true);
+
+      module2.dispose();
     });
 
     test('on<T>() registers listener and fires callback', () async {
       final completer = Completer<void>();
+      final module = _EventModule(
+        onEventCalled: (event) {
+          expect(event.message, 'Test');
+          completer.complete();
+        },
+      );
 
-      module.on<_EventMock>((event) {
-        expect(event.message, 'Test');
-        completer.complete();
-      });
+      module.initState();
 
-      EventChannel.emit(_EventMock('Test'));
+      Event.emit(_EventMock('Test'));
 
       await completer.future;
-
       expect(completer.isCompleted, true);
+
+      module.dispose();
     });
 
     test('dispose cancels subscriptions', () async {
@@ -51,21 +58,21 @@ void main() {
 
       module.dispose();
 
-      EventChannel.emit(_EventMock('Test'));
+      Event.emit(_EventMock('Test'));
 
       await Future.delayed(Duration.zero);
 
       expect(callbackCalled, false);
     });
 
-    test('disposeAll disposes all EventChannel listeners', () async {
+    test('disposeAll disposes all Event listeners', () async {
       bool callbackCalled = false;
 
       module.on<_EventMock>((_) => callbackCalled = true);
 
       module.dispose();
 
-      EventChannel.emit(_EventMock('Test'));
+      Event.emit(_EventMock('Test'));
 
       await Future.delayed(Duration.zero);
       expect(callbackCalled, false);

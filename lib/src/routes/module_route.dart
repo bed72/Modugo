@@ -28,8 +28,7 @@ import 'package:modugo/src/interfaces/route_interface.dart';
 @immutable
 final class ModuleRoute implements IRoute {
   /// The path at which this module is mounted (e.g. `/shop`, `/admin/users`).
-  /// If not passed or null the default value is '/'
-  final String? path;
+  final String path;
 
   /// Optional name for named navigation or route identification.
   final String? name;
@@ -44,9 +43,9 @@ final class ModuleRoute implements IRoute {
 
   /// Creates a [ModuleRoute] that links a [path] to a nested [module].
   const ModuleRoute({
+    required this.path,
     required this.module,
     this.name,
-    this.path = '/',
     this.parentNavigatorKey,
   });
 

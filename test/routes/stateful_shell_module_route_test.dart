@@ -9,6 +9,7 @@ import 'package:modugo/src/interfaces/route_interface.dart';
 
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
+import 'package:modugo/src/routes/routes_factory.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 import '../fakes/fakes.dart';
@@ -57,7 +58,10 @@ void main() {
         builder: (_, _, _) => const Placeholder(),
       );
 
-      expect(() => route.toRoute(path: '/'), throwsA(isA<UnsupportedError>()));
+      expect(
+        () => RoutesFactory.from([route]),
+        throwsA(isA<UnsupportedError>()),
+      );
     });
   });
 
@@ -113,16 +117,18 @@ void main() {
   });
 
   group('StatefulShellModuleRoute - navigation key', () {
-    test('toRoute generates StatefulShellRoute.indexedStack', () {
+    test('RoutesFactory generates StatefulShellRoute.indexedStack', () {
       final route = StatefulShellModuleRoute(
         builder: (_, _, _) => const Placeholder(),
         routes: [ModuleRoute(path: '/', module: _DummyModule())],
       );
 
-      final result = route.toRoute(path: '/');
+      final result = RoutesFactory.from([route]);
 
-      expect(result, isA<StatefulShellRoute>());
+      expect(result, hasLength(1));
+      expect(result.first, isA<StatefulShellRoute>());
     });
+
     test('builds StatefulShellModuleRoute with correct config', () {
       final key = GlobalKey<StatefulNavigationShellState>();
       final parentKey = GlobalKey<NavigatorState>();
