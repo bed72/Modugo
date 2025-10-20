@@ -1,3 +1,7 @@
+## [4.0.0] - 2025-10-20
+
+- Merge pull request #25 from bed72/MODUGO-2742
+
 ## [3.3.3] - 2025-10-07
 
 - :fire: fix module
