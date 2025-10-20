@@ -21,6 +21,9 @@ final class BuildContextFake extends Fake implements BuildContext {}
 final class StateFake extends Fake implements GoRouterState {
   @override
   Uri get uri => Uri.parse('/home');
+
+  @override
+  ValueKey<String> get pageKey => const ValueKey('fake-page');
 }
 
 final class StateWithParamsFake extends Fake implements GoRouterState {

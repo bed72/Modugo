@@ -29,22 +29,24 @@ final class _FakeBuildContext extends Fake implements BuildContext {}
 
 final class _FakeGoRouterState extends Fake implements GoRouterState {}
 
-final class _AllowGuard implements IGuard<String?> {
+final class _AllowGuard implements IGuard {
   @override
   Future<String?> call(BuildContext context, GoRouterState state) async => null;
 }
 
-final class _RedirectGuard implements IGuard<String?> {
+final class _RedirectGuard implements IGuard {
   @override
   Future<String?> call(BuildContext context, GoRouterState state) async =>
       '/login';
 }
 
-final class _SideEffectGuard implements IGuard<void> {
+final class _SideEffectGuard implements IGuard {
   bool called = false;
 
   @override
-  Future<void> call(BuildContext context, GoRouterState state) async {
+  Future<String?> call(BuildContext context, GoRouterState state) async {
     called = true;
+
+    return null;
   }
 }

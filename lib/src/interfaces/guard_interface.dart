@@ -14,7 +14,7 @@ import 'package:go_router/go_router.dart';
 ///
 /// ### Example:
 /// ```dart
-/// final class AuthGuard implements IGuard<String?> {
+/// final class AuthGuard implements IGuard {
 ///   @override
 ///   FutureOr<String?> call(BuildContext context, GoRouterState state) {
 ///     final authService = context.read<AuthService>();
@@ -22,10 +22,10 @@ import 'package:go_router/go_router.dart';
 ///   }
 /// }
 /// ```
-abstract interface class IGuard<T> {
+abstract interface class IGuard {
   /// Called before a route is activated.
   ///
   /// Returns `null` if access is allowed, or a string path to redirect
   /// to another location (e.g., `/login`) if access is denied.
-  FutureOr<T> call(BuildContext context, GoRouterState state);
+  FutureOr<String?> call(BuildContext context, GoRouterState state);
 }
