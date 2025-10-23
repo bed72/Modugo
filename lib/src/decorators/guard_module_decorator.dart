@@ -28,7 +28,7 @@ final class GuardModuleDecorator extends Module {
       _module = module;
 
   @override
-  void binds() => _module.binds();
+  Future<void> binds() => _module.binds();
 
   @override
   List<IBinder> imports() => _module.imports();

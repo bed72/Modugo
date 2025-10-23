@@ -30,7 +30,7 @@ import 'package:modugo/src/module.dart';
 /// ```dart
 /// final class AuthModule with IBinder {
 ///   @override
-///   void binds() {
+///   Future<void> binds() {
 ///     final i = GetIt.instance;
 ///     i.registerLazySingleton<AuthRepository>(
 ///       () => AuthRepositoryImpl(i.get<ApiClient>()),
@@ -52,7 +52,7 @@ mixin IBinder {
   /// Registers all dependency injection bindings for this module.
   ///
   /// Override this method to declare your dependencies using the [GetIt].
-  void binds() {}
+  Future<void> binds() => Future.value();
 
   /// List of imported modules that this module depends on.
   ///

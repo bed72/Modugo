@@ -96,7 +96,10 @@ void main() {
       ],
     );
 
-    final router = GoRouter(initialLocation: '/', routes: [routeOf(route)]);
+    final router = GoRouter(
+      initialLocation: '/',
+      routes: [await routeOf(route)],
+    );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
     await tester.pumpAndSettle();
@@ -181,7 +184,7 @@ void main() {
     final router = GoRouter(
       initialLocation: '/',
       errorBuilder: (_, _) => const Text('ERRO NA ROTA'),
-      routes: [routeOf(shellRoute)],
+      routes: [await routeOf(shellRoute)],
     );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
@@ -219,7 +222,7 @@ void main() {
     final router = GoRouter(
       initialLocation: '/',
       errorBuilder: (_, _) => const Text('ERRO NA ROTA'),
-      routes: [routeOf(shellRoute)],
+      routes: [await routeOf(shellRoute)],
     );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
@@ -243,7 +246,7 @@ void main() {
       routes: [ModuleRoute(path: '/', module: _DummyModule())],
     );
 
-    final result = routeOf(route);
+    final result = await routeOf(route);
     expect(result, isA<StatefulShellRoute>());
   });
 
@@ -256,7 +259,7 @@ void main() {
     );
 
     final router = GoRouter(
-      routes: RoutesFactory.from([shell]),
+      routes: await RoutesFactory.from([shell]),
       initialLocation: '/bed/product',
     );
 
@@ -282,7 +285,7 @@ void main() {
           routes: [ModuleRoute(path: '/bed', module: _DummyProductsModule())],
         );
 
-        final routes = RoutesFactory.from([shell]);
+        final routes = await RoutesFactory.from([shell]);
         expect(routes.first, isA<StatefulShellRoute>());
 
         final statefulShell = routes.first as StatefulShellRoute;
@@ -302,7 +305,7 @@ void main() {
         routes: [ModuleRoute(path: '/', module: _DummyProductsModule())],
       );
 
-      final routes = RoutesFactory.from([shell]);
+      final routes = await RoutesFactory.from([shell]);
       final statefulShell = routes.first as StatefulShellRoute;
       final branchRoutes =
           statefulShell.branches.first.routes.whereType<GoRoute>().toList();
@@ -319,7 +322,7 @@ void main() {
         routes: [ModuleRoute(path: '/bed/', module: _DummyProductsModule())],
       );
 
-      final routes = RoutesFactory.from([shell]);
+      final routes = await RoutesFactory.from([shell]);
       final statefulShell = routes.first as StatefulShellRoute;
       final branchRoutes =
           statefulShell.branches.first.routes.whereType<GoRoute>().toList();
@@ -336,7 +339,7 @@ void main() {
           routes: [ModuleRoute(path: '/', module: _ProductModule())],
         );
 
-        final routes = RoutesFactory.from([shell]);
+        final routes = await RoutesFactory.from([shell]);
         final statefulShell = routes.first as StatefulShellRoute;
         final branchRoutes =
             statefulShell.branches.first.routes.whereType<GoRoute>().toList();
@@ -355,7 +358,7 @@ void main() {
       );
 
       final router = GoRouter(
-        routes: RoutesFactory.from([shell]),
+        routes: await RoutesFactory.from([shell]),
         initialLocation: '/bed/product',
       );
 
@@ -374,7 +377,8 @@ void main() {
 
 final class _UnsupportedRoute implements IRoute {}
 
-RouteBase routeOf(IRoute route) => RoutesFactory.from([route]).first;
+Future<RouteBase> routeOf(IRoute route) async =>
+    (await RoutesFactory.from([route])).first;
 
 final class _DummyModule extends Module {
   @override

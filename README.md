@@ -4,44 +4,44 @@
 
 # Modugo
 
-**Modugo** é um sistema modular para Flutter inspirado em [Flutter Modular](https://pub.dev/packages/flutter_modular) e [Go Router Modular](https://pub.dev/packages/go_router_modular). Ele organiza sua aplicação em **módulos, rotas e injeção de dependências** de forma clara e escalável. Diferente de outros frameworks, o Modugo **não gerencia descarte automático de dependências**.
+**Modugo** é um sistema modular para Flutter inspirado em [Flutter Modular](https://pub.dev/packages/flutter_modular) e [Go Router Modular](https://pub.dev/packages/go_router_modular). Ele organiza sua aplicação em **módulos, rotas e injeção de dependências** de forma clara e escalável. Diferente de outros frameworks, o Modugo **não gerencia descarte automático de modulos**.
 
 ---
 
 ## 📖 Sumário
 
-* 🚀 [Visão Geral](#-visão-geral)
-* 📦 [Instalação](#-instalação)
-* 🏗️ [Estrutura de Projeto](#️-estrutura-de-projeto)
-* ▶️ [Primeiros Passos](#️-primeiros-passos)
-* 🧭 [Navegação](#-navegação)
-  * `Construtor Declarativo`
-  * `ChildRoute`
-  * `ModuleRoute`
-  * `ShellModuleRoute`
-  * `StatefulShellModuleRoute`
-  * `AliasRoute`
-* 🔒 [Guards](#-guards-e-propagateguards)
-* 🛠️ [Injeção de Dependência](#️-injeção-de-dependência)
-* ⏳ [AfterLayoutMixin](#-afterlayoutmixin)
-* 🔎 [Regex e Matching](#-regex-e-matching)
-* 📡 [Sistema de Eventos](#-sistema-de-eventos)
-* 📝 [Logging e Diagnóstico](#-logging-e-diagnóstico)
-* 📚 [Documentação MkDocs](#-documentação-mkdocs)
-* 🤝 [Contribuições](#-contribuições)
-* 📜 [Licença](#-licença)
+- 🚀 [Visão Geral](#-visão-geral)
+- 📦 [Instalação](#-instalação)
+- 🏗️ [Estrutura de Projeto](#️-estrutura-de-projeto)
+- ▶️ [Primeiros Passos](#️-primeiros-passos)
+- 🧭 [Navegação](#-navegação)
+  - `Construtor Declarativo`
+  - `ChildRoute`
+  - `ModuleRoute`
+  - `ShellModuleRoute`
+  - `StatefulShellModuleRoute`
+  - `AliasRoute`
+- 🔒 [Guards](#-guards-e-propagateguards)
+- 🛠️ [Injeção de Dependência](#️-injeção-de-dependência)
+- ⏳ [AfterLayout](#-afterlayoutmixin)
+- 🔎 [Regex e Matching](#-regex-e-matching)
+- 📡 [Sistema de Eventos](#-sistema-de-eventos)
+- 📝 [Logging e Diagnóstico](#-logging-e-diagnóstico)
+- 📚 [Documentação MkDocs](#-documentação-mkdocs)
+- 🤝 [Contribuições](#-contribuições)
+- 📜 [Licença](#-licença)
 
 ---
 
 ## 🚀 Visão Geral
 
-* Usa **GoRouter** para navegação.
-* Usa **GetIt** para injeção de dependências.
-* Dependências são registradas **uma única vez** ao iniciar.
-* Não há descarte automático — dependências vivem até o app encerrar.
-* Projetado para fornecer **arquitetura modular desacoplada**.
+- Usa **GoRouter** para navegação.
+- Usa **GetIt** para injeção de dependências.
+- Dependências são registradas **uma única vez** ao iniciar.
+- Não há descarte automático — as dependências de modulos vivem até o app encerrar.
+- Projetado para fornecer **arquitetura modular desacoplada**.
 
-⚠️ Atenção: Diferente das versões <3.x, o Modugo **não descarta dependências automaticamente**.
+⚠️ Atenção: Diferente das versões <3.x, o Modugo **não descarta dependências de modulos automaticamente**.
 
 ---
 
@@ -85,12 +85,7 @@ Future<void> main() async {
 
   await Modugo.configure(module: AppModule(), initialRoute: '/');
 
-  runApp(
-    ModugoLoaderWidget(
-      loading: const CircularProgressIndicator(),
-      builder: (_) => const AppWidget(),
-    ),
-  );
+  runApp(const AppWidget());
 }
 ```
 
@@ -234,7 +229,6 @@ final class AppModule extends Module {
 
 ✨ Desta forma transformamos suas definições de rota em uma DSL fluente e legível — mantendo seus módulos Modugo elegantes e escaláveis.
 
-
 ### 🔹 `route() -> ChildRoute`
 
 ```dart
@@ -289,8 +283,8 @@ O `AliasRoute` é um tipo especial de rota que funciona como **um apelido (alias
 
 #### 📌 Quando usar?
 
-* Para manter **compatibilidade retroativa** com URLs antigas.
-* Para expor uma mesma tela em **múltiplos caminhos semânticos** (ex: `/cart` e `/order`).
+- Para manter **compatibilidade retroativa** com URLs antigas.
+- Para expor uma mesma tela em **múltiplos caminhos semânticos** (ex: `/cart` e `/order`).
 
 ---
 
@@ -314,14 +308,14 @@ alias(
 
 #### ⚠️ Limitações
 
-1. O `AliasRoute` **só funciona para `ChildRoute`**.
+1. O `AliasRoute` **só funciona para `child`**.
 
-   * Ele não pode apontar para `ModuleRoute` ou `ShellModuleRoute`.
-   * Essa limitação é intencional, pois módulos inteiros ou shells representam estruturas de navegação maiores e complexas.
+   - Ele não pode apontar para `module` ou `shell`.
+   - Essa limitação é intencional, pois módulos inteiros ou shells representam estruturas de navegação maiores e complexas.
 
-2. O alias precisa **apontar para uma `ChildRoute` existente dentro do mesmo módulo**.
+2. O alias precisa **apontar para uma `child` existente dentro do mesmo módulo**.
 
-   * Caso contrário, será lançado um erro em tempo de configuração:
+   - Caso contrário, será lançado um erro em tempo de configuração:
 
      ```text
      Alias Route points to /cart/:id, but there is no corresponding Child Route.
@@ -358,12 +352,12 @@ final class ShopModule extends Module {
 
 #### 💡 Vantagens sobre RedirectRoute
 
-* Evita **loops infinitos** comuns em redirecionamentos.
-* Mantém o histórico de navegação intacto (não "teleporta" o usuário para outra URL, apenas resolve a rota).
+- Evita **loops infinitos** comuns em redirecionamentos.
+- Mantém o histórico de navegação intacto (não "teleporta" o usuário para outra URL, apenas resolve a rota).
 
 ---
 
-🔒 **Resumo:** Use `AliasRoute` para apelidos de `ChildRoute`. Se precisar de comportamento mais avançado (como autenticação ou lógica condicional), continue usando guards (`IGuard`) ou `ChildRoute` com cuidado.
+🔒 **Resumo:** Use `alias` para apelidos de `child`. Se precisar de comportamento mais avançado (como autenticação ou lógica condicional), continue usando guards (`IGuard`) ou `child` com cuidado.
 
 ## 🔒 Guards — Protegendo suas rotas com IGuard
 
@@ -390,10 +384,10 @@ final class CustomGuard implements IGuard {
 
 Neste exemplo:
 
-* O guard implementa a interface `IGuard`.
-* O método `call` é executado antes de entrar na rota.
-* Retornar uma **string** redireciona o usuário para outro caminho.
-* Retornar **null** permite o acesso normalmente.
+- O guard implementa a interface `IGuard`.
+- O método `call` é executado antes de entrar na rota.
+- Retornar uma **string** redireciona o usuário para outro caminho.
+- Retornar **null** permite o acesso normalmente.
 
 ### 🚀 Aplicando Guards em rotas
 
@@ -406,6 +400,7 @@ child(
   guards: [CustomGuard(repository: i.get<Repository>())],
 );
 ```
+
 ➡️ Este parâmetro está disponível apenas para `child`.
 
 ### 🌀 propagateGuards — Propagando Guards para submódulos
@@ -434,9 +429,9 @@ Os guards no Modugo seguem esta **ordem de execução**:
 
 ### ⚙️ Vantagens dos Guards
 
-* Evitam navegação não autorizada.
-* Permitem lógica condicional antes da renderização da página.
-* Suportam dependências injetadas pelo Modugo (`i.get()` ou `context.read()`).
+- Evitam navegação não autorizada.
+- Permitem lógica condicional antes da renderização da página.
+- Suportam dependências injetadas pelo Modugo (`i.get()` ou `context.read()`).
 
 ### 💡 Dica
 
@@ -444,13 +439,12 @@ Guards são executados **de forma assíncrona**, permitindo validações complex
 
 ---
 
-
 ## 🛠️ Injeção de Dependência
 
 ```dart
 final class HomeModule extends Module {
   @override
-  void binds() {
+  Future<void> binds() {
     i
       ..registerSingleton<ServiceRepository>(ServiceRepository())
       ..registerLazySingleton<ApiClient>(ApiClient.new);
@@ -476,10 +470,9 @@ Ou via Modugo:
 final repository = Modugo.i.get<ServiceRepository>();
 ```
 
-
 ---
 
-## ⏳ AfterLayoutMixin
+## ⏳ AfterLayout
 
 Mixin para executar código **após o primeiro layout** do widget.
 
@@ -506,9 +499,9 @@ class _MyScreenState extends State<MyScreen> with AfterLayout {
 
 💡 Útil para:
 
-* Carregar dados iniciais.
-* Disparar animações.
-* Abrir dialogs/snackbars com `BuildContext` válido.
+- Carregar dados iniciais.
+- Disparar animações.
+- Abrir dialogs/snackbars com `BuildContext` válido.
 
 ---
 
