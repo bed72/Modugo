@@ -1,5 +1,7 @@
 // coverage:ignore-file
 
+import 'dart:async';
+
 import 'package:modugo/src/module.dart';
 
 /// Mixin for declaring dependency injection bindings of a module.
@@ -52,7 +54,7 @@ mixin IBinder {
   /// Registers all dependency injection bindings for this module.
   ///
   /// Override this method to declare your dependencies using the [GetIt].
-  void binds() {}
+  FutureOr<void> binds() {}
 
   /// List of imported modules that this module depends on.
   ///

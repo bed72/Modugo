@@ -1,5 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:async';
+
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
@@ -94,7 +96,6 @@ abstract class Module with IBinder, IHelper, IRouter {
   /// Configures and returns the list of [RouteBase]s defined by this module.
   ///
   /// This method is responsible for:
-  /// - registering binds for the module (if not already active)
   /// - creating and combining child, shell, and module routes
   /// - optionally logging the final set of registered route paths when diagnostics are enabled
   ///
@@ -104,11 +105,7 @@ abstract class Module with IBinder, IHelper, IRouter {
   /// ```dart
   /// final routes = module.configureRoutes();
   /// ```
-  List<RouteBase> configureRoutes() {
-    _configureBinders();
-
-    return RoutesFactory.from(routes());
-  }
+  List<RouteBase> configureRoutes() => RoutesFactory.from(routes());
 
   /// Registers this module and all its imported modules recursively.
   ///
@@ -122,7 +119,7 @@ abstract class Module with IBinder, IHelper, IRouter {
   ///
   /// [binder] Optional module to register explicitly. If `null`, the current
   ///   module (`this`) will be used.
-  void _configureBinders({IBinder? binder}) {
+  FutureOr<void> configureBinders({IBinder? binder}) async {
     final targetBinder = binder ?? this;
 
     if (_modulesRegistered.contains(targetBinder.runtimeType)) {
@@ -131,10 +128,10 @@ abstract class Module with IBinder, IHelper, IRouter {
     }
 
     for (final imported in targetBinder.imports()) {
-      _configureBinders(binder: imported);
+      configureBinders(binder: imported);
     }
 
-    targetBinder.binds();
+    await targetBinder.binds();
     _modulesRegistered.add(targetBinder.runtimeType);
 
     Logger.module('${targetBinder.runtimeType} binds registered');

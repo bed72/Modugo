@@ -115,15 +115,17 @@ final class Modugo {
     void Function(BuildContext, GoRouterState, GoRouter)? onException,
     FutureOr<String?> Function(BuildContext, GoRouterState)? redirect,
     Page<dynamic> Function(BuildContext, GoRouterState)? errorPageBuilder,
-  }) {
+  }) async {
     if (_router != null) return _router!;
 
     _transition = pageTransition;
     _debugLogDiagnostics = debugLogDiagnostics;
     GoRouter.optionURLReflectsImperativeAPIs = true;
 
-    final routes = module.configureRoutes();
+    await module.configureBinders();
+    await i.allReady();
 
+    final routes = module.configureRoutes();
     if (navigatorKey != null) modugoNavigatorKey = navigatorKey;
 
     _router = GoRouter(

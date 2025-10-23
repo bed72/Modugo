@@ -11,8 +11,6 @@ export 'src/mixins/helper_mixin.dart';
 export 'src/mixins/router_mixin.dart';
 export 'src/mixins/after_layout_mixin.dart';
 
-export 'src/widgets/modugo_loader_widget.dart';
-
 export 'src/mixins/event_mixin.dart';
 export 'src/interfaces/guard_interface.dart';
 export 'src/interfaces/route_interface.dart';

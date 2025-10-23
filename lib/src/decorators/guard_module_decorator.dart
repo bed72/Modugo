@@ -1,5 +1,7 @@
 // coverage:ignore-file
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
 import 'package:modugo/src/guard.dart';
@@ -28,7 +30,7 @@ final class GuardModuleDecorator extends Module {
       _module = module;
 
   @override
-  void binds() => _module.binds();
+  FutureOr<void> binds() => _module.binds();
 
   @override
   List<IBinder> imports() => _module.imports();
