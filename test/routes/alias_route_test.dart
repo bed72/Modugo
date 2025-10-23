@@ -14,9 +14,9 @@ import '../fakes/fakes.dart';
 
 void main() {
   group('AliasRoute', () {
-    test('creates GoRoute from alias pointing to a ChildRoute', () {
+    test('creates GoRoute from alias pointing to a ChildRoute', () async {
       final module = _AliasModule();
-      final routes = module.configureRoutes();
+      final routes = await module.configureRoutes();
 
       final aliasRoute = routes.whereType<GoRoute>().firstWhere(
         (route) => route.path == '/alias',
@@ -26,9 +26,9 @@ void main() {
       expect(aliasRoute.pageBuilder, isNotNull);
     });
 
-    test('multiple aliases pointing to same ChildRoute', () {
+    test('multiple aliases pointing to same ChildRoute', () async {
       final module = _MultiAliasModule();
-      final routes = module.configureRoutes();
+      final routes = await module.configureRoutes();
 
       final alias1 = routes.whereType<GoRoute>().firstWhere(
         (route) => route.path == '/alias1',
@@ -45,7 +45,7 @@ void main() {
 
     test('alias respects ChildRoute guards', () async {
       final module = _GuardedAliasModule();
-      final routes = module.configureRoutes();
+      final routes = await module.configureRoutes();
 
       final alias = routes.whereType<GoRoute>().firstWhere(
         (route) => route.path == '/alias',
@@ -55,16 +55,19 @@ void main() {
       expect(value, '/blocked');
     });
 
-    test('alias preserves pageBuilder and transition from ChildRoute', () {
-      final module = _CustomPageAliasModule();
-      final routes = module.configureRoutes();
+    test(
+      'alias preserves pageBuilder and transition from ChildRoute',
+      () async {
+        final module = _CustomPageAliasModule();
+        final routes = await module.configureRoutes();
 
-      final alias = routes.whereType<GoRoute>().firstWhere(
-        (route) => route.path == '/alias',
-      );
+        final alias = routes.whereType<GoRoute>().firstWhere(
+          (route) => route.path == '/alias',
+        );
 
-      expect(alias.pageBuilder, isNotNull);
-    });
+        expect(alias.pageBuilder, isNotNull);
+      },
+    );
 
     test('throws ArgumentError if target ChildRoute does not exist', () {
       final module = _BrokenAliasModule();

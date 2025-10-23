@@ -50,7 +50,7 @@ main.dart
 // app_module.dart
 final class AppModule extends Module {
   @override
-  void binds() {
+  Future<void> binds() {
     i.registerSingleton<AuthService>((_) => AuthService());
   }
 

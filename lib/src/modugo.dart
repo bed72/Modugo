@@ -95,7 +95,7 @@ final class Modugo {
   /// - [observers], [navigatorKey], [redirect], [errorBuilder], etc: standard GoRouter options
   ///
   /// Returns the initialized [GoRouter].
-  static FutureOr<GoRouter> configure({
+  static Future<GoRouter> configure({
     required Module module,
     Object? initialExtra,
     int redirectLimit = 2,
@@ -115,14 +115,14 @@ final class Modugo {
     void Function(BuildContext, GoRouterState, GoRouter)? onException,
     FutureOr<String?> Function(BuildContext, GoRouterState)? redirect,
     Page<dynamic> Function(BuildContext, GoRouterState)? errorPageBuilder,
-  }) {
+  }) async {
     if (_router != null) return _router!;
 
     _transition = pageTransition;
     _debugLogDiagnostics = debugLogDiagnostics;
     GoRouter.optionURLReflectsImperativeAPIs = true;
 
-    final routes = module.configureRoutes();
+    final routes = await module.configureRoutes();
 
     if (navigatorKey != null) modugoNavigatorKey = navigatorKey;
 

@@ -70,7 +70,7 @@ void main() {
     () async {
       final module = _StatefulShellWithMultipleGuardsModule();
 
-      final routes = module.configureRoutes();
+      final routes = await module.configureRoutes();
       final shell = routes.whereType<StatefulShellRoute>().first;
 
       final route = shell.branches.first.routes.whereType<GoRoute>().first;
@@ -86,7 +86,7 @@ void main() {
     () async {
       final module = _StatefulShellGuardedModule();
 
-      final routes = module.configureRoutes();
+      final routes = await module.configureRoutes();
       final shell = routes.whereType<StatefulShellRoute>().first;
 
       final guardedRoute =
@@ -117,13 +117,13 @@ void main() {
   });
 
   group('StatefulShellModuleRoute - navigation key', () {
-    test('RoutesFactory generates StatefulShellRoute.indexedStack', () {
+    test('RoutesFactory generates StatefulShellRoute.indexedStack', () async {
       final route = StatefulShellModuleRoute(
         builder: (_, _, _) => const Placeholder(),
         routes: [ModuleRoute(path: '/', module: _DummyModule())],
       );
 
-      final result = RoutesFactory.from([route]);
+      final result = await RoutesFactory.from([route]);
 
       expect(result, hasLength(1));
       expect(result.first, isA<StatefulShellRoute>());
