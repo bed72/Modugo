@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
@@ -52,13 +50,13 @@ import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 /// ### 🧭 Example
 /// ```dart
 /// final routes = RoutesFactory.from([
-///   ChildRoute(path: '/home', child: (_, __) => const HomePage()),
+///   ChildRoute(path: '/home', child: (_, _) => const HomePage()),
 ///   ModuleRoute(path: '/auth', module: AuthModule()),
 ///   ShellModuleRoute(
-///     builder: (_, __, child) => Scaffold(body: child),
+///     builder: (_, _, child) => Scaffold(body: child),
 ///     routes: [
-///       ChildRoute(path: '/a', child: (_, __) => const APage()),
-///       ChildRoute(path: '/b', child: (_, __) => const BPage()),
+///       ChildRoute(path: '/a', child: (_, _) => const APage()),
+///       ChildRoute(path: '/b', child: (_, _) => const BPage()),
 ///     ],
 ///   ),
 /// ]);
@@ -112,12 +110,12 @@ final class RoutesFactory {
   /// ### 🧭 Example
   /// ```dart
   /// final routes = RoutesFactory.from([
-  ///   ChildRoute(path: '/home', child: (_, __) => const HomePage()),
+  ///   ChildRoute(path: '/home', child: (_, _) => const HomePage()),
   ///   ModuleRoute(path: '/auth', module: AuthModule()),
   ///   ShellModuleRoute(
-  ///     builder: (_, __, child) => AppShell(child: child),
+  ///     builder: (_, _, child) => AppShell(child: child),
   ///     routes: [
-  ///       ChildRoute(path: '/feed', child: (_, __) => const FeedPage()),
+  ///       ChildRoute(path: '/feed', child: (_, _) => const FeedPage()),
   ///     ],
   ///   ),
   /// ]);
@@ -128,7 +126,7 @@ final class RoutesFactory {
   /// Returns:
   /// A single, flattened [List] of [RouteBase] objects ready for
   /// consumption by [GoRouter].
-  static Future<List<RouteBase>> from(List<IRoute> routes) async {
+  static List<RouteBase> from(List<IRoute> routes) {
     final childs = <GoRoute>[];
     final modules = <GoRoute>[];
     final shells = <RouteBase>[];
@@ -142,13 +140,13 @@ final class RoutesFactory {
           childs.add(_createAlias(route, routes));
 
         case ModuleRoute():
-          modules.add(await _createModule(route));
+          modules.add(_createModule(route));
 
         case ShellModuleRoute():
-          shells.add(await _createShell(route));
+          shells.add(_createShell(route));
 
         case StatefulShellModuleRoute():
-          shells.add(await _createStatefulShell(route));
+          shells.add(_createStatefulShell(route));
 
         case _:
           throw UnsupportedError(
@@ -213,7 +211,7 @@ final class RoutesFactory {
     );
   }
 
-  static Future<GoRoute> _createModule(ModuleRoute route) async {
+  static GoRoute _createModule(ModuleRoute route) {
     final module = route.module;
     final first = module.routes().whereType<ChildRoute>().firstOrNull;
 
@@ -229,7 +227,7 @@ final class RoutesFactory {
     return GoRoute(
       path: route.path,
       name: route.name,
-      routes: await module.configureRoutes(),
+      routes: module.configureRoutes(),
       parentNavigatorKey: route.parentNavigatorKey ?? first.parentNavigatorKey,
       redirect: (context, state) async {
         if (module is GuardModuleDecorator) {
@@ -257,14 +255,16 @@ final class RoutesFactory {
     );
   }
 
-  static Future<ShellRoute> _createShell(ShellModuleRoute route) async {
-    final futures = route.routes.map((iRoute) async {
-      if (iRoute is ChildRoute) return _createChild(iRoute);
-      if (iRoute is ModuleRoute) return await _createModule(iRoute);
-      return null;
-    });
-
-    final routes = (await Future.wait(futures)).whereType<RouteBase>().toList();
+  static ShellRoute _createShell(ShellModuleRoute route) {
+    final routes =
+        route.routes
+            .map((iRoute) {
+              if (iRoute is ChildRoute) return _createChild(iRoute);
+              if (iRoute is ModuleRoute) return _createModule(iRoute);
+              return null;
+            })
+            .whereType<RouteBase>()
+            .toList();
 
     return ShellRoute(
       routes: routes,
@@ -287,67 +287,69 @@ final class RoutesFactory {
     );
   }
 
-  static Future<StatefulShellRoute> _createStatefulShell(
+  static StatefulShellRoute _createStatefulShell(
     StatefulShellModuleRoute route,
-  ) async {
-    final branches = await Future.wait(
-      route.routes.asMap().entries.map((entry) async {
-        final index = entry.key;
-        final child = entry.value;
+  ) {
+    final branches =
+        route.routes.asMap().entries.map((entry) {
+          final index = entry.key;
+          final child = entry.value;
 
-        if (child is ModuleRoute) {
-          final moduleRoutes = await child.module.configureRoutes();
+          if (child is ModuleRoute) {
+            final module = child.module.configureRoutes();
 
-          final routes =
-              moduleRoutes.map((route) {
-                if (route is! GoRoute) return route;
+            final routes =
+                module.map((route) {
+                  if (route is! GoRoute) return route;
 
-                final composed = _normalizeComposedPath(child.path, route.path);
-                _validatePath(composed, 'StatefulShellModuleRoute');
+                  final composed = _normalizeComposedPath(
+                    child.path,
+                    route.path,
+                  );
+                  _validatePath(composed, 'StatefulShellModuleRoute');
 
-                return GoRoute(
-                  path: composed,
-                  name: route.name,
-                  routes: route.routes,
-                  redirect: route.redirect,
-                  pageBuilder: route.pageBuilder,
-                  parentNavigatorKey:
-                      route.parentNavigatorKey ?? child.parentNavigatorKey,
-                );
-              }).toList();
+                  return GoRoute(
+                    path: composed,
+                    name: route.name,
+                    routes: route.routes,
+                    redirect: route.redirect,
+                    pageBuilder: route.pageBuilder,
+                    parentNavigatorKey:
+                        route.parentNavigatorKey ?? child.parentNavigatorKey,
+                  );
+                }).toList();
 
-          return StatefulShellBranch(
-            routes: routes,
-            navigatorKey: child.parentNavigatorKey,
-          );
-        }
+            return StatefulShellBranch(
+              routes: routes,
+              navigatorKey: child.parentNavigatorKey,
+            );
+          }
 
-        if (child is ChildRoute) {
-          final path = child.path.isEmpty ? '/' : child.path;
-          _validatePath(path, 'StatefulShellModuleRoute');
+          if (child is ChildRoute) {
+            final path = child.path.isEmpty ? '/' : child.path;
+            _validatePath(path, 'StatefulShellModuleRoute');
 
-          return StatefulShellBranch(
-            routes: [
-              _createChild(
-                ChildRoute(
-                  path: path,
-                  child: child.child,
-                  guards: child.guards,
-                  transition: child.transition,
-                  pageBuilder: child.pageBuilder,
-                  name: child.name ?? 'branch_$index',
-                  parentNavigatorKey: child.parentNavigatorKey,
+            return StatefulShellBranch(
+              routes: [
+                _createChild(
+                  ChildRoute(
+                    path: path,
+                    child: child.child,
+                    guards: child.guards,
+                    transition: child.transition,
+                    pageBuilder: child.pageBuilder,
+                    name: child.name ?? 'branch_$index',
+                    parentNavigatorKey: child.parentNavigatorKey,
+                  ),
                 ),
-              ),
-            ],
-          );
-        }
+              ],
+            );
+          }
 
-        throw UnsupportedError(
-          'Unsupported route type inside StatefulShellModuleRoute: ${child.runtimeType}',
-        );
-      }),
-    );
+          throw UnsupportedError(
+            'Unsupported route type inside StatefulShellModuleRoute: ${child.runtimeType}',
+          );
+        }).toList();
 
     return StatefulShellRoute.indexedStack(
       key: route.key,

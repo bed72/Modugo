@@ -13,40 +13,37 @@ import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 void main() {
   group('StatefulShellModuleRoute - ModuleRoute path prefix', () {
-    test(
-      'Should prefix all internal module routes with ModuleRoute.path',
-      () async {
-        final shell = StatefulShellModuleRoute(
-          builder: (_, _, _) => const _DummyPage('Shell'),
-          routes: [ModuleRoute(path: '/bed', module: _DummyProductsModule())],
-        );
+    test('Should prefix all internal module routes with ModuleRoute.path', () {
+      final shell = StatefulShellModuleRoute(
+        builder: (_, _, _) => const _DummyPage('Shell'),
+        routes: [ModuleRoute(path: '/bed', module: _DummyProductsModule())],
+      );
 
-        final routes = await RoutesFactory.from([shell]);
-        expect(routes, isNotEmpty);
-        expect(routes.first, isA<StatefulShellRoute>());
+      final routes = RoutesFactory.from([shell]);
+      expect(routes, isNotEmpty);
+      expect(routes.first, isA<StatefulShellRoute>());
 
-        final statefulShell = routes.first as StatefulShellRoute;
-        final branches = statefulShell.branches;
-        expect(branches.length, 1);
+      final statefulShell = routes.first as StatefulShellRoute;
+      final branches = statefulShell.branches;
+      expect(branches.length, 1);
 
-        final routesInBranch =
-            branches.first.routes.whereType<GoRoute>().toList();
+      final routesInBranch =
+          branches.first.routes.whereType<GoRoute>().toList();
 
-        expect(routesInBranch, isNotEmpty);
-        expect(routesInBranch[0].path, equals('/bed/product'));
-        expect(routesInBranch[1].path, equals('/bed/product/add'));
-      },
-    );
+      expect(routesInBranch, isNotEmpty);
+      expect(routesInBranch[0].path, equals('/bed/product'));
+      expect(routesInBranch[1].path, equals('/bed/product/add'));
+    });
 
     test(
       'Should not generate duplicate slashes when prefix or child starts with "/"',
-      () async {
+      () {
         final shell = StatefulShellModuleRoute(
           builder: (_, _, _) => const _DummyPage('Shell'),
           routes: [ModuleRoute(path: '/bed/', module: _DummyProductsModule())],
         );
 
-        final routes = await RoutesFactory.from([shell]);
+        final routes = RoutesFactory.from([shell]);
         final statefulShell = routes.first as StatefulShellRoute;
         final branchRoutes =
             statefulShell.branches.first.routes.whereType<GoRoute>().toList();

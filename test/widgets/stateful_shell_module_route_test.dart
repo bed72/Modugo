@@ -96,10 +96,7 @@ void main() {
       ],
     );
 
-    final router = GoRouter(
-      initialLocation: '/',
-      routes: [await routeOf(route)],
-    );
+    final router = GoRouter(initialLocation: '/', routes: [routeOf(route)]);
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
     await tester.pumpAndSettle();
@@ -183,15 +180,15 @@ void main() {
 
     final router = GoRouter(
       initialLocation: '/',
+      routes: [routeOf(shellRoute)],
       errorBuilder: (_, _) => const Text('ERRO NA ROTA'),
-      routes: [await routeOf(shellRoute)],
     );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
     await tester.pumpAndSettle();
 
-    expect(find.text('Shell UI'), findsOneWidget);
     expect(find.text('Home'), findsOneWidget);
+    expect(find.text('Shell UI'), findsOneWidget);
 
     router.go('/cafe/dp/12345');
     await tester.pumpAndSettle();
@@ -221,8 +218,8 @@ void main() {
 
     final router = GoRouter(
       initialLocation: '/',
+      routes: [routeOf(shellRoute)],
       errorBuilder: (_, _) => const Text('ERRO NA ROTA'),
-      routes: [await routeOf(shellRoute)],
     );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
@@ -246,7 +243,7 @@ void main() {
       routes: [ModuleRoute(path: '/', module: _DummyModule())],
     );
 
-    final result = await routeOf(route);
+    final result = routeOf(route);
     expect(result, isA<StatefulShellRoute>());
   });
 
@@ -259,16 +256,16 @@ void main() {
     );
 
     final router = GoRouter(
-      routes: await RoutesFactory.from([shell]),
       initialLocation: '/bed/product',
+      routes: RoutesFactory.from([shell]),
     );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Product'), findsOneWidget);
     expect(find.text('Add'), findsNothing);
+    expect(find.text('Product'), findsOneWidget);
 
     router.go('/bed/product/add');
     await tester.pumpAndSettle();
@@ -285,7 +282,7 @@ void main() {
           routes: [ModuleRoute(path: '/bed', module: _DummyProductsModule())],
         );
 
-        final routes = await RoutesFactory.from([shell]);
+        final routes = RoutesFactory.from([shell]);
         expect(routes.first, isA<StatefulShellRoute>());
 
         final statefulShell = routes.first as StatefulShellRoute;
@@ -305,7 +302,7 @@ void main() {
         routes: [ModuleRoute(path: '/', module: _DummyProductsModule())],
       );
 
-      final routes = await RoutesFactory.from([shell]);
+      final routes = RoutesFactory.from([shell]);
       final statefulShell = routes.first as StatefulShellRoute;
       final branchRoutes =
           statefulShell.branches.first.routes.whereType<GoRoute>().toList();
@@ -322,7 +319,7 @@ void main() {
         routes: [ModuleRoute(path: '/bed/', module: _DummyProductsModule())],
       );
 
-      final routes = await RoutesFactory.from([shell]);
+      final routes = RoutesFactory.from([shell]);
       final statefulShell = routes.first as StatefulShellRoute;
       final branchRoutes =
           statefulShell.branches.first.routes.whereType<GoRoute>().toList();
@@ -339,7 +336,7 @@ void main() {
           routes: [ModuleRoute(path: '/', module: _ProductModule())],
         );
 
-        final routes = await RoutesFactory.from([shell]);
+        final routes = RoutesFactory.from([shell]);
         final statefulShell = routes.first as StatefulShellRoute;
         final branchRoutes =
             statefulShell.branches.first.routes.whereType<GoRoute>().toList();
@@ -358,8 +355,8 @@ void main() {
       );
 
       final router = GoRouter(
-        routes: await RoutesFactory.from([shell]),
         initialLocation: '/bed/product',
+        routes: RoutesFactory.from([shell]),
       );
 
       await tester.pumpWidget(MaterialApp.router(routerConfig: router));
@@ -377,8 +374,7 @@ void main() {
 
 final class _UnsupportedRoute implements IRoute {}
 
-Future<RouteBase> routeOf(IRoute route) async =>
-    (await RoutesFactory.from([route])).first;
+RouteBase routeOf(IRoute route) => RoutesFactory.from([route]).first;
 
 final class _DummyModule extends Module {
   @override

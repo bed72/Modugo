@@ -122,7 +122,7 @@ final class Modugo {
     _debugLogDiagnostics = debugLogDiagnostics;
     GoRouter.optionURLReflectsImperativeAPIs = true;
 
-    final routes = await module.configureRoutes();
+    final routes = module.configureRoutes();
 
     if (navigatorKey != null) modugoNavigatorKey = navigatorKey;
 

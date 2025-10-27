@@ -12,9 +12,9 @@ import '../fakes/fakes.dart';
 
 void main() {
   group('Module with AliasRoute', () {
-    test('creates GoRoute for alias pointing to valid ChildRoute', () async {
+    test('creates GoRoute for alias pointing to valid ChildRoute', () {
       final module = _ModuleWithAlias();
-      final routes = await module.configureRoutes();
+      final routes = module.configureRoutes();
 
       final alias = routes.whereType<GoRoute>().firstWhere(
         (route) => route.path == '/alias',
@@ -26,9 +26,9 @@ void main() {
       expect((page as CustomTransitionPage).child, isA<Text>());
     });
 
-    test('multiple aliases can point to the same ChildRoute', () async {
+    test('multiple aliases can point to the same ChildRoute', () {
       final module = _ModuleWithMultipleAliases();
-      final routes = await module.configureRoutes();
+      final routes = module.configureRoutes();
 
       final alias1 = routes.whereType<GoRoute>().firstWhere(
         (route) => route.path == '/alias1',
@@ -43,7 +43,7 @@ void main() {
 
     test('alias respects ChildRoute guards', () async {
       final module = _ModuleWithGuardedAlias();
-      final routes = await module.configureRoutes();
+      final routes = module.configureRoutes();
 
       final alias = routes.whereType<GoRoute>().firstWhere(
         (route) => route.path == '/alias',
@@ -58,9 +58,9 @@ void main() {
       expect(() => module.configureRoutes(), throwsArgumentError);
     });
 
-    test('child and alias coexist in routes', () async {
+    test('child and alias coexist in routes', () {
       final module = _ModuleWithAlias();
-      final routes = await module.configureRoutes();
+      final routes = module.configureRoutes();
 
       final child = routes.whereType<GoRoute>().firstWhere(
         (route) => route.path == '/original',

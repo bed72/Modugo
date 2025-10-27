@@ -121,7 +121,7 @@ final class _FakeModule extends Module {
   _FakeModule(this._routes);
 
   @override
-  Future<void> binds() => Future.value();
+  void binds() => Future.value();
 
   @override
   List<IBinder> imports() => const [];

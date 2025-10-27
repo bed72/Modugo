@@ -51,7 +51,7 @@ final Set<Type> _modulesRegistered = {};
 ///   ];
 ///
 ///   @override
-///   Future<void> binds() {
+///   void binds() {
 ///     i
 ///       ..registerLazySingleton<HomeController>(() => HomeController())
 ///       ..registerSingleton<ApiClient>(ApiClient());
@@ -104,8 +104,8 @@ abstract class Module with IBinder, IHelper, IRouter {
   /// ```dart
   /// final routes = module.configureRoutes();
   /// ```
-  Future<List<RouteBase>> configureRoutes() async {
-    await _configureBinders();
+  List<RouteBase> configureRoutes() {
+    _configureBinders();
 
     return RoutesFactory.from(routes());
   }
@@ -122,7 +122,7 @@ abstract class Module with IBinder, IHelper, IRouter {
   ///
   /// [binder] Optional module to register explicitly. If `null`, the current
   ///   module (`this`) will be used.
-  Future<void> _configureBinders({IBinder? binder}) async {
+  void _configureBinders({IBinder? binder}) async {
     final targetBinder = binder ?? this;
 
     if (_modulesRegistered.contains(targetBinder.runtimeType)) {
@@ -134,7 +134,7 @@ abstract class Module with IBinder, IHelper, IRouter {
       _configureBinders(binder: imported);
     }
 
-    await targetBinder.binds();
+    targetBinder.binds();
     _modulesRegistered.add(targetBinder.runtimeType);
 
     Logger.module('${targetBinder.runtimeType} binds registered');

@@ -19,7 +19,7 @@ final class HomeModule extends Module {
   ];
 
   @override
-  Future<void> binds() {
+  void binds() {
     i
       ..registerSingleton<ServiceRepository>(ServiceRepository.instance) // singleton
       ..registerLazySingleton<OtherServiceRepository>(OtherServiceRepositoryImpl.new); // lazy singleton

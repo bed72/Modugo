@@ -444,7 +444,7 @@ Guards são executados **de forma assíncrona**, permitindo validações complex
 ```dart
 final class HomeModule extends Module {
   @override
-  Future<void> binds() {
+  void binds() {
     i
       ..registerSingleton<ServiceRepository>(ServiceRepository())
       ..registerLazySingleton<ApiClient>(ApiClient.new);

@@ -20,14 +20,14 @@ import '../fakes/fakes.dart';
 
 void main() {
   group('RoutesFactory.from', () {
-    test('creates GoRoute for ChildRoute and validates path', () async {
+    test('creates GoRoute for ChildRoute and validates path', () {
       final route = ChildRoute(
         name: 'home',
         path: '/home',
         child: (_, _) => const Placeholder(),
       );
 
-      final result = await RoutesFactory.from([route]);
+      final result = RoutesFactory.from([route]);
       expect(result, hasLength(1));
       expect(result.first, isA<GoRoute>());
       expect((result.first as GoRoute).path, '/home');
@@ -40,7 +40,7 @@ void main() {
         child: (_, _) => const Placeholder(),
       );
 
-      final goRoute = (await RoutesFactory.from([route])).first as GoRoute;
+      final goRoute = RoutesFactory.from([route]).first as GoRoute;
       final redirect = await goRoute.redirect!(BuildContextFake(), StateFake());
 
       expect(redirect, '/login');
@@ -53,17 +53,17 @@ void main() {
         child: (_, _) => const Placeholder(),
       );
 
-      final routes = (await RoutesFactory.from([route])).first as GoRoute;
+      final routes = RoutesFactory.from([route]).first as GoRoute;
       final redirect = await routes.redirect!(BuildContextFake(), StateFake());
 
       expect(redirect, isNull);
     });
 
-    test('creates GoRoute for ModuleRoute and validates nested path', () async {
+    test('creates GoRoute for ModuleRoute and validates nested path', () {
       final module = _DummyModule();
       final route = ModuleRoute(path: '/mod', module: module);
 
-      final result = await RoutesFactory.from([route]);
+      final result = RoutesFactory.from([route]);
       expect(result.first, isA<GoRoute>());
       expect((result.first as GoRoute).path, '/mod');
     });
@@ -82,7 +82,7 @@ void main() {
       );
 
       final route = ModuleRoute(path: '/mod', module: guardedModule);
-      final routes = (await RoutesFactory.from([route])).first as GoRoute;
+      final routes = RoutesFactory.from([route]).first as GoRoute;
 
       final redirect = await routes.redirect!(BuildContextFake(), StateFake());
 
@@ -97,7 +97,7 @@ void main() {
       );
       final alias = AliasRoute(from: '/alias', to: '/target');
 
-      final result = await RoutesFactory.from([target, alias]);
+      final result = RoutesFactory.from([target, alias]);
       expect(result, hasLength(2));
 
       final aliasRoute = result[1] as GoRoute;
@@ -115,7 +115,7 @@ void main() {
       expect(() => RoutesFactory.from([alias]), throwsA(isA<ArgumentError>()));
     });
 
-    test('creates ShellRoute with nested routes', () async {
+    test('creates ShellRoute with nested routes', () {
       final shell = ShellModuleRoute(
         builder: (_, _, child) => child,
         routes: [
@@ -124,14 +124,14 @@ void main() {
         ],
       );
 
-      final result = await RoutesFactory.from([shell]);
+      final result = RoutesFactory.from([shell]);
       expect(result.first, isA<ShellRoute>());
 
       final shellRoute = result.first as ShellRoute;
       expect(shellRoute.routes.length, 2);
     });
 
-    test('creates StatefulShellRoute with child branches', () async {
+    test('creates StatefulShellRoute with child branches', () {
       final shell = StatefulShellModuleRoute(
         builder: (_, _, shell) => shell,
         routes: [
@@ -140,14 +140,14 @@ void main() {
         ],
       );
 
-      final result = await RoutesFactory.from([shell]);
+      final result = RoutesFactory.from([shell]);
       expect(result.first, isA<StatefulShellRoute>());
 
       final shellRoute = result.first as StatefulShellRoute;
       expect(shellRoute.branches.length, 2);
     });
 
-    test('creates StatefulShellRoute with nested ModuleRoutes', () async {
+    test('creates StatefulShellRoute with nested ModuleRoutes', () {
       final shell = StatefulShellModuleRoute(
         builder: (_, _, shell) => shell,
         routes: [
@@ -156,7 +156,7 @@ void main() {
         ],
       );
 
-      final result = await RoutesFactory.from([shell]);
+      final result = RoutesFactory.from([shell]);
       final route = result.first as StatefulShellRoute;
 
       expect(route.branches.length, 2);
@@ -189,7 +189,7 @@ void main() {
         child: (_, _) => throw Exception('Boom'),
       );
 
-      final routes = (await RoutesFactory.from([route])).first as GoRoute;
+      final routes = RoutesFactory.from([route]).first as GoRoute;
 
       expect(
         () => routes.pageBuilder!(BuildContextFake(), StateFake()),
@@ -204,7 +204,7 @@ void main() {
         child: (_, _) => const Placeholder(),
       );
 
-      final routes = (await RoutesFactory.from([route])).first as GoRoute;
+      final routes = RoutesFactory.from([route]).first as GoRoute;
       expect(
         () async => await routes.redirect!(BuildContextFake(), StateFake()),
         throwsException,
@@ -245,7 +245,7 @@ final class _DummyModule extends Module {
   bool called = false;
 
   @override
-  Future<void> binds() async {
+  void binds() async {
     called = true;
   }
 

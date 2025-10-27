@@ -80,7 +80,7 @@ final class AppModule extends Module {
 /// The home module that handles feature-specific dependencies and routes.
 final class HomeModule extends Module {
   @override
-  Future<void> binds() async {
+  void binds() async {
     // Example using SharedPreferences
     // i.registerSingletonAsync<SharedPreferences>(
     //   () async => await SharedPreferences.getInstance(),
