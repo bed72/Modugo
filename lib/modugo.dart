@@ -18,8 +18,8 @@ export 'src/interfaces/route_interface.dart';
 export 'src/models/route_change_event_model.dart';
 
 export 'src/extensions/uri_extension.dart';
-export 'src/extensions/context_state_extension.dart';
 export 'src/extensions/context_match_extension.dart';
+export 'src/extensions/go_router_state_extension.dart';
 export 'src/extensions/context_injection_extension.dart';
 export 'src/extensions/context_navigation_extension.dart';
 

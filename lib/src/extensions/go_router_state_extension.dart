@@ -1,10 +1,10 @@
-import 'package:flutter/widgets.dart';
+// coverage:ignore-file
 
 import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/routes/paths/function.dart';
 
-/// Extension on [BuildContext] that provides convenient access to the current [GoRouterState].
+/// Extension on [GoRouterState].
 ///
 /// This extension exposes several properties and helpers to work with the
 /// current navigation state, including:
@@ -20,45 +20,27 @@ import 'package:modugo/src/routes/paths/function.dart';
 ///
 /// Example:
 /// ```dart
-/// final id = context.getPathParam('id');
-/// final search = context.getStringQueryParam('q');
-/// final isInitial = context.isInitialRoute;
-/// final args = context.getExtra<MyModel>();
+/// final id = state.getPathParam('id');
+/// final search = state.getStringQueryParam('q');
+/// final isInitial = state.isInitialRoute;
+/// final args = state.getExtra<MyModel>();
 ///
-/// final uri = context.uri;
-/// final routeName = context.name;
-/// final fullPath = context.fullPath;
+/// final uri = state.uri;
+/// final routeName = state.name;
+/// final fullPath = state.fullPath;
 /// ```
-extension ContextStateExtension on BuildContext {
-  /// Retrieves the current [GoRouterState] associated with this [BuildContext].
-  ///
-  /// This provides access to:
-  /// - current `path`, `uri`, `name`
-  /// - route parameters and query parameters
-  /// - any extra data passed during navigation
-  ///
-  /// Useful when you need to inspect the current route state inside a widget,
-  /// such as reading parameters or checking which route is active.
-  ///
-  /// Example:
-  /// ```dart
-  /// final name = context.state.name;
-  /// final id = context.state.pathParameters['id'];
-  /// final tab = context.state.uri.queryParameters['tab'];
-  /// ```
-  GoRouterState get state => GoRouterState.of(this);
-
+extension GoRouterStateExtension on GoRouterState {
   /// Returns the [Uri] object representing the current route.
   ///
   /// Useful for extracting query parameters, fragments, and path segments
-  /// from the active route within a widget context.
-  Uri get uri => state.uri;
+  /// from the active route within a widget state.
+  Uri get uri => this.uri;
 
   /// The current matched route path.
   ///
   /// Example:
   /// ```dart
-  /// if (context.path == '/home') {
+  /// if (state.path == '/home') {
   ///   // You're on the home screen
   /// }
   /// ```
@@ -68,7 +50,7 @@ extension ContextStateExtension on BuildContext {
   ///
   /// This corresponds to the `name` property set in your route configuration.
   /// It can be used to identify or log the current route by its named reference.
-  String? get name => state.name;
+  String? get name => this.name;
 
   /// Returns the full navigated path, including query parameters.
   ///
@@ -81,9 +63,9 @@ extension ContextStateExtension on BuildContext {
   ///
   /// Example:
   /// ```dart
-  /// final data = context.getExtra<MyData>();
+  /// final data = state.getExtra<MyData>();
   /// ```
-  T? getExtra<T>() => state.extra as T?;
+  T? getExtra<T>() => extra as T?;
 
   /// Returns `true` if the current route has the given [name].
   ///
@@ -91,11 +73,11 @@ extension ContextStateExtension on BuildContext {
   ///
   /// Example:
   /// ```dart
-  /// if (context.isCurrentRoute('dashboard')) {
+  /// if (state.isCurrentRoute('dashboard')) {
   ///   // Show back button logic
   /// }
   /// ```
-  bool isCurrentRoute(String name) => state.name == name;
+  bool isCurrentRoute(String name) => name == name;
 
   /// Returns the path from the `extra` map if present, or falls back to [GoRouterState.uri.path].
   ///
@@ -108,7 +90,7 @@ extension ContextStateExtension on BuildContext {
   /// if (path.startsWith('/cart')) { ... }
   /// ```
   String get effectivePath {
-    final data = state.extra;
+    final data = extra;
     if (data is Map<String, dynamic>) {
       final value = data['path'];
       if (value is String) return value;
@@ -117,32 +99,32 @@ extension ContextStateExtension on BuildContext {
   }
 
   /// Returns `true` if the current matched route is the root (`'/'`).
-  bool get isInitialRoute => state.matchedLocation == '/';
+  bool get isInitialRoute => matchedLocation == '/';
 
   /// Returns the segments of the current URI path as a list of strings.
   ///
   /// Example:
   /// ```dart
   /// // '/profile/settings' → ['profile', 'settings']
-  /// final segments = context.locationSegments;
+  /// final segments = state.locationSegments;
   /// ```
-  List<String> get locationSegments => state.uri.pathSegments;
+  List<String> get locationSegments => uri.pathSegments;
 
   /// Returns the value of a dynamic path parameter by its [param] name.
   ///
   /// Example:
   /// ```dart
-  /// final userId = context.getPathParam('id'); // from '/user/:id'
+  /// final userId = state.getPathParam('id'); // from '/user/:id'
   /// ```
-  String? getPathParam(String param) => state.pathParameters[param];
+  String? getPathParam(String param) => pathParameters[param];
 
   /// Returns the value of a query parameter as a string, if it exists.
   ///
   /// Example:
   /// ```dart
-  /// final search = context.getStringQueryParam('q'); // from '?q=flutter'
+  /// final search = state.getStringQueryParam('q'); // from '?q=flutter'
   /// ```
-  String? getStringQueryParam(String key) => state.uri.queryParameters[key];
+  String? getStringQueryParam(String key) => uri.queryParameters[key];
 
   /// Returns the value of a query parameter as an integer, if parsable.
   ///
@@ -150,16 +132,16 @@ extension ContextStateExtension on BuildContext {
   ///
   /// Example:
   /// ```dart
-  /// final page = context.getIntQueryParam('page');
+  /// final page = state.getIntQueryParam('page');
   /// ```
   int? getIntQueryParam(String key) =>
-      int.tryParse(state.uri.queryParameters[key] ?? '');
+      int.tryParse(uri.queryParameters[key] ?? '');
 
   /// Builds a complete path string by applying [args] to a route [pattern].
   ///
   /// Example:
   /// ```dart
-  /// final path = context.buildPath('/user/:id', {'id': '42'});
+  /// final path = state.buildPath('/user/:id', {'id': '42'});
   /// // path → '/user/42'
   /// ```
   String buildPath(String pattern, Map<String, String> args) {
@@ -177,12 +159,12 @@ extension ContextStateExtension on BuildContext {
   ///
   /// Example:
   /// ```dart
-  /// final isActive = context.getBoolQueryParam('active');
+  /// final isActive = state.getBoolQueryParam('active');
   /// ```
   bool? getBoolQueryParam(String key) {
-    final value = state.uri.queryParameters[key];
-    if (value == null) return null;
-    return value.toLowerCase() == 'true';
+    final data = uri.queryParameters[key];
+    if (data == null) return null;
+    return data.toLowerCase() == 'true';
   }
 
   /// Retrieves the `extra` data passed via navigation and **throws** if the type does not match.
@@ -192,14 +174,14 @@ extension ContextStateExtension on BuildContext {
   ///
   /// Example:
   /// ```dart
-  /// final product = context.argumentsOrThrow<ProductModel>();
+  /// final product = state.argumentsOrThrow<ProductModel>();
   /// ```
   ///
   /// Throws:
   /// - [Exception] if the `extra` is not of type [T].
   T argumentsOrThrow<T>() {
-    final extra = state.extra;
-    if (extra is T) return extra;
-    throw Exception('Expected extra of type $T, got: $extra');
+    final data = extra;
+    if (data is T) return data;
+    throw Exception('Expected extra of type $T, got: $data');
   }
 }
