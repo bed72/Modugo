@@ -1,5 +1,7 @@
 // coverage:ignore-file
 
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
@@ -10,8 +12,8 @@ import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/interfaces/route_interface.dart';
 
 import 'package:modugo/src/routes/child_route.dart';
-import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/alias_route.dart';
+import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
@@ -87,10 +89,12 @@ mixin IHelper {
     List<IGuard> guards = const [],
     GlobalKey<NavigatorState>? parentNavigatorKey,
     Page<dynamic> Function(BuildContext, GoRouterState)? pageBuilder,
+    FutureOr<bool> Function(BuildContext context, GoRouterState state)? onExit,
   }) => ChildRoute(
     name: name,
     child: child,
     guards: guards,
+    onExit: onExit,
     path: path ?? '/',
     transition: transition,
     pageBuilder: pageBuilder,
