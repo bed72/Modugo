@@ -27,6 +27,26 @@ import 'package:modugo/src/routes/paths/regexp.dart';
 extension ContextMatchExtension on BuildContext {
   GoRouter get _goRouter => GoRouter.of(this);
 
+  /// Provides access to the current [GoRouterState].
+  ///
+  /// This getter exposes the internal [GoRouter.state] instance,
+  /// which holds information about the active route such as:
+  /// - the current location (`location`)
+  /// - path parameters (`pathParameters`)
+  /// - query parameters (`queryParameters`)
+  /// - route name (`name`)
+  /// - and any extra data passed during navigation (`extra`)
+  ///
+  /// ### Example
+  /// ```dart
+  /// final currentPath = router.state.location;
+  /// final id = router.state.pathParameters['id'];
+  /// ```
+  ///
+  /// This is particularly useful inside navigation or route-related
+  /// utilities where you need to inspect the current navigation state.
+  GoRouterState get state => _goRouter.state;
+
   /// Checks whether the given [path] matches any route currently registered in the app.
   ///
   /// This is useful for validating user inputs or links before navigation,
