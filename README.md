@@ -23,7 +23,7 @@
   - `AliasRoute`
 - 🔒 [Guards](#-guards-e-propagateguards)
 - 🛠️ [Injeção de Dependência](#️-injeção-de-dependência)
-- ⏳ [AfterLayout](#-afterlayoutmixin)
+- ⏳ [AfterLayoutMixin](#-afterlayoutmixin)
 - 🔎 [Regex e Matching](#-regex-e-matching)
 - 📡 [Sistema de Eventos](#-sistema-de-eventos)
 - 📝 [Logging e Diagnóstico](#-logging-e-diagnóstico)
@@ -472,7 +472,7 @@ final repository = Modugo.i.get<ServiceRepository>();
 
 ---
 
-## ⏳ AfterLayout
+## ⏳ AfterLayoutMixin
 
 Mixin para executar código **após o primeiro layout** do widget.
 
@@ -484,7 +484,7 @@ class MyScreen extends StatefulWidget {
   State<MyScreen> createState() => _MyScreenState();
 }
 
-class _MyScreenState extends State<MyScreen> with AfterLayout {
+class _MyScreenState extends State<MyScreen> with AfterLayoutMixin {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(body: Center(child: Text('Hello World')));

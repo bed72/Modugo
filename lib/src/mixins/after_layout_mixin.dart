@@ -44,7 +44,7 @@ import 'package:flutter/widgets.dart';
 ///
 /// In this example, `afterFirstLayout` runs only once, immediately
 /// after the widget has finished its first layout pass.
-mixin AfterLayout<T extends StatefulWidget> on State<T> {
+mixin AfterLayoutMixin<T extends StatefulWidget> on State<T> {
   @override
   void initState() {
     super.initState();
