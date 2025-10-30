@@ -52,7 +52,7 @@ mixin IBinder {
   /// Registers all dependency injection bindings for this module.
   ///
   /// Override this method to declare your dependencies using the [GetIt].
-  void binds() => Future.value();
+  void binds() {}
 
   /// List of imported modules that this module depends on.
   ///
