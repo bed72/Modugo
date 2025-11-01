@@ -1,3 +1,7 @@
+## [4.1.0] - 2025-11-01
+
+- chore: release v4.0.0
+
 ## [4.0.0] - 2025-10-20
 
 - Merge pull request #25 from bed72/MODUGO-2742
