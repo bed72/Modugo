@@ -1,3 +1,7 @@
+## [4.2.0] - 2025-11-01
+
+- :fire: update extensions
+
 ## [4.1.0] - 2025-11-01
 
 - chore: release v4.0.0
