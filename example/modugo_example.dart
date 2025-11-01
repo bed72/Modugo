@@ -27,7 +27,7 @@ Future<void> main() async {
     debugLogDiagnosticsGoRouter: true,
   );
 
-  runApp(AppResolver.app);
+  runApp(const AppWidget());
 }
 
 /// Resolves the root application widget and manages asynchronous dependencies.
@@ -41,22 +41,6 @@ Future<void> main() async {
 /// runApp(AppResolver.app);
 /// ```
 final class AppResolver {
-  /// Returns the main application widget wrapped in [ModugoLoaderWidget].
-  ///
-  /// This ensures that all asynchronous dependencies are completed before
-  /// building the app. While waiting, the `loading` widget is displayed.
-  ///
-  /// Example:
-  /// ```dart
-  /// Widget mainApp = AppResolver.app;
-  /// runApp(mainApp);
-  /// ```
-  static Widget get app => ModugoLoaderWidget(
-    loading: const Placeholder(), // Displayed while dependencies load
-    dependencies: _dependencies(),
-    builder: (_) => const AppWidget(),
-  );
-
   /// Handles navigation when an error occurs during route resolution.
   ///
   /// Typically redirects the user to a safe route (e.g., '/').
@@ -69,36 +53,6 @@ final class AppResolver {
   static Widget error(BuildContext context, GoRouterState state) {
     context.go('/');
     return const Placeholder();
-  }
-
-  /// Returns a list of asynchronous dependencies to be awaited before
-  /// building the app.
-  ///
-  /// This method allows dynamically composing the list of futures that need
-  /// to be resolved, including:
-  /// - Any singleton async registrations from GetIt/Modugo
-  /// - Service initializations (e.g., SharedPreferences, Firebase, RemoteConfig)
-  ///
-  /// The returned `Future<void>?` ensures that [ModugoLoaderWidget]
-  /// can await all necessary initializations.
-  ///
-  /// Example usage inside the loader:
-  /// ```dart
-  /// ModugoLoaderWidget(
-  ///   loading: CircularProgressIndicator(),
-  ///   dependencies: AppResolver._dependencies(),
-  ///   builder: (_) => const AppWidget(),
-  /// );
-  /// ```
-  static Future<void> _dependencies() async {
-    // Example using SharedPreferences
-    // await Modugo.i.isReady<SharedPreferences>();
-
-    // Example: wait for all required async services
-    await Future.wait([
-      Modugo.i.allReady(), // Ensure all GetIt singletons are ready
-      // Add other async dependencies here.
-    ]);
   }
 }
 
@@ -126,7 +80,7 @@ final class AppModule extends Module {
 /// The home module that handles feature-specific dependencies and routes.
 final class HomeModule extends Module {
   @override
-  void binds() {
+  void binds() async {
     // Example using SharedPreferences
     // i.registerSingletonAsync<SharedPreferences>(
     //   () async => await SharedPreferences.getInstance(),

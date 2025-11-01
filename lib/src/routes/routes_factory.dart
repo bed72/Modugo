@@ -50,13 +50,13 @@ import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 /// ### 🧭 Example
 /// ```dart
 /// final routes = RoutesFactory.from([
-///   ChildRoute(path: '/home', child: (_, __) => const HomePage()),
+///   ChildRoute(path: '/home', child: (_, _) => const HomePage()),
 ///   ModuleRoute(path: '/auth', module: AuthModule()),
 ///   ShellModuleRoute(
-///     builder: (_, __, child) => Scaffold(body: child),
+///     builder: (_, _, child) => Scaffold(body: child),
 ///     routes: [
-///       ChildRoute(path: '/a', child: (_, __) => const APage()),
-///       ChildRoute(path: '/b', child: (_, __) => const BPage()),
+///       ChildRoute(path: '/a', child: (_, _) => const APage()),
+///       ChildRoute(path: '/b', child: (_, _) => const BPage()),
 ///     ],
 ///   ),
 /// ]);
@@ -110,12 +110,12 @@ final class RoutesFactory {
   /// ### 🧭 Example
   /// ```dart
   /// final routes = RoutesFactory.from([
-  ///   ChildRoute(path: '/home', child: (_, __) => const HomePage()),
+  ///   ChildRoute(path: '/home', child: (_, _) => const HomePage()),
   ///   ModuleRoute(path: '/auth', module: AuthModule()),
   ///   ShellModuleRoute(
-  ///     builder: (_, __, child) => AppShell(child: child),
+  ///     builder: (_, _, child) => AppShell(child: child),
   ///     routes: [
-  ///       ChildRoute(path: '/feed', child: (_, __) => const FeedPage()),
+  ///       ChildRoute(path: '/feed', child: (_, _) => const FeedPage()),
   ///     ],
   ///   ),
   /// ]);

@@ -44,7 +44,7 @@ final class _Service {
 
 final class _InnerModule extends Module {
   @override
-  void binds() {
+  void binds() async {
     i.registerSingleton<_Service>(_Service());
   }
 

@@ -122,7 +122,7 @@ abstract class Module with IBinder, IHelper, IRouter {
   ///
   /// [binder] Optional module to register explicitly. If `null`, the current
   ///   module (`this`) will be used.
-  void _configureBinders({IBinder? binder}) {
+  void _configureBinders({IBinder? binder}) async {
     final targetBinder = binder ?? this;
 
     if (_modulesRegistered.contains(targetBinder.runtimeType)) {

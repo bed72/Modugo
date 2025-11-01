@@ -180,15 +180,15 @@ void main() {
 
     final router = GoRouter(
       initialLocation: '/',
-      errorBuilder: (_, _) => const Text('ERRO NA ROTA'),
       routes: [routeOf(shellRoute)],
+      errorBuilder: (_, _) => const Text('ERRO NA ROTA'),
     );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
     await tester.pumpAndSettle();
 
-    expect(find.text('Shell UI'), findsOneWidget);
     expect(find.text('Home'), findsOneWidget);
+    expect(find.text('Shell UI'), findsOneWidget);
 
     router.go('/cafe/dp/12345');
     await tester.pumpAndSettle();
@@ -218,8 +218,8 @@ void main() {
 
     final router = GoRouter(
       initialLocation: '/',
-      errorBuilder: (_, _) => const Text('ERRO NA ROTA'),
       routes: [routeOf(shellRoute)],
+      errorBuilder: (_, _) => const Text('ERRO NA ROTA'),
     );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
@@ -256,16 +256,16 @@ void main() {
     );
 
     final router = GoRouter(
-      routes: RoutesFactory.from([shell]),
       initialLocation: '/bed/product',
+      routes: RoutesFactory.from([shell]),
     );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Product'), findsOneWidget);
     expect(find.text('Add'), findsNothing);
+    expect(find.text('Product'), findsOneWidget);
 
     router.go('/bed/product/add');
     await tester.pumpAndSettle();
@@ -355,8 +355,8 @@ void main() {
       );
 
       final router = GoRouter(
-        routes: RoutesFactory.from([shell]),
         initialLocation: '/bed/product',
+        routes: RoutesFactory.from([shell]),
       );
 
       await tester.pumpWidget(MaterialApp.router(routerConfig: router));

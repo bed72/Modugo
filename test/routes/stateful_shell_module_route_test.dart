@@ -117,16 +117,16 @@ void main() {
   });
 
   group('StatefulShellModuleRoute - navigation key', () {
-    test('RoutesFactory generates StatefulShellRoute.indexedStack', () {
+    test('RoutesFactory generates StatefulShellRoute.indexedStack', () async {
       final route = StatefulShellModuleRoute(
         builder: (_, _, _) => const Placeholder(),
         routes: [ModuleRoute(path: '/', module: _DummyModule())],
       );
 
-      final result = RoutesFactory.from([route]);
+      final routes = RoutesFactory.from([route]);
 
-      expect(result, hasLength(1));
-      expect(result.first, isA<StatefulShellRoute>());
+      expect(routes, hasLength(1));
+      expect(routes.first, isA<StatefulShellRoute>());
     });
 
     test('builds StatefulShellModuleRoute with correct config', () {

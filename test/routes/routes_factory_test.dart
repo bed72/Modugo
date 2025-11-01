@@ -183,10 +183,10 @@ void main() {
       );
     });
 
-    test('safe pageBuilder catches errors in build and rethrows', () {
+    test('safe pageBuilder catches errors in build and rethrows', () async {
       final route = ChildRoute(
         path: '/',
-        child: (_, __) => throw Exception('Boom'),
+        child: (_, _) => throw Exception('Boom'),
       );
 
       final routes = RoutesFactory.from([route]).first as GoRoute;
@@ -245,7 +245,7 @@ final class _DummyModule extends Module {
   bool called = false;
 
   @override
-  void binds() {
+  void binds() async {
     called = true;
   }
 
