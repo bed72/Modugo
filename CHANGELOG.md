@@ -1,3 +1,7 @@
+## [4.2.1] - 2025-11-11
+
+- Merge pull request #29 from bed72/update_dependencies
+
 ## [4.2.0] - 2025-11-01
 
 - :fire: update extensions

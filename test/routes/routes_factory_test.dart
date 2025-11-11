@@ -12,7 +12,7 @@ import 'package:modugo/src/decorators/guard_module_decorator.dart';
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/alias_route.dart';
-import 'package:modugo/src/routes/routes_factory.dart';
+import 'package:modugo/src/routes/factory_route.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
@@ -27,7 +27,7 @@ void main() {
         child: (_, _) => const Placeholder(),
       );
 
-      final result = RoutesFactory.from([route]);
+      final result = FactoryRoute.from([route]);
       expect(result, hasLength(1));
       expect(result.first, isA<GoRoute>());
       expect((result.first as GoRoute).path, '/home');
@@ -40,7 +40,7 @@ void main() {
         child: (_, _) => const Placeholder(),
       );
 
-      final goRoute = RoutesFactory.from([route]).first as GoRoute;
+      final goRoute = FactoryRoute.from([route]).first as GoRoute;
       final redirect = await goRoute.redirect!(BuildContextFake(), StateFake());
 
       expect(redirect, '/login');
@@ -53,7 +53,7 @@ void main() {
         child: (_, _) => const Placeholder(),
       );
 
-      final routes = RoutesFactory.from([route]).first as GoRoute;
+      final routes = FactoryRoute.from([route]).first as GoRoute;
       final redirect = await routes.redirect!(BuildContextFake(), StateFake());
 
       expect(redirect, isNull);
@@ -63,7 +63,7 @@ void main() {
       final module = _DummyModule();
       final route = ModuleRoute(path: '/mod', module: module);
 
-      final result = RoutesFactory.from([route]);
+      final result = FactoryRoute.from([route]);
       expect(result.first, isA<GoRoute>());
       expect((result.first as GoRoute).path, '/mod');
     });
@@ -72,7 +72,7 @@ void main() {
       final module = _EmptyModule();
       final route = ModuleRoute(path: '/empty', module: module);
 
-      expect(() => RoutesFactory.from([route]), throwsA(isA<StateError>()));
+      expect(() => FactoryRoute.from([route]), throwsA(isA<StateError>()));
     });
 
     test('applies GuardModuleDecorator redirect', () async {
@@ -82,7 +82,7 @@ void main() {
       );
 
       final route = ModuleRoute(path: '/mod', module: guardedModule);
-      final routes = RoutesFactory.from([route]).first as GoRoute;
+      final routes = FactoryRoute.from([route]).first as GoRoute;
 
       final redirect = await routes.redirect!(BuildContextFake(), StateFake());
 
@@ -97,7 +97,7 @@ void main() {
       );
       final alias = AliasRoute(from: '/alias', to: '/target');
 
-      final result = RoutesFactory.from([target, alias]);
+      final result = FactoryRoute.from([target, alias]);
       expect(result, hasLength(2));
 
       final aliasRoute = result[1] as GoRoute;
@@ -112,7 +112,7 @@ void main() {
 
     test('throws ArgumentError for invalid AliasRoute target', () {
       final alias = AliasRoute(from: '/alias', to: '/missing');
-      expect(() => RoutesFactory.from([alias]), throwsA(isA<ArgumentError>()));
+      expect(() => FactoryRoute.from([alias]), throwsA(isA<ArgumentError>()));
     });
 
     test('creates ShellRoute with nested routes', () {
@@ -124,7 +124,7 @@ void main() {
         ],
       );
 
-      final result = RoutesFactory.from([shell]);
+      final result = FactoryRoute.from([shell]);
       expect(result.first, isA<ShellRoute>());
 
       final shellRoute = result.first as ShellRoute;
@@ -140,7 +140,7 @@ void main() {
         ],
       );
 
-      final result = RoutesFactory.from([shell]);
+      final result = FactoryRoute.from([shell]);
       expect(result.first, isA<StatefulShellRoute>());
 
       final shellRoute = result.first as StatefulShellRoute;
@@ -156,7 +156,7 @@ void main() {
         ],
       );
 
-      final result = RoutesFactory.from([shell]);
+      final result = FactoryRoute.from([shell]);
       final route = result.first as StatefulShellRoute;
 
       expect(route.branches.length, 2);
@@ -165,10 +165,7 @@ void main() {
 
     test('throws for unsupported IRoute type', () {
       final fake = _UnsupportedRoute();
-      expect(
-        () => RoutesFactory.from([fake]),
-        throwsA(isA<UnsupportedError>()),
-      );
+      expect(() => FactoryRoute.from([fake]), throwsA(isA<UnsupportedError>()));
     });
 
     test('throws ArgumentError on invalid path', () {
@@ -177,10 +174,7 @@ void main() {
         child: (_, _) => const Placeholder(),
       );
 
-      expect(
-        () => RoutesFactory.from([invalid]),
-        throwsA(isA<ArgumentError>()),
-      );
+      expect(() => FactoryRoute.from([invalid]), throwsA(isA<ArgumentError>()));
     });
 
     test('safe pageBuilder catches errors in build and rethrows', () async {
@@ -189,7 +183,7 @@ void main() {
         child: (_, _) => throw Exception('Boom'),
       );
 
-      final routes = RoutesFactory.from([route]).first as GoRoute;
+      final routes = FactoryRoute.from([route]).first as GoRoute;
 
       expect(
         () => routes.pageBuilder!(BuildContextFake(), StateFake()),
@@ -204,7 +198,7 @@ void main() {
         child: (_, _) => const Placeholder(),
       );
 
-      final routes = RoutesFactory.from([route]).first as GoRoute;
+      final routes = FactoryRoute.from([route]).first as GoRoute;
       expect(
         () async => await routes.redirect!(BuildContextFake(), StateFake()),
         throwsException,

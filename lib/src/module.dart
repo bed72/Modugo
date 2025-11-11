@@ -9,7 +9,7 @@ import 'package:modugo/src/mixins/binder_mixin.dart';
 import 'package:modugo/src/mixins/helper_mixin.dart';
 import 'package:modugo/src/mixins/router_mixin.dart';
 
-import 'package:modugo/src/routes/routes_factory.dart';
+import 'package:modugo/src/routes/factory_route.dart';
 
 /// A set of module types that have been registered globally,
 /// used to ensure the same module is not bound more than once.
@@ -107,7 +107,7 @@ abstract class Module with IBinder, IHelper, IRouter {
   List<RouteBase> configureRoutes() {
     _configureBinders();
 
-    return RoutesFactory.from(routes());
+    return FactoryRoute.from(routes());
   }
 
   /// Registers this module and all its imported modules recursively.

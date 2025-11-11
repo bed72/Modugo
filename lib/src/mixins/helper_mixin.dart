@@ -113,12 +113,11 @@ mixin IHelper {
   ModuleRoute module({
     required Module module,
     String? name,
-    String? path,
     GlobalKey<NavigatorState>? parentNavigatorKey,
   }) => ModuleRoute(
+    path: '/',
     name: name,
     module: module,
-    path: path ?? '/',
     parentNavigatorKey: parentNavigatorKey,
   );
 

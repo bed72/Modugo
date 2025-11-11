@@ -7,7 +7,7 @@ import 'package:modugo/src/interfaces/route_interface.dart';
 
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
-import 'package:modugo/src/routes/routes_factory.dart';
+import 'package:modugo/src/routes/factory_route.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 void main() {
@@ -38,7 +38,7 @@ void main() {
     );
 
     expect(
-      () => RoutesFactory.from([shellRoute]),
+      () => FactoryRoute.from([shellRoute]),
       throwsA(isA<UnsupportedError>()),
     );
   });
@@ -257,7 +257,7 @@ void main() {
 
     final router = GoRouter(
       initialLocation: '/bed/product',
-      routes: RoutesFactory.from([shell]),
+      routes: FactoryRoute.from([shell]),
     );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
@@ -282,7 +282,7 @@ void main() {
           routes: [ModuleRoute(path: '/bed', module: _DummyProductsModule())],
         );
 
-        final routes = RoutesFactory.from([shell]);
+        final routes = FactoryRoute.from([shell]);
         expect(routes.first, isA<StatefulShellRoute>());
 
         final statefulShell = routes.first as StatefulShellRoute;
@@ -302,7 +302,7 @@ void main() {
         routes: [ModuleRoute(path: '/', module: _DummyProductsModule())],
       );
 
-      final routes = RoutesFactory.from([shell]);
+      final routes = FactoryRoute.from([shell]);
       final statefulShell = routes.first as StatefulShellRoute;
       final branchRoutes =
           statefulShell.branches.first.routes.whereType<GoRoute>().toList();
@@ -319,7 +319,7 @@ void main() {
         routes: [ModuleRoute(path: '/bed/', module: _DummyProductsModule())],
       );
 
-      final routes = RoutesFactory.from([shell]);
+      final routes = FactoryRoute.from([shell]);
       final statefulShell = routes.first as StatefulShellRoute;
       final branchRoutes =
           statefulShell.branches.first.routes.whereType<GoRoute>().toList();
@@ -336,7 +336,7 @@ void main() {
           routes: [ModuleRoute(path: '/', module: _ProductModule())],
         );
 
-        final routes = RoutesFactory.from([shell]);
+        final routes = FactoryRoute.from([shell]);
         final statefulShell = routes.first as StatefulShellRoute;
         final branchRoutes =
             statefulShell.branches.first.routes.whereType<GoRoute>().toList();
@@ -356,7 +356,7 @@ void main() {
 
       final router = GoRouter(
         initialLocation: '/bed/product',
-        routes: RoutesFactory.from([shell]),
+        routes: FactoryRoute.from([shell]),
       );
 
       await tester.pumpWidget(MaterialApp.router(routerConfig: router));
@@ -374,7 +374,7 @@ void main() {
 
 final class _UnsupportedRoute implements IRoute {}
 
-RouteBase routeOf(IRoute route) => RoutesFactory.from([route]).first;
+RouteBase routeOf(IRoute route) => FactoryRoute.from([route]).first;
 
 final class _DummyModule extends Module {
   @override

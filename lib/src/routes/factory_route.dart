@@ -18,7 +18,7 @@ import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 /// A centralized factory responsible for building GoRouter-compatible [RouteBase] objects
 /// from Modugo's declarative [IRoute] definitions.
 ///
-/// The [RoutesFactory] acts as the bridge between Modugo’s modular route layer and
+/// The [FactoryRoute] acts as the bridge between Modugo’s modular route layer and
 /// Flutter’s native navigation system ([GoRouter]). It converts high-level route
 /// declarations such as [ChildRoute], [ModuleRoute], [AliasRoute], [ShellModuleRoute],
 /// and [StatefulShellModuleRoute] into valid [GoRoute] and [ShellRoute] configurations.
@@ -71,13 +71,13 @@ import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 ///
 /// In short, this class guarantees that every route defined in Modugo’s modular
 /// structure is validated, guarded, and ready for use within Flutter’s [GoRouter].
-final class RoutesFactory {
-  const RoutesFactory._();
+final class FactoryRoute {
+  const FactoryRoute._();
 
   /// Converts a list of Modugo [IRoute] definitions into a flattened list of
   /// GoRouter-compatible [RouteBase] objects.
   ///
-  /// This is the main entry point of the [RoutesFactory]. It scans each provided
+  /// This is the main entry point of the [FactoryRoute]. It scans each provided
   /// modular route and delegates the creation process to the correct specialized
   /// builder based on the route type.
   ///

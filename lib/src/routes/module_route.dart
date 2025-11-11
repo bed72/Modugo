@@ -27,7 +27,6 @@ import 'package:modugo/src/interfaces/route_interface.dart';
 /// ```
 @immutable
 final class ModuleRoute implements IRoute {
-  /// The path at which this module is mounted (e.g. `/shop`, `/admin/users`).
   final String path;
 
   /// Optional name for named navigation or route identification.

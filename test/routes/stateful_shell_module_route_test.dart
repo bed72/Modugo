@@ -9,7 +9,7 @@ import 'package:modugo/src/interfaces/route_interface.dart';
 
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
-import 'package:modugo/src/routes/routes_factory.dart';
+import 'package:modugo/src/routes/factory_route.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 import '../fakes/fakes.dart';
@@ -59,7 +59,7 @@ void main() {
       );
 
       expect(
-        () => RoutesFactory.from([route]),
+        () => FactoryRoute.from([route]),
         throwsA(isA<UnsupportedError>()),
       );
     });
@@ -123,7 +123,7 @@ void main() {
         routes: [ModuleRoute(path: '/', module: _DummyModule())],
       );
 
-      final routes = RoutesFactory.from([route]);
+      final routes = FactoryRoute.from([route]);
 
       expect(routes, hasLength(1));
       expect(routes.first, isA<StatefulShellRoute>());

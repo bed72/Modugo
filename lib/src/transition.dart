@@ -1,3 +1,5 @@
+// coverage:ignore-file
+
 import 'package:flutter/widgets.dart';
 
 /// Defines the supported types of transition animations for page navigation.

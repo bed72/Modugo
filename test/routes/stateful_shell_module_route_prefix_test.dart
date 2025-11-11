@@ -8,7 +8,7 @@ import 'package:modugo/src/interfaces/route_interface.dart';
 
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
-import 'package:modugo/src/routes/routes_factory.dart';
+import 'package:modugo/src/routes/factory_route.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
 void main() {
@@ -19,7 +19,7 @@ void main() {
         routes: [ModuleRoute(path: '/bed', module: _DummyProductsModule())],
       );
 
-      final routes = RoutesFactory.from([shell]);
+      final routes = FactoryRoute.from([shell]);
       expect(routes, isNotEmpty);
       expect(routes.first, isA<StatefulShellRoute>());
 
@@ -43,7 +43,7 @@ void main() {
           routes: [ModuleRoute(path: '/bed/', module: _DummyProductsModule())],
         );
 
-        final routes = RoutesFactory.from([shell]);
+        final routes = FactoryRoute.from([shell]);
         final statefulShell = routes.first as StatefulShellRoute;
         final branchRoutes =
             statefulShell.branches.first.routes.whereType<GoRoute>().toList();
