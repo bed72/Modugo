@@ -1,3 +1,7 @@
+## [4.2.2] - 2025-11-18
+
+- chore: release v4.2.1
+
 ## [4.2.1] - 2025-11-11
 
 - Merge pull request #29 from bed72/update_dependencies
