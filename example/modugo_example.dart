@@ -99,8 +99,8 @@ final class HomeModule extends Module {
     child(
       path: '/',
       name: 'home-route',
-      child: (context, _) {
-        final controller = context.read<HomeController>();
+      child: (_, _) {
+        final controller = i.get<HomeController>();
         return HomeScreen(controller: controller);
       },
     ),
