@@ -1,3 +1,7 @@
+## [4.2.3] - 2026-01-08
+
+- :fire: update dependencies
+
 ## [4.2.2] - 2025-11-18
 
 - chore: release v4.2.1
