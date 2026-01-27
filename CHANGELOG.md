@@ -1,3 +1,7 @@
+## [4.2.5] - 2026-01-27
+
+- :fire: return extensions
+
 ## [4.2.4] - 2026-01-27
 
 - :fire: update version
