@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
+import 'package:modugo/src/routes/compiler_route.dart';
 
 import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/modugo.dart';
@@ -10,7 +11,6 @@ import 'package:modugo/src/interfaces/route_interface.dart';
 import 'package:modugo/src/routes/alias_route.dart';
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
-import 'package:modugo/src/routes/compiler_route.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/decorators/guard_module_decorator.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';

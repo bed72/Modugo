@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:modugo/src/logger.dart';
 
 import 'package:modugo/src/mixins/binder_mixin.dart';
-import 'package:modugo/src/mixins/helper_mixin.dart';
+import 'package:modugo/src/mixins/dsl_mixin.dart';
 import 'package:modugo/src/mixins/router_mixin.dart';
 
 import 'package:modugo/src/routes/factory_route.dart';
@@ -58,7 +58,7 @@ final Set<Type> _modulesRegistered = {};
 ///   }
 /// }
 /// ```
-abstract class Module with IBinder, IHelper, IRouter {
+abstract class Module with IBinder, IDsl, IRouter {
   /// Shortcut to access the global GetIt instance used for dependency injection.
   /// Provides direct access to registered services and singletons.
   GetIt get i => GetIt.instance;

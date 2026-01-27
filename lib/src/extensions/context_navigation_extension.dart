@@ -1,10 +1,8 @@
 // coverage:ignore-file
 
 import 'package:flutter/widgets.dart';
-
 import 'package:go_router/go_router.dart';
-
-import 'package:modugo/src/routes/paths/regexp.dart';
+import 'package:path_to_regexp/path_to_regexp.dart';
 
 /// Extension on [BuildContext] that provides convenient navigation helpers
 /// using [GoRouter].

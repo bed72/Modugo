@@ -2,8 +2,6 @@
 
 import 'package:go_router/go_router.dart';
 
-import 'package:modugo/src/routes/paths/function.dart';
-
 /// Extension on [GoRouterState].
 ///
 /// This extension exposes several properties and helpers to work with the
@@ -136,18 +134,6 @@ extension GoRouterStateExtension on GoRouterState {
   /// ```
   int? getIntQueryParam(String key) =>
       int.tryParse(uri.queryParameters[key] ?? '');
-
-  /// Builds a complete path string by applying [args] to a route [pattern].
-  ///
-  /// Example:
-  /// ```dart
-  /// final path = state.buildPath('/user/:id', {'id': '42'});
-  /// // path → '/user/42'
-  /// ```
-  String buildPath(String pattern, Map<String, String> args) {
-    final fn = pathToFunction(pattern);
-    return fn(args);
-  }
 
   /// Returns the value of a query parameter as a boolean (`true` or `false`).
   ///

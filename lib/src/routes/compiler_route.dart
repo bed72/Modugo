@@ -1,7 +1,4 @@
-import 'package:modugo/src/routes/paths/parse.dart';
-import 'package:modugo/src/routes/paths/regexp.dart';
-import 'package:modugo/src/routes/paths/function.dart';
-import 'package:modugo/src/routes/paths/extract.dart' as ex;
+import 'package:path_to_regexp/path_to_regexp.dart' as ptr;
 
 /// A compiled representation of a dynamic route path.
 ///
@@ -39,13 +36,13 @@ final class CompilerRoute {
   final List<String> _parameters = [];
 
   /// Tokens parsed from the [pattern], including static and dynamic segments.
-  late final _tokens = parse(pattern, parameters: _parameters);
+  late final _tokens = ptr.parse(pattern, parameters: _parameters);
 
   /// Regular expression generated from the [pattern], used to match incoming paths.
-  late final _regExp = tokensToRegExp(_tokens);
+  late final _regExp = ptr.tokensToRegExp(_tokens);
 
   /// Function used to build a path string from a map of arguments.
-  late final _builder = tokensToFunction(_tokens);
+  late final _builder = ptr.tokensToFunction(_tokens);
 
   /// Creates a [CompilerRoute] from a path [pattern].
   ///
@@ -102,7 +99,7 @@ final class CompilerRoute {
 
     final match = _regExp.matchAsPrefix(cleanPath);
     if (match == null) return null;
-    return ex.extract(_parameters, match);
+    return ptr.extract(_parameters, match);
   }
 
   /// Validates the syntax of the route pattern.
@@ -115,12 +112,12 @@ final class CompilerRoute {
   ///
   /// Throws a [FormatException] if the pattern is malformed.
   void _validatePattern(String pattern) {
-    final paramRegex = RegExp(r'^:[a-zA-Z_][a-zA-Z0-9_]*$');
+    final regex = RegExp(r'^:[a-zA-Z_][a-zA-Z0-9_]*$');
 
     // Split by '/' to isolate each segment
     for (final segment in pattern.split('/')) {
       if (segment.startsWith(':')) {
-        if (!paramRegex.hasMatch(segment)) {
+        if (!regex.hasMatch(segment)) {
           throw FormatException(
             'Invalid parameter syntax: $segment in "$pattern"',
           );

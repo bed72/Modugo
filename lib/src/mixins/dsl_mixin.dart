@@ -33,7 +33,7 @@ import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 ///
 /// ### Example:
 /// ```dart
-/// final class AppModule extends Module with IHelper {
+/// final class AppModule extends Module with IDsl {
 ///   @override
 ///   List<IRoute> routes() => [
 ///     route('/', child: (_, _) => const HomePage()),
@@ -60,7 +60,7 @@ import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 /// - All helpers return their respective [IRoute] subtype.
 /// - This mixin is stateless and can safely be combined with
 ///   [IBinder] and [IRouter] in any [Module].
-mixin IHelper {
+mixin IDsl {
   /// Creates an [AliasRoute] to define an alternate path that maps
   /// to an existing [ChildRoute]. Useful for SEO-friendly URLs,
   /// backward compatibility, or multiple access points for the same screen.
