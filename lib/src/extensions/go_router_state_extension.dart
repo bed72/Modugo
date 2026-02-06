@@ -1,6 +1,7 @@
 // coverage:ignore-file
 
 import 'package:go_router/go_router.dart';
+import 'package:modugo/src/extensions/uri_extension.dart';
 
 /// Extension on [GoRouterState].
 ///
@@ -53,7 +54,7 @@ extension GoRouterStateExtension on GoRouterState {
   /// Returns the full navigated path, including query parameters.
   ///
   /// For example: `/test?query=value`
-  String get fullPath => uri.toString();
+  String get fullPath => uri.fullPath;
 
   /// Retrieves the `extra` object passed during navigation, cast to type [T].
   ///
