@@ -113,77 +113,54 @@ class PageWidget extends StatelessWidget {
 
 ---
 
-## 🔹 Tipos de Rotas Suportadas
+## 🔹 AliasRoute
 
-- ChildRoute
-- ModuleRoute
-- ShellModuleRoute
-- StatefulShellModuleRoute
+O `AliasRoute` funciona como um **apelido** para uma `ChildRoute` existente. Ele permite que múltiplos caminhos apontem para a mesma tela, sem duplicar lógica ou causar loops de redirecionamento.
 
-### ⚡ Utilidades
+```dart
+final class ShopModule extends Module {
+  @override
+  List<IRoute> routes() => [
+    route('/order/:id', child: (_, state) =>
+      OrderPage(id: state.pathParameters['id']!)),
 
-- Analytics e logging
-- Validação de deep links
-- Rotas fallback e redirects
+    alias(from: '/cart/:id', to: '/order/:id'),
+  ];
+}
+```
+
+Tanto `/order/123` quanto `/cart/123` renderizam a mesma `OrderPage`.
+
+### Quando usar
+
+- Compatibilidade retroativa com URLs antigas.
+- Múltiplos caminhos semânticos para a mesma tela (ex: `/cart` e `/order`).
+
+### Limitações
+
+- Funciona **apenas para `ChildRoute`** (não para `ModuleRoute` ou `ShellModuleRoute`).
+- O alias deve apontar para uma `ChildRoute` **existente dentro do mesmo módulo**.
+- Não há suporte a alias encadeados.
+
+### Vantagens sobre RedirectRoute
+
+- Evita loops infinitos comuns em redirecionamentos.
+- Mantém o historico de navegacao intacto.
 
 ---
 
-## 🔹 Extensões de Navegação
+## 🔹 Tipos de Rotas Suportadas
 
-Modugo fornece extensões em BuildContext que enriquecem a navegação, oferecendo ferramentas para validação de rotas, extração de parâmetros e operações avançadas com GoRouter.
+| Tipo | Uso |
+|------|-----|
+| `ChildRoute` | Telas simples |
+| `ModuleRoute` | Submódulos |
+| `AliasRoute` | Caminhos alternativos |
+| `ShellModuleRoute` | Containers e layouts compartilhados |
+| `StatefulShellModuleRoute` | Navegação com múltiplas pilhas |
 
-ContextMatchExtension
+> Para a API declarativa (DSL) com `route()`, `module()`, `alias()`, `shell()` e `statefulShell()`, consulte [API Declarativa (DSL)](dsl.md).
 
-Permite:
-
-Verificar se um caminho (path) ou nome de rota (name) está registrado.
-
-Obter a rota correspondente para um dado local.
-
-Extrair parâmetros dinâmicos de rotas.
-
-💡 Útil para validação de links, navegação condicional e debugging de rotas.
-
-Exemplo:
-
-```dart
-final isValid = context.isKnownPath('/settings');
-final isNamed = context.isKnownRouteName('profile');
-
-final matchedRoute = context.matchingRoute('/user/42');
-final params = context.matchParams('/user/42');
-final userId = params?['id'];
-```
-
-ContextNavigationExtension
-
-Simplifica operações de navegação padrão com GoRouter:
-
-- Métodos de navegação: `go, goNamed, push, pushNamed, replace`, etc.
-- Controle de rota atual: `reload()` para recarregar a página.
-- Validação de navegação: `canPop()` e `canPush()`.
-- Gerenciamento de pilhas de navegação: `replaceStack()`.
-
-💡 Facilita:
-
-- Navegação dinâmica
-- Integração com deep links e parâmetros
-- Simplificação de operações complexas de roteamento
-
-Exemplo:
-
-```dart
-context.go('/home');
-
-context.pushNamed('product', pathParameters: {'id': '42'});
-
-if (context.canPop()) context.pop();
-
-context.reload();
-
-await context.replaceStack(['/home', '/profile']);
-```
-
-✅ Essas extensões tornam o desenvolvimento de UIs complexas mais simples, seguro e organizado, integrando diretamente o GoRouter ao contexto de forma fluida.
+> Para transições de página, consulte [Transições](transitions.md).
 
 ---

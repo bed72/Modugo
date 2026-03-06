@@ -44,7 +44,7 @@ Para obter uma instância registrada dentro do módulo ou de qualquer widget que
 ```dart
 final service = i.get<ServiceRepository>();
 final service = Modugo.i.get<ServiceRepository>();
-final otherService = context.reade<OtherServiceRepository>();
+final otherService = context.read<OtherServiceRepository>();
 ```
 
 > 🔹 Funciona de forma global dentro do escopo do módulo, garantindo consistência e fácil substituição para testes.
@@ -90,3 +90,37 @@ i.registerSingleton<ServiceRepository>(ServiceRepository.instance);
 ```
 
 > Visualiza como singleton é compartilhado e lazy/factory são criados sob demanda.
+
+---
+
+## 🔹 Acesso via Context Extension
+
+Alem de `i.get<T>()` e `Modugo.i.get<T>()`, voce pode usar as extensions de `BuildContext`:
+
+### `context.read<T>()`
+
+Recupera uma dependência registrada de forma síncrona:
+
+```dart
+final controller = context.read<HomeController>();
+
+// Com instância nomeada
+final primaryDb = context.read<Database>(instanceName: 'primary');
+```
+
+### `context.readAsync<T>()`
+
+Recupera dependências registradas de forma assíncrona (via `registerSingletonAsync`):
+
+```dart
+final service = await context.readAsync<MyService>();
+```
+
+### Parâmetros opcionais
+
+| Parâmetro | Descrição |
+|-----------|-----------|
+| `param1` | Primeiro parâmetro para factories parametrizadas |
+| `param2` | Segundo parâmetro para factories parametrizadas |
+| `type` | Tipo específico para resolver quando há múltiplas implementações |
+| `instanceName` | Nome da instância registrada |

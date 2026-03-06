@@ -6,6 +6,71 @@
 
 ---
 
+## 📦 Instalação
+
+Adicione o Modugo ao seu `pubspec.yaml`:
+
+```yaml
+dependencies:
+  modugo: ^4.2.6
+```
+
+Depois execute:
+
+```bash
+flutter pub get
+```
+
+---
+
+## ▶️ Primeiros Passos
+
+### 1. Crie seu módulo raiz
+
+```dart
+final class AppModule extends Module {
+  @override
+  void binds() {
+    i.registerSingleton<AuthService>(AuthService());
+  }
+
+  @override
+  List<IRoute> routes() => [
+    route('/', child: (_, _) => const HomePage()),
+    module('/profile', ProfileModule()),
+  ];
+}
+```
+
+### 2. Configure o Modugo no `main.dart`
+
+```dart
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Modugo.configure(module: AppModule(), initialRoute: '/');
+
+  runApp(const AppWidget());
+}
+```
+
+### 3. Use o router no `AppWidget`
+
+```dart
+class AppWidget extends StatelessWidget {
+  const AppWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp.router(
+      routerConfig: modugoRouter,
+    );
+  }
+}
+```
+
+---
+
 ## Por que Modugo? 🤔
 
 O Modugo nasceu para resolver problemas comuns em apps grandes:
@@ -14,16 +79,11 @@ O Modugo nasceu para resolver problemas comuns em apps grandes:
 - 🔍 **Clareza**: Cada módulo define suas rotas e dependências de forma explícita.
 - ⚡ **Injeção de dependências simples**: Baseado em **GetIt**, as dependências são registradas **uma vez** na inicialização.
 - 🛣️ **Navegação robusta**: Com integração ao **GoRouter**, gerencie rotas de forma eficiente.
+- 🔒 **Guards**: Proteja rotas com lógica condicional e propagação automática.
+- 📡 **Eventos**: Comunicação desacoplada entre módulos via sistema de eventos nativo.
+- 🎨 **Transições**: 7 tipos de animação de transição prontos para uso.
 
 > 💡 **Nota importante:** Diferente de outros frameworks modulares, **Modugo não faz o dispose automático das dependências**. Todas as instâncias vivem até o encerramento do app.
-
----
-
-## Slogan do Modugo ✨
-
-> **Modugo — Modularize, injete e navegue.**
-
-Modugo é ideal para quem quer **organização, modularidade e injeção de dependências simples**, sem comprometer a flexibilidade do Flutter.
 
 ---
 
@@ -37,25 +97,25 @@ Modugo é ideal para quem quer **organização, modularidade e injeção de depe
 
 ---
 
-## Limitações ⚠️
-
-- ❌ **Sem dispose automático**: Evita inconsistência quando múltiplas rotas compartilham o mesmo módulo.
-- ✅ **Foco na estrutura e clareza**, não no gerenciamento automático de memória.
-- 🔄 **Versão 3.x é breaking**: Mudança no sistema de DI.
-  > Ao migrar de versões <3, será necessário **gerenciar manualmente o dispose** das dependências.
-
----
-
-## Principais pontos ✅
+## Funcionalidades ✅
 
 - [x] Dependências registradas **uma vez** na inicialização.
 - [x] Arquitetura **desacoplada** e modular.
 - [x] Navegação simplificada com **GoRouter**.
-- [ ] ❌ Cleanup automático **não disponível**.
-- [ ] ⚠️ Atenção ao migrar para **v3+**, mudanças de DI.
+- [x] API declarativa (DSL) para definição de rotas.
+- [x] Guards com propagação automática para submódulos.
+- [x] Sistema de eventos nativo para comunicação entre módulos.
+- [x] 5 tipos de rotas: `ChildRoute`, `ModuleRoute`, `ShellModuleRoute`, `StatefulShellModuleRoute`, `AliasRoute`.
+- [x] Extensions de contexto para navegação, matching e injeção.
+- [x] `AfterLayoutMixin` para executar código pós-layout.
+- [x] `CompilerRoute` para validação e extração de parâmetros de rotas.
+- [x] Logging e diagnóstico integrado.
 
 ---
 
-> ⚠️ **Atenção**: Diferente de alguns frameworks modulares, **Modugo não faz o dispose automático das dependências**. Todas as instâncias vivem até o encerramento do aplicativo.
+## Limitações ⚠️
+
+- ❌ **Sem dispose automático**: Evita inconsistência quando múltiplas rotas compartilham o mesmo módulo.
+- ✅ **Foco na estrutura e clareza**, não no gerenciamento automático de memória.
 
 ---

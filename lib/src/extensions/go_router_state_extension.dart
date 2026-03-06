@@ -76,7 +76,7 @@ extension GoRouterStateExtension on GoRouterState {
   ///   // Show back button logic
   /// }
   /// ```
-  bool isCurrentRoute(String name) => name == name;
+  bool isCurrentRoute(String name) => this.name == name;
 
   /// Returns the path from the `extra` map if present, or falls back to [GoRouterState.uri.path].
   ///

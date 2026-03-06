@@ -44,21 +44,34 @@ main.dart
 
 ---
 
+## 🧬 Anatomia de um Module
+
+A classe `Module` é a base de tudo no Modugo. Ela combina três responsabilidades:
+
+| Método | Responsabilidade |
+|--------|------------------|
+| `binds()` | Registra dependências no GetIt |
+| `routes()` | Declara as rotas expostas pelo módulo |
+| `imports()` | Declara dependências de outros módulos |
+| `initState()` | Executado quando o módulo é inicializado |
+| `dispose()` | Executado para limpar recursos do módulo |
+
+---
+
 ## 📝 Exemplo: Módulo App
 
 ```dart
-// app_module.dart
 final class AppModule extends Module {
   @override
   void binds() {
-    i.registerSingleton<AuthService>((_) => AuthService());
+    i.registerSingleton<AuthService>(AuthService());
   }
 
   @override
   List<IRoute> routes() => [
-    ModuleRoute(path: '/', module: HomeModule()),
-    ModuleRoute(path: '/chat', module: ChatModule()),
-    ModuleRoute(path: '/profile', module: ProfileModule()),
+    module('/home', HomeModule()),
+    module('/chat', ChatModule()),
+    module('/profile', ProfileModule()),
   ];
 }
 ```
@@ -68,9 +81,97 @@ final class AppModule extends Module {
 
 ---
 
+## 📦 Importando Módulos com `imports()`
+
+O método `imports()` permite que um módulo declare dependências de outros módulos. Os `binds()` dos módulos importados são executados **antes** dos `binds()` do módulo atual.
+
+```dart
+final class HomeModule extends Module {
+  @override
+  List<IBinder> imports() => [SharedModule()];
+
+  @override
+  void binds() {
+    // SharedModule já foi registrado, podemos usar suas dependências
+    i.registerLazySingleton<HomeController>(
+      () => HomeController(i.get<ApiClient>()),
+    );
+  }
+
+  @override
+  List<IRoute> routes() => [
+    route('/', child: (_, _) => const HomePage()),
+  ];
+}
+```
+
+### Comportamento do registro
+
+- Cada módulo é registrado **apenas uma vez** (idempotente).
+- Se o mesmo módulo for importado por múltiplos módulos, seus `binds()` **não serão executados novamente**.
+- Imports são processados **recursivamente** — se `A` importa `B` que importa `C`, a ordem de registro é: `C → B → A`.
+
+---
+
+## 🔄 Ciclo de Vida
+
+### `initState()`
+
+Executado quando o módulo é inicializado. Ideal para configurar listeners, preparar recursos ou executar lógica de setup.
+
+```dart
+final class AnalyticsModule extends Module {
+  @override
+  void initState() {
+    super.initState();
+    debugPrint('AnalyticsModule inicializado');
+  }
+}
+```
+
+### `dispose()`
+
+Executado quando o módulo é descartado. Ideal para cancelar subscriptions, limpar estado e liberar recursos.
+
+```dart
+final class ChatModule extends Module {
+  @override
+  void dispose() {
+    // Limpar recursos
+    super.dispose();
+  }
+}
+```
+
+> ⚠️ **Importante:** O Modugo **não chama `dispose()` automaticamente**. Se precisar limpar recursos, você deve gerenciar manualmente.
+
+---
+
 ## 🚀 Benefícios
 
 - **Separação de Responsabilidades**: UI, rotas e dependências são modularizadas.
 - **Facilidade de Testes**: Cada módulo pode ser testado de forma independente.
 - **Reutilização**: Módulos podem ser reutilizados em diferentes apps.
 - **Colaboração em Equipe**: Times podem trabalhar em módulos diferentes simultaneamente sem conflitos.
+
+---
+
+## 📊 Diagrama de Composição
+
+```
+AppModule
+├── imports: [CoreModule]
+├── binds: AuthService
+└── routes:
+    ├── HomeModule
+    │   ├── imports: [SharedModule]
+    │   ├── binds: HomeController
+    │   └── routes: ['/']
+    ├── ChatModule
+    │   ├── binds: ChatService
+    │   └── routes: ['/']
+    └── ProfileModule
+        ├── imports: [SharedModule]  ← já registrado, skip
+        ├── binds: ProfileController
+        └── routes: ['/']
+```
