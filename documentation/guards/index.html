@@ -12,13 +12,13 @@
         <meta name="author" content="Gabriel">
       
       
-        <link rel="canonical" href="https://bed72.github.io/Modugo/documentation/injection/index.html">
+        <link rel="canonical" href="https://bed72.github.io/Modugo/documentation/guards/index.html">
       
       
-        <link rel="prev" href="../routes/transitions.html">
+        <link rel="prev" href="../injection/index.html">
       
       
-        <link rel="next" href="../guards/index.html">
+        <link rel="next" href="../events/index.html">
       
       
       <link rel="icon" href="../../assets/favicon.png">
@@ -26,7 +26,7 @@
     
     
       
-        <title>Injeção de Dependência - Modugo</title>
+        <title>Guards - Modugo</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#injecao-de-dependencias" class="md-skip">
+        <a href="#guards" class="md-skip">
           Pular para conteúdo
         </a>
       
@@ -115,7 +115,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Injeção de Dependência
+              Guards
             
           </span>
         </div>
@@ -444,6 +444,28 @@
       
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../injection/index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Injeção de Dependência
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -461,7 +483,7 @@
   
   
   <span class="md-ellipsis">
-    Injeção de Dependência
+    Guards
     
   </span>
   
@@ -474,7 +496,7 @@
   
   
   <span class="md-ellipsis">
-    Injeção de Dependência
+    Guards
     
   </span>
   
@@ -497,19 +519,19 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#registrando-dependencias" class="md-nav__link">
+  <a href="#interface-iguard" class="md-nav__link">
     <span class="md-ellipsis">
-      🔹 Registrando Dependências
+      🔹 Interface IGuard
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="🔹 Registrando Dependências">
+    <nav class="md-nav" aria-label="🔹 Interface IGuard">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#tipos-de-registro-suportados" class="md-nav__link">
+  <a href="#regras" class="md-nav__link">
     <span class="md-ellipsis">
-      ✅ Tipos de registro suportados:
+      Regras
     </span>
   </a>
   
@@ -521,73 +543,28 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#acessando-dependencias" class="md-nav__link">
+  <a href="#aplicando-guards-em-rotas" class="md-nav__link">
     <span class="md-ellipsis">
-      🔹 Acessando Dependências
+      🔹 Aplicando Guards em Rotas
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#comparacao-com-getit" class="md-nav__link">
+  <a href="#propagando-guards-com-propagateguards" class="md-nav__link">
     <span class="md-ellipsis">
-      🔹 Comparação com GetIt
+      🔹 Propagando Guards com propagateGuards
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#ciclo-de-vida-e-modularidade" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Ciclo de Vida e Modularidade
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#exemplo-visual-de-di" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Exemplo Visual de DI
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#acesso-via-context-extension" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Acesso via Context Extension
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="🔹 Acesso via Context Extension">
+    <nav class="md-nav" aria-label="🔹 Propagando Guards com propagateGuards">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#contextreadt" class="md-nav__link">
+  <a href="#como-funciona-internamente" class="md-nav__link">
     <span class="md-ellipsis">
-      context.read&lt;T&gt;()
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#contextreadasynct" class="md-nav__link">
-    <span class="md-ellipsis">
-      context.readAsync&lt;T&gt;()
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#parametros-opcionais" class="md-nav__link">
-    <span class="md-ellipsis">
-      Parâmetros opcionais
+      Como funciona internamente
     </span>
   </a>
   
@@ -595,6 +572,66 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ordem-de-execucao" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔹 Ordem de Execução
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tipos-comuns-de-guard" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔹 Tipos Comuns de Guard
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔹 Tipos Comuns de Guard">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#guard-de-autenticacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      Guard de Autenticação
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#guard-de-rolepermissao" class="md-nav__link">
+    <span class="md-ellipsis">
+      Guard de Role/Permissão
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#guard-com-side-effect-sem-redirect" class="md-nav__link">
+    <span class="md-ellipsis">
+      Guard com Side-Effect (sem redirect)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exemplo-completo" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔹 Exemplo Completo
+    </span>
+  </a>
   
 </li>
       
@@ -602,28 +639,6 @@
   
 </nav>
       
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../guards/index.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Guards
-    
-  </span>
-  
-
-      </a>
     </li>
   
 
@@ -743,19 +758,19 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#registrando-dependencias" class="md-nav__link">
+  <a href="#interface-iguard" class="md-nav__link">
     <span class="md-ellipsis">
-      🔹 Registrando Dependências
+      🔹 Interface IGuard
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="🔹 Registrando Dependências">
+    <nav class="md-nav" aria-label="🔹 Interface IGuard">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#tipos-de-registro-suportados" class="md-nav__link">
+  <a href="#regras" class="md-nav__link">
     <span class="md-ellipsis">
-      ✅ Tipos de registro suportados:
+      Regras
     </span>
   </a>
   
@@ -767,73 +782,28 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#acessando-dependencias" class="md-nav__link">
+  <a href="#aplicando-guards-em-rotas" class="md-nav__link">
     <span class="md-ellipsis">
-      🔹 Acessando Dependências
+      🔹 Aplicando Guards em Rotas
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#comparacao-com-getit" class="md-nav__link">
+  <a href="#propagando-guards-com-propagateguards" class="md-nav__link">
     <span class="md-ellipsis">
-      🔹 Comparação com GetIt
+      🔹 Propagando Guards com propagateGuards
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#ciclo-de-vida-e-modularidade" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Ciclo de Vida e Modularidade
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#exemplo-visual-de-di" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Exemplo Visual de DI
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#acesso-via-context-extension" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Acesso via Context Extension
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="🔹 Acesso via Context Extension">
+    <nav class="md-nav" aria-label="🔹 Propagando Guards com propagateGuards">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#contextreadt" class="md-nav__link">
+  <a href="#como-funciona-internamente" class="md-nav__link">
     <span class="md-ellipsis">
-      context.read&lt;T&gt;()
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#contextreadasynct" class="md-nav__link">
-    <span class="md-ellipsis">
-      context.readAsync&lt;T&gt;()
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#parametros-opcionais" class="md-nav__link">
-    <span class="md-ellipsis">
-      Parâmetros opcionais
+      Como funciona internamente
     </span>
   </a>
   
@@ -841,6 +811,66 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ordem-de-execucao" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔹 Ordem de Execução
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tipos-comuns-de-guard" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔹 Tipos Comuns de Guard
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔹 Tipos Comuns de Guard">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#guard-de-autenticacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      Guard de Autenticação
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#guard-de-rolepermissao" class="md-nav__link">
+    <span class="md-ellipsis">
+      Guard de Role/Permissão
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#guard-com-side-effect-sem-redirect" class="md-nav__link">
+    <span class="md-ellipsis">
+      Guard com Side-Effect (sem redirect)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exemplo-completo" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔹 Exemplo Completo
+    </span>
+  </a>
   
 </li>
       
@@ -863,121 +893,135 @@
   
 
 
-<h1 id="injecao-de-dependencias">🧩 Injeção de Dependências</h1>
-<p>O Modugo possui um <strong>sistema de DI baseado no GetIt</strong>, permitindo registrar e acessar instâncias de serviços de forma centralizada dentro de módulos. Isso facilita a modularização, testes e reutilização de código.</p>
+<h1 id="guards">🔒 Guards</h1>
+<p>Os <strong>Guards</strong> no Modugo permitem controlar o acesso a rotas com base em condições lógicas, como autenticação, papéis de usuário ou verificações de sessão. Eles são executados <strong>antes</strong> do carregamento da rota e podem redirecionar o usuário conforme necessário.</p>
 <hr />
-<h2 id="registrando-dependencias">🔹 Registrando Dependências</h2>
-<p>Dentro de cada módulo, você pode registrar <strong>binds</strong> usando o método <code>binds()</code>:</p>
-<pre><code class="language-dart">final class HomeModule extends Module {
-  @override
-  List&lt;IBinder&gt; imports() =&gt; [CoreModule()]; // importa outros módulos se necessário
+<h2 id="interface-iguard">🔹 Interface IGuard</h2>
+<p>Todo guard implementa a interface <code>IGuard</code>:</p>
+<pre><code class="language-dart">final class AuthGuard implements IGuard {
+  final AuthRepository _repository;
+
+  AuthGuard({required AuthRepository repository}) : _repository = repository;
 
   @override
-  List&lt;IRoute&gt; routes() =&gt; [
-    ChildRoute(path: '/', child: (context, state) =&gt; const HomePage()),
-  ];
+  FutureOr&lt;String?&gt; call(BuildContext context, GoRouterState state) async {
+    final isAuthenticated = await _repository.isAuthenticated();
 
-  @override
-  void binds() {
-    i
-      ..registerSingleton&lt;ServiceRepository&gt;(ServiceRepository.instance) // singleton
-      ..registerLazySingleton&lt;OtherServiceRepository&gt;(OtherServiceRepositoryImpl.new); // lazy singleton
+    // Retorna null para permitir acesso
+    // Retorna um path para redirecionar
+    return isAuthenticated ? null : '/login';
   }
 }
 </code></pre>
-<h3 id="tipos-de-registro-suportados">✅ Tipos de registro suportados:</h3>
+<h3 id="regras">Regras</h3>
 <ul>
-<li><code>registerSingleton&lt;T&gt;(instance)</code> → Instância única já criada, retornada sempre que requisitada.</li>
-<li><code>registerLazySingleton&lt;T&gt;(factory)</code> → Instância criada apenas na primeira vez que for requisitada.</li>
-<li><code>registerFactory&lt;T&gt;(factory)</code> → Cria uma nova instância a cada requisição.</li>
-</ul>
-<blockquote>
-<p>🔹 Observação: <code>i</code> é o <strong>Injector do Modugo</strong>, equivalente ao <code>GetIt.I</code> no GetIt.</p>
-</blockquote>
-<hr />
-<h2 id="acessando-dependencias">🔹 Acessando Dependências</h2>
-<p>Para obter uma instância registrada dentro do módulo ou de qualquer widget que faça parte do módulo:</p>
-<pre><code class="language-dart">final service = i.get&lt;ServiceRepository&gt;();
-final service = Modugo.i.get&lt;ServiceRepository&gt;();
-final otherService = context.read&lt;OtherServiceRepository&gt;();
-</code></pre>
-<blockquote>
-<p>🔹 Funciona de forma global dentro do escopo do módulo, garantindo consistência e fácil substituição para testes.</p>
-</blockquote>
-<hr />
-<h2 id="comparacao-com-getit">🔹 Comparação com GetIt</h2>
-<p>Se você já conhece o GetIt, o fluxo é muito parecido:</p>
-<pre><code class="language-dart">// GetIt
-final getIt = GetIt.instance;
-getIt.registerSingleton&lt;ServiceRepository&gt;(ServiceRepository.instance);
-
-// Modugo
-i.registerSingleton&lt;ServiceRepository&gt;(ServiceRepository.instance);
-</code></pre>
-<p><strong>Diferenças principais:</strong></p>
-<ul>
-<li>Suporte direto a <strong>rotas modulares</strong>, resolvendo binds automaticamente ao acessar uma rota.</li>
+<li>Retornar <code>null</code> → permite o acesso normalmente.</li>
+<li>Retornar uma <code>String</code> → redireciona o usuário para esse caminho.</li>
+<li>Guards suportam operações <strong>assíncronas</strong> (<code>FutureOr</code>).</li>
 </ul>
 <hr />
-<h2 id="ciclo-de-vida-e-modularidade">🔹 Ciclo de Vida e Modularidade</h2>
-<ul>
-<li><strong>Lazy Singleton e Factory</strong> são criados <strong>sob demanda</strong>, economizando memória.</li>
-<li><strong>Singleton</strong> pode ser compartilhado entre módulos importados.</li>
-<li>Cada módulo pode importar outros módulos, mantendo a <strong>hierarquia de dependências</strong> limpa e previsível.</li>
-</ul>
+<h2 id="aplicando-guards-em-rotas">🔹 Aplicando Guards em Rotas</h2>
+<p>Guards podem ser aplicados diretamente em <code>ChildRoute</code>:</p>
+<pre><code class="language-dart">route(
+  '/dashboard',
+  child: (_, _) =&gt; const DashboardPage(),
+  guards: [AuthGuard(repository: i.get&lt;AuthRepository&gt;())],
+);
+</code></pre>
+<p>Ou usando a sintaxe tradicional:</p>
+<pre><code class="language-dart">ChildRoute(
+  path: '/dashboard',
+  child: (_, _) =&gt; const DashboardPage(),
+  guards: [AuthGuard(repository: i.get&lt;AuthRepository&gt;())],
+);
+</code></pre>
 <hr />
-<h2 id="exemplo-visual-de-di">🔹 Exemplo Visual de DI</h2>
-<pre><code>[HomeModule] ---&gt; Singleton(ServiceRepository)
-              \-&gt; LazySingleton(OtherServiceRepository)
-
-[ProfileModule] ---&gt; importa HomeModule
-                     Singleton(ServiceRepository) já compartilhado
-                     LazySingleton(ProfileService)
+<h2 id="propagando-guards-com-propagateguards">🔹 Propagando Guards com <code>propagateGuards</code></h2>
+<p>Quando você deseja aplicar um guard a <strong>todas as rotas</strong> de um módulo (incluindo submódulos), use <code>propagateGuards</code>:</p>
+<pre><code class="language-dart">final class AppModule extends Module {
+  @override
+  List&lt;IRoute&gt; routes() =&gt; propagateGuards(
+    guards: [AuthGuard(repository: i.get&lt;AuthRepository&gt;())],
+    routes: [
+      module('/home', HomeModule()),
+      module('/profile', ProfileModule()),
+    ],
+  );
+}
 </code></pre>
-<blockquote>
-<p>Visualiza como singleton é compartilhado e lazy/factory são criados sob demanda.</p>
-</blockquote>
+<p>Todas as rotas internas de <code>HomeModule</code> e <code>ProfileModule</code> herdam automaticamente o <code>AuthGuard</code>.</p>
+<h3 id="como-funciona-internamente">Como funciona internamente</h3>
+<p>O <code>propagateGuards</code> percorre recursivamente as rotas e:</p>
+<ol>
+<li><strong>ChildRoute</strong> → os guards do pai são <strong>prepended</strong> aos guards da rota (executados primeiro).</li>
+<li><strong>ModuleRoute</strong> → o módulo é envolvido em um <code>GuardModuleDecorator</code> que injeta os guards em todas as suas rotas.</li>
+<li><strong>ShellModuleRoute</strong> → os guards são propagados para todas as rotas filhas.</li>
+<li><strong>StatefulShellModuleRoute</strong> → os guards são propagados para todas as branches.</li>
+</ol>
 <hr />
-<h2 id="acesso-via-context-extension">🔹 Acesso via Context Extension</h2>
-<p>Alem de <code>i.get&lt;T&gt;()</code> e <code>Modugo.i.get&lt;T&gt;()</code>, voce pode usar as extensions de <code>BuildContext</code>:</p>
-<h3 id="contextreadt"><code>context.read&lt;T&gt;()</code></h3>
-<p>Recupera uma dependência registrada de forma síncrona:</p>
-<pre><code class="language-dart">final controller = context.read&lt;HomeController&gt;();
+<h2 id="ordem-de-execucao">🔹 Ordem de Execução</h2>
+<pre><code>1. Guards propagados (do pai) → executados primeiro
+2. Guards da rota atual → executados depois
+3. Se todos retornarem null → navegação prossegue
+4. Se algum retornar String → redirect para esse caminho
+5. Redirect da rota (se definido) → avaliado após os guards
+</code></pre>
+<hr />
+<h2 id="tipos-comuns-de-guard">🔹 Tipos Comuns de Guard</h2>
+<h3 id="guard-de-autenticacao">Guard de Autenticação</h3>
+<pre><code class="language-dart">final class AuthGuard implements IGuard {
+  @override
+  FutureOr&lt;String?&gt; call(BuildContext context, GoRouterState state) async {
+    final isLoggedIn = await checkAuth();
+    return isLoggedIn ? null : '/login';
+  }
+}
+</code></pre>
+<h3 id="guard-de-rolepermissao">Guard de Role/Permissão</h3>
+<pre><code class="language-dart">final class AdminGuard implements IGuard {
+  @override
+  FutureOr&lt;String?&gt; call(BuildContext context, GoRouterState state) async {
+    final user = context.read&lt;UserService&gt;().currentUser;
+    return user.isAdmin ? null : '/unauthorized';
+  }
+}
+</code></pre>
+<h3 id="guard-com-side-effect-sem-redirect">Guard com Side-Effect (sem redirect)</h3>
+<pre><code class="language-dart">final class AnalyticsGuard implements IGuard {
+  @override
+  FutureOr&lt;String?&gt; call(BuildContext context, GoRouterState state) {
+    Analytics.logPageView(state.uri.path);
+    return null; // sempre permite acesso
+  }
+}
+</code></pre>
+<hr />
+<h2 id="exemplo-completo">🔹 Exemplo Completo</h2>
+<pre><code class="language-dart">final class AppModule extends Module {
+  @override
+  void binds() {
+    i
+      ..registerSingleton&lt;AuthRepository&gt;(AuthRepositoryImpl())
+      ..registerSingleton&lt;UserService&gt;(UserService());
+  }
 
-// Com instância nomeada
-final primaryDb = context.read&lt;Database&gt;(instanceName: 'primary');
+  @override
+  List&lt;IRoute&gt; routes() =&gt; [
+    // Rota publica (sem guard)
+    route('/login', child: (_, _) =&gt; const LoginPage()),
+
+    // Rotas protegidas
+    ...propagateGuards(
+      guards: [AuthGuard(repository: i.get&lt;AuthRepository&gt;())],
+      routes: [
+        route('/', child: (_, _) =&gt; const HomePage()),
+        module('/profile', ProfileModule()),
+        module('/admin', AdminModule()), // AdminModule pode ter seus proprios guards
+      ],
+    ),
+  ];
+}
 </code></pre>
-<h3 id="contextreadasynct"><code>context.readAsync&lt;T&gt;()</code></h3>
-<p>Recupera dependências registradas de forma assíncrona (via <code>registerSingletonAsync</code>):</p>
-<pre><code class="language-dart">final service = await context.readAsync&lt;MyService&gt;();
-</code></pre>
-<h3 id="parametros-opcionais">Parâmetros opcionais</h3>
-<table>
-<thead>
-<tr>
-<th>Parâmetro</th>
-<th>Descrição</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>param1</code></td>
-<td>Primeiro parâmetro para factories parametrizadas</td>
-</tr>
-<tr>
-<td><code>param2</code></td>
-<td>Segundo parâmetro para factories parametrizadas</td>
-</tr>
-<tr>
-<td><code>type</code></td>
-<td>Tipo específico para resolver quando há múltiplas implementações</td>
-</tr>
-<tr>
-<td><code>instanceName</code></td>
-<td>Nome da instância registrada</td>
-</tr>
-</tbody>
-</table>
 
 
 

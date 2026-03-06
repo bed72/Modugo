@@ -12,13 +12,13 @@
         <meta name="author" content="Gabriel">
       
       
-        <link rel="canonical" href="https://bed72.github.io/Modugo/documentation/injection/index.html">
+        <link rel="canonical" href="https://bed72.github.io/Modugo/documentation/events/index.html">
       
       
-        <link rel="prev" href="../routes/transitions.html">
+        <link rel="prev" href="../guards/index.html">
       
       
-        <link rel="next" href="../guards/index.html">
+        <link rel="next" href="../extensions/index.html">
       
       
       <link rel="icon" href="../../assets/favicon.png">
@@ -26,7 +26,7 @@
     
     
       
-        <title>Injeção de Dependência - Modugo</title>
+        <title>Eventos - Modugo</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#injecao-de-dependencias" class="md-skip">
+        <a href="#sistema-de-eventos" class="md-skip">
           Pular para conteúdo
         </a>
       
@@ -115,7 +115,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Injeção de Dependência
+              Eventos
             
           </span>
         </div>
@@ -444,32 +444,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Injeção de Dependência
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="index.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../injection/index.html" class="md-nav__link">
         
   
   
@@ -480,128 +458,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Índice">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Índice
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#registrando-dependencias" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Registrando Dependências
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="🔹 Registrando Dependências">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#tipos-de-registro-suportados" class="md-nav__link">
-    <span class="md-ellipsis">
-      ✅ Tipos de registro suportados:
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#acessando-dependencias" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Acessando Dependências
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#comparacao-com-getit" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Comparação com GetIt
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#ciclo-de-vida-e-modularidade" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Ciclo de Vida e Modularidade
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#exemplo-visual-de-di" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Exemplo Visual de DI
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#acesso-via-context-extension" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Acesso via Context Extension
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="🔹 Acesso via Context Extension">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#contextreadt" class="md-nav__link">
-    <span class="md-ellipsis">
-      context.read&lt;T&gt;()
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#contextreadasynct" class="md-nav__link">
-    <span class="md-ellipsis">
-      context.readAsync&lt;T&gt;()
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#parametros-opcionais" class="md-nav__link">
-    <span class="md-ellipsis">
-      Parâmetros opcionais
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -632,10 +488,32 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../events/index.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Eventos
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="index.html" class="md-nav__link md-nav__link--active">
         
   
   
@@ -646,6 +524,161 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Índice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Índice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#conceito" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔹 Conceito
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#definindo-um-evento" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔹 Definindo um Evento
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#emitindo-eventos" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔹 Emitindo Eventos
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ouvindo-eventos" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔹 Ouvindo Eventos
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔹 Ouvindo Eventos">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#via-eventont" class="md-nav__link">
+    <span class="md-ellipsis">
+      Via Event.on&lt;T&gt;()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#via-eventistreamoft" class="md-nav__link">
+    <span class="md-ellipsis">
+      Via Event.i.streamOf&lt;T&gt;()
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#limpeza-de-listeners" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔹 Limpeza de Listeners
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔹 Limpeza de Listeners">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#remover-listener-de-um-tipo-especifico" class="md-nav__link">
+    <span class="md-ellipsis">
+      Remover listener de um tipo específico
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remover-todos-os-listeners" class="md-nav__link">
+    <span class="md-ellipsis">
+      Remover todos os listeners
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ievent-mixin-eventos-em-modulos" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔹 IEvent Mixin — Eventos em Módulos
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔹 IEvent Mixin — Eventos em Módulos">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#comportamento" class="md-nav__link">
+    <span class="md-ellipsis">
+      Comportamento
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#routechangedeventmodel" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔹 RouteChangedEventModel
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exemplo-completo" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔹 Exemplo Completo
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -743,19 +776,55 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#registrando-dependencias" class="md-nav__link">
+  <a href="#conceito" class="md-nav__link">
     <span class="md-ellipsis">
-      🔹 Registrando Dependências
+      🔹 Conceito
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="🔹 Registrando Dependências">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#definindo-um-evento" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔹 Definindo um Evento
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#emitindo-eventos" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔹 Emitindo Eventos
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ouvindo-eventos" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔹 Ouvindo Eventos
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔹 Ouvindo Eventos">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#tipos-de-registro-suportados" class="md-nav__link">
+  <a href="#via-eventont" class="md-nav__link">
     <span class="md-ellipsis">
-      ✅ Tipos de registro suportados:
+      Via Event.on&lt;T&gt;()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#via-eventistreamoft" class="md-nav__link">
+    <span class="md-ellipsis">
+      Via Event.i.streamOf&lt;T&gt;()
     </span>
   </a>
   
@@ -767,73 +836,28 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#acessando-dependencias" class="md-nav__link">
+  <a href="#limpeza-de-listeners" class="md-nav__link">
     <span class="md-ellipsis">
-      🔹 Acessando Dependências
+      🔹 Limpeza de Listeners
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#comparacao-com-getit" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Comparação com GetIt
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#ciclo-de-vida-e-modularidade" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Ciclo de Vida e Modularidade
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#exemplo-visual-de-di" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Exemplo Visual de DI
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#acesso-via-context-extension" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Acesso via Context Extension
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="🔹 Acesso via Context Extension">
+    <nav class="md-nav" aria-label="🔹 Limpeza de Listeners">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#contextreadt" class="md-nav__link">
+  <a href="#remover-listener-de-um-tipo-especifico" class="md-nav__link">
     <span class="md-ellipsis">
-      context.read&lt;T&gt;()
+      Remover listener de um tipo específico
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#contextreadasynct" class="md-nav__link">
+  <a href="#remover-todos-os-listeners" class="md-nav__link">
     <span class="md-ellipsis">
-      context.readAsync&lt;T&gt;()
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#parametros-opcionais" class="md-nav__link">
-    <span class="md-ellipsis">
-      Parâmetros opcionais
+      Remover todos os listeners
     </span>
   </a>
   
@@ -841,6 +865,48 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ievent-mixin-eventos-em-modulos" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔹 IEvent Mixin — Eventos em Módulos
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔹 IEvent Mixin — Eventos em Módulos">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#comportamento" class="md-nav__link">
+    <span class="md-ellipsis">
+      Comportamento
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#routechangedeventmodel" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔹 RouteChangedEventModel
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exemplo-completo" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔹 Exemplo Completo
+    </span>
+  </a>
   
 </li>
       
@@ -863,121 +929,117 @@
   
 
 
-<h1 id="injecao-de-dependencias">🧩 Injeção de Dependências</h1>
-<p>O Modugo possui um <strong>sistema de DI baseado no GetIt</strong>, permitindo registrar e acessar instâncias de serviços de forma centralizada dentro de módulos. Isso facilita a modularização, testes e reutilização de código.</p>
+<h1 id="sistema-de-eventos">📡 Sistema de Eventos</h1>
+<p>O Modugo inclui um sistema de eventos leve e type-safe para comunicação desacoplada entre módulos. Ele usa a API nativa de <code>Stream</code> do Dart, sem dependências externas.</p>
 <hr />
-<h2 id="registrando-dependencias">🔹 Registrando Dependências</h2>
-<p>Dentro de cada módulo, você pode registrar <strong>binds</strong> usando o método <code>binds()</code>:</p>
-<pre><code class="language-dart">final class HomeModule extends Module {
+<h2 id="conceito">🔹 Conceito</h2>
+<p>O sistema de eventos permite que módulos se comuniquem <strong>sem se conhecerem diretamente</strong>. Um módulo emite um evento e qualquer outro módulo pode ouvir e reagir.</p>
+<hr />
+<h2 id="definindo-um-evento">🔹 Definindo um Evento</h2>
+<p>Crie uma classe simples para representar o evento:</p>
+<pre><code class="language-dart">final class UserLoggedInEvent {
+  final String userId;
+  UserLoggedInEvent(this.userId);
+}
+
+final class CartUpdatedEvent {
+  final int itemCount;
+  CartUpdatedEvent(this.itemCount);
+}
+</code></pre>
+<hr />
+<h2 id="emitindo-eventos">🔹 Emitindo Eventos</h2>
+<p>Use <code>Event.emit&lt;T&gt;()</code> para disparar um evento:</p>
+<pre><code class="language-dart">Event.emit(UserLoggedInEvent('user-123'));
+Event.emit(CartUpdatedEvent(5));
+</code></pre>
+<hr />
+<h2 id="ouvindo-eventos">🔹 Ouvindo Eventos</h2>
+<h3 id="via-eventont">Via <code>Event.on&lt;T&gt;()</code></h3>
+<pre><code class="language-dart">Event.i.on&lt;UserLoggedInEvent&gt;((event) {
+  print('Usuário logou: ${event.userId}');
+});
+</code></pre>
+<h3 id="via-eventistreamoft">Via <code>Event.i.streamOf&lt;T&gt;()</code></h3>
+<p>Para acesso ao stream diretamente:</p>
+<pre><code class="language-dart">Event.i.streamOf&lt;CartUpdatedEvent&gt;().listen((event) {
+  print('Carrinho atualizado: ${event.itemCount} itens');
+});
+</code></pre>
+<hr />
+<h2 id="limpeza-de-listeners">🔹 Limpeza de Listeners</h2>
+<h3 id="remover-listener-de-um-tipo-especifico">Remover listener de um tipo específico</h3>
+<pre><code class="language-dart">Event.i.dispose&lt;UserLoggedInEvent&gt;();
+</code></pre>
+<h3 id="remover-todos-os-listeners">Remover todos os listeners</h3>
+<pre><code class="language-dart">Event.i.disposeAll();
+</code></pre>
+<hr />
+<h2 id="ievent-mixin-eventos-em-modulos">🔹 IEvent Mixin — Eventos em Módulos</h2>
+<p>O mixin <code>IEvent</code> integra o sistema de eventos ao ciclo de vida do módulo, com <strong>auto-cleanup</strong> das subscriptions:</p>
+<pre><code class="language-dart">final class ChatModule extends Module with IEvent {
   @override
-  List&lt;IBinder&gt; imports() =&gt; [CoreModule()]; // importa outros módulos se necessário
+  void listen() {
+    on&lt;UserLoggedInEvent&gt;((event) {
+      print('Chat: usuário ${event.userId} conectou');
+    });
+
+    on&lt;CartUpdatedEvent&gt;((event) {
+      print('Chat: carrinho com ${event.itemCount} itens');
+    });
+  }
 
   @override
   List&lt;IRoute&gt; routes() =&gt; [
-    ChildRoute(path: '/', child: (context, state) =&gt; const HomePage()),
+    route('/', child: (_, _) =&gt; const ChatPage()),
   ];
-
-  @override
-  void binds() {
-    i
-      ..registerSingleton&lt;ServiceRepository&gt;(ServiceRepository.instance) // singleton
-      ..registerLazySingleton&lt;OtherServiceRepository&gt;(OtherServiceRepositoryImpl.new); // lazy singleton
-  }
 }
 </code></pre>
-<h3 id="tipos-de-registro-suportados">✅ Tipos de registro suportados:</h3>
+<h3 id="comportamento">Comportamento</h3>
 <ul>
-<li><code>registerSingleton&lt;T&gt;(instance)</code> → Instância única já criada, retornada sempre que requisitada.</li>
-<li><code>registerLazySingleton&lt;T&gt;(factory)</code> → Instância criada apenas na primeira vez que for requisitada.</li>
-<li><code>registerFactory&lt;T&gt;(factory)</code> → Cria uma nova instância a cada requisição.</li>
+<li><code>listen()</code> é chamado automaticamente quando o módulo é inicializado (via <code>initState()</code>).</li>
+<li>Todas as subscriptions registradas via <code>on&lt;T&gt;()</code> são canceladas automaticamente no <code>dispose()</code>.</li>
+<li>O parâmetro <code>autoDispose</code> controla se a subscription é rastreada:</li>
 </ul>
-<blockquote>
-<p>🔹 Observação: <code>i</code> é o <strong>Injector do Modugo</strong>, equivalente ao <code>GetIt.I</code> no GetIt.</p>
-</blockquote>
-<hr />
-<h2 id="acessando-dependencias">🔹 Acessando Dependências</h2>
-<p>Para obter uma instância registrada dentro do módulo ou de qualquer widget que faça parte do módulo:</p>
-<pre><code class="language-dart">final service = i.get&lt;ServiceRepository&gt;();
-final service = Modugo.i.get&lt;ServiceRepository&gt;();
-final otherService = context.read&lt;OtherServiceRepository&gt;();
+<pre><code class="language-dart">on&lt;MyEvent&gt;((e) =&gt; ..., autoDispose: true);  // cancelada no dispose (padrão)
+on&lt;MyEvent&gt;((e) =&gt; ..., autoDispose: false); // vive independente do módulo
 </code></pre>
-<blockquote>
-<p>🔹 Funciona de forma global dentro do escopo do módulo, garantindo consistência e fácil substituição para testes.</p>
-</blockquote>
 <hr />
-<h2 id="comparacao-com-getit">🔹 Comparação com GetIt</h2>
-<p>Se você já conhece o GetIt, o fluxo é muito parecido:</p>
-<pre><code class="language-dart">// GetIt
-final getIt = GetIt.instance;
-getIt.registerSingleton&lt;ServiceRepository&gt;(ServiceRepository.instance);
+<h2 id="routechangedeventmodel">🔹 RouteChangedEventModel</h2>
+<p>O Modugo emite automaticamente um <code>RouteChangedEventModel</code> sempre que a rota muda:</p>
+<pre><code class="language-dart">Event.i.on&lt;RouteChangedEventModel&gt;((event) {
+  print('Navegou para: ${event.location}');
+});
+</code></pre>
+<p>Isso é útil para analytics, logging ou qualquer lógica que dependa de mudanças de rota.</p>
+<hr />
+<h2 id="exemplo-completo">🔹 Exemplo Completo</h2>
+<pre><code class="language-dart">// Definição do evento
+final class ProductViewedEvent {
+  final String productId;
+  ProductViewedEvent(this.productId);
+}
 
-// Modugo
-i.registerSingleton&lt;ServiceRepository&gt;(ServiceRepository.instance);
-</code></pre>
-<p><strong>Diferenças principais:</strong></p>
-<ul>
-<li>Suporte direto a <strong>rotas modulares</strong>, resolvendo binds automaticamente ao acessar uma rota.</li>
-</ul>
-<hr />
-<h2 id="ciclo-de-vida-e-modularidade">🔹 Ciclo de Vida e Modularidade</h2>
-<ul>
-<li><strong>Lazy Singleton e Factory</strong> são criados <strong>sob demanda</strong>, economizando memória.</li>
-<li><strong>Singleton</strong> pode ser compartilhado entre módulos importados.</li>
-<li>Cada módulo pode importar outros módulos, mantendo a <strong>hierarquia de dependências</strong> limpa e previsível.</li>
-</ul>
-<hr />
-<h2 id="exemplo-visual-de-di">🔹 Exemplo Visual de DI</h2>
-<pre><code>[HomeModule] ---&gt; Singleton(ServiceRepository)
-              \-&gt; LazySingleton(OtherServiceRepository)
+// Emissão (em qualquer lugar)
+Event.emit(ProductViewedEvent('prod-42'));
 
-[ProfileModule] ---&gt; importa HomeModule
-                     Singleton(ServiceRepository) já compartilhado
-                     LazySingleton(ProfileService)
-</code></pre>
-<blockquote>
-<p>Visualiza como singleton é compartilhado e lazy/factory são criados sob demanda.</p>
-</blockquote>
-<hr />
-<h2 id="acesso-via-context-extension">🔹 Acesso via Context Extension</h2>
-<p>Alem de <code>i.get&lt;T&gt;()</code> e <code>Modugo.i.get&lt;T&gt;()</code>, voce pode usar as extensions de <code>BuildContext</code>:</p>
-<h3 id="contextreadt"><code>context.read&lt;T&gt;()</code></h3>
-<p>Recupera uma dependência registrada de forma síncrona:</p>
-<pre><code class="language-dart">final controller = context.read&lt;HomeController&gt;();
+// Escuta no módulo de analytics
+final class AnalyticsModule extends Module with IEvent {
+  @override
+  void listen() {
+    on&lt;ProductViewedEvent&gt;((event) {
+      Analytics.trackProductView(event.productId);
+    });
 
-// Com instância nomeada
-final primaryDb = context.read&lt;Database&gt;(instanceName: 'primary');
+    on&lt;RouteChangedEventModel&gt;((event) {
+      Analytics.trackPageView(event.location);
+    });
+  }
+
+  @override
+  List&lt;IRoute&gt; routes() =&gt; [];
+}
 </code></pre>
-<h3 id="contextreadasynct"><code>context.readAsync&lt;T&gt;()</code></h3>
-<p>Recupera dependências registradas de forma assíncrona (via <code>registerSingletonAsync</code>):</p>
-<pre><code class="language-dart">final service = await context.readAsync&lt;MyService&gt;();
-</code></pre>
-<h3 id="parametros-opcionais">Parâmetros opcionais</h3>
-<table>
-<thead>
-<tr>
-<th>Parâmetro</th>
-<th>Descrição</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>param1</code></td>
-<td>Primeiro parâmetro para factories parametrizadas</td>
-</tr>
-<tr>
-<td><code>param2</code></td>
-<td>Segundo parâmetro para factories parametrizadas</td>
-</tr>
-<tr>
-<td><code>type</code></td>
-<td>Tipo específico para resolver quando há múltiplas implementações</td>
-</tr>
-<tr>
-<td><code>instanceName</code></td>
-<td>Nome da instância registrada</td>
-</tr>
-</tbody>
-</table>
 
 
 

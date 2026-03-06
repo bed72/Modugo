@@ -12,13 +12,13 @@
         <meta name="author" content="Gabriel">
       
       
-        <link rel="canonical" href="https://bed72.github.io/Modugo/documentation/injection/index.html">
+        <link rel="canonical" href="https://bed72.github.io/Modugo/documentation/routes/transitions.html">
       
       
-        <link rel="prev" href="../routes/transitions.html">
+        <link rel="prev" href="dsl.html">
       
       
-        <link rel="next" href="../guards/index.html">
+        <link rel="next" href="../injection/index.html">
       
       
       <link rel="icon" href="../../assets/favicon.png">
@@ -26,7 +26,7 @@
     
     
       
-        <title>Injeção de Dependência - Modugo</title>
+        <title>Transições - Modugo</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#injecao-de-dependencias" class="md-skip">
+        <a href="#transicoes" class="md-skip">
           Pular para conteúdo
         </a>
       
@@ -115,7 +115,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Injeção de Dependência
+              Transições
             
           </span>
         </div>
@@ -330,18 +330,20 @@
       
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
           <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
@@ -357,7 +359,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             Rotas
@@ -371,7 +373,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../routes/index.html" class="md-nav__link">
+      <a href="index.html" class="md-nav__link">
         
   
   
@@ -394,7 +396,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../routes/dsl.html" class="md-nav__link">
+      <a href="dsl.html" class="md-nav__link">
         
   
   
@@ -414,36 +416,6 @@
                 
   
   
-  
-  
-    <li class="md-nav__item">
-      <a href="../routes/transitions.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Transições
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
     
   
   
@@ -461,7 +433,7 @@
   
   
   <span class="md-ellipsis">
-    Injeção de Dependência
+    Transições
     
   </span>
   
@@ -469,12 +441,12 @@
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <a href="index.html" class="md-nav__link md-nav__link--active">
+      <a href="transitions.html" class="md-nav__link md-nav__link--active">
         
   
   
   <span class="md-ellipsis">
-    Injeção de Dependência
+    Transições
     
   </span>
   
@@ -497,19 +469,37 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#registrando-dependencias" class="md-nav__link">
+  <a href="#tipos-disponiveis" class="md-nav__link">
     <span class="md-ellipsis">
-      🔹 Registrando Dependências
+      🔹 Tipos Disponíveis
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="🔹 Registrando Dependências">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aplicando-em-rotas" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔹 Aplicando em Rotas
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔹 Aplicando em Rotas">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#tipos-de-registro-suportados" class="md-nav__link">
+  <a href="#por-rota-individual" class="md-nav__link">
     <span class="md-ellipsis">
-      ✅ Tipos de registro suportados:
+      Por rota individual
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transicao-padrao-global" class="md-nav__link">
+    <span class="md-ellipsis">
+      Transição padrão global
     </span>
   </a>
   
@@ -521,80 +511,11 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#acessando-dependencias" class="md-nav__link">
+  <a href="#usando-transitionbuilder-diretamente" class="md-nav__link">
     <span class="md-ellipsis">
-      🔹 Acessando Dependências
+      🔹 Usando Transition.builder Diretamente
     </span>
   </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#comparacao-com-getit" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Comparação com GetIt
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#ciclo-de-vida-e-modularidade" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Ciclo de Vida e Modularidade
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#exemplo-visual-de-di" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Exemplo Visual de DI
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#acesso-via-context-extension" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Acesso via Context Extension
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="🔹 Acesso via Context Extension">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#contextreadt" class="md-nav__link">
-    <span class="md-ellipsis">
-      context.read&lt;T&gt;()
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#contextreadasynct" class="md-nav__link">
-    <span class="md-ellipsis">
-      context.readAsync&lt;T&gt;()
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#parametros-opcionais" class="md-nav__link">
-    <span class="md-ellipsis">
-      Parâmetros opcionais
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -602,6 +523,36 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../injection/index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Injeção de Dependência
+    
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -743,19 +694,37 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#registrando-dependencias" class="md-nav__link">
+  <a href="#tipos-disponiveis" class="md-nav__link">
     <span class="md-ellipsis">
-      🔹 Registrando Dependências
+      🔹 Tipos Disponíveis
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="🔹 Registrando Dependências">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aplicando-em-rotas" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔹 Aplicando em Rotas
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔹 Aplicando em Rotas">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#tipos-de-registro-suportados" class="md-nav__link">
+  <a href="#por-rota-individual" class="md-nav__link">
     <span class="md-ellipsis">
-      ✅ Tipos de registro suportados:
+      Por rota individual
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transicao-padrao-global" class="md-nav__link">
+    <span class="md-ellipsis">
+      Transição padrão global
     </span>
   </a>
   
@@ -767,80 +736,11 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#acessando-dependencias" class="md-nav__link">
+  <a href="#usando-transitionbuilder-diretamente" class="md-nav__link">
     <span class="md-ellipsis">
-      🔹 Acessando Dependências
+      🔹 Usando Transition.builder Diretamente
     </span>
   </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#comparacao-com-getit" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Comparação com GetIt
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#ciclo-de-vida-e-modularidade" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Ciclo de Vida e Modularidade
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#exemplo-visual-de-di" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Exemplo Visual de DI
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#acesso-via-context-extension" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Acesso via Context Extension
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="🔹 Acesso via Context Extension">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#contextreadt" class="md-nav__link">
-    <span class="md-ellipsis">
-      context.read&lt;T&gt;()
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#contextreadasynct" class="md-nav__link">
-    <span class="md-ellipsis">
-      context.readAsync&lt;T&gt;()
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#parametros-opcionais" class="md-nav__link">
-    <span class="md-ellipsis">
-      Parâmetros opcionais
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -863,121 +763,91 @@
   
 
 
-<h1 id="injecao-de-dependencias">🧩 Injeção de Dependências</h1>
-<p>O Modugo possui um <strong>sistema de DI baseado no GetIt</strong>, permitindo registrar e acessar instâncias de serviços de forma centralizada dentro de módulos. Isso facilita a modularização, testes e reutilização de código.</p>
+<h1 id="transicoes">🎨 Transições</h1>
+<p>O Modugo oferece 7 tipos de transição de página prontos para uso, integrados ao GoRouter via <code>CustomTransitionPage</code>.</p>
 <hr />
-<h2 id="registrando-dependencias">🔹 Registrando Dependências</h2>
-<p>Dentro de cada módulo, você pode registrar <strong>binds</strong> usando o método <code>binds()</code>:</p>
-<pre><code class="language-dart">final class HomeModule extends Module {
-  @override
-  List&lt;IBinder&gt; imports() =&gt; [CoreModule()]; // importa outros módulos se necessário
-
-  @override
-  List&lt;IRoute&gt; routes() =&gt; [
-    ChildRoute(path: '/', child: (context, state) =&gt; const HomePage()),
-  ];
-
-  @override
-  void binds() {
-    i
-      ..registerSingleton&lt;ServiceRepository&gt;(ServiceRepository.instance) // singleton
-      ..registerLazySingleton&lt;OtherServiceRepository&gt;(OtherServiceRepositoryImpl.new); // lazy singleton
-  }
-}
-</code></pre>
-<h3 id="tipos-de-registro-suportados">✅ Tipos de registro suportados:</h3>
-<ul>
-<li><code>registerSingleton&lt;T&gt;(instance)</code> → Instância única já criada, retornada sempre que requisitada.</li>
-<li><code>registerLazySingleton&lt;T&gt;(factory)</code> → Instância criada apenas na primeira vez que for requisitada.</li>
-<li><code>registerFactory&lt;T&gt;(factory)</code> → Cria uma nova instância a cada requisição.</li>
-</ul>
-<blockquote>
-<p>🔹 Observação: <code>i</code> é o <strong>Injector do Modugo</strong>, equivalente ao <code>GetIt.I</code> no GetIt.</p>
-</blockquote>
-<hr />
-<h2 id="acessando-dependencias">🔹 Acessando Dependências</h2>
-<p>Para obter uma instância registrada dentro do módulo ou de qualquer widget que faça parte do módulo:</p>
-<pre><code class="language-dart">final service = i.get&lt;ServiceRepository&gt;();
-final service = Modugo.i.get&lt;ServiceRepository&gt;();
-final otherService = context.read&lt;OtherServiceRepository&gt;();
-</code></pre>
-<blockquote>
-<p>🔹 Funciona de forma global dentro do escopo do módulo, garantindo consistência e fácil substituição para testes.</p>
-</blockquote>
-<hr />
-<h2 id="comparacao-com-getit">🔹 Comparação com GetIt</h2>
-<p>Se você já conhece o GetIt, o fluxo é muito parecido:</p>
-<pre><code class="language-dart">// GetIt
-final getIt = GetIt.instance;
-getIt.registerSingleton&lt;ServiceRepository&gt;(ServiceRepository.instance);
-
-// Modugo
-i.registerSingleton&lt;ServiceRepository&gt;(ServiceRepository.instance);
-</code></pre>
-<p><strong>Diferenças principais:</strong></p>
-<ul>
-<li>Suporte direto a <strong>rotas modulares</strong>, resolvendo binds automaticamente ao acessar uma rota.</li>
-</ul>
-<hr />
-<h2 id="ciclo-de-vida-e-modularidade">🔹 Ciclo de Vida e Modularidade</h2>
-<ul>
-<li><strong>Lazy Singleton e Factory</strong> são criados <strong>sob demanda</strong>, economizando memória.</li>
-<li><strong>Singleton</strong> pode ser compartilhado entre módulos importados.</li>
-<li>Cada módulo pode importar outros módulos, mantendo a <strong>hierarquia de dependências</strong> limpa e previsível.</li>
-</ul>
-<hr />
-<h2 id="exemplo-visual-de-di">🔹 Exemplo Visual de DI</h2>
-<pre><code>[HomeModule] ---&gt; Singleton(ServiceRepository)
-              \-&gt; LazySingleton(OtherServiceRepository)
-
-[ProfileModule] ---&gt; importa HomeModule
-                     Singleton(ServiceRepository) já compartilhado
-                     LazySingleton(ProfileService)
-</code></pre>
-<blockquote>
-<p>Visualiza como singleton é compartilhado e lazy/factory são criados sob demanda.</p>
-</blockquote>
-<hr />
-<h2 id="acesso-via-context-extension">🔹 Acesso via Context Extension</h2>
-<p>Alem de <code>i.get&lt;T&gt;()</code> e <code>Modugo.i.get&lt;T&gt;()</code>, voce pode usar as extensions de <code>BuildContext</code>:</p>
-<h3 id="contextreadt"><code>context.read&lt;T&gt;()</code></h3>
-<p>Recupera uma dependência registrada de forma síncrona:</p>
-<pre><code class="language-dart">final controller = context.read&lt;HomeController&gt;();
-
-// Com instância nomeada
-final primaryDb = context.read&lt;Database&gt;(instanceName: 'primary');
-</code></pre>
-<h3 id="contextreadasynct"><code>context.readAsync&lt;T&gt;()</code></h3>
-<p>Recupera dependências registradas de forma assíncrona (via <code>registerSingletonAsync</code>):</p>
-<pre><code class="language-dart">final service = await context.readAsync&lt;MyService&gt;();
-</code></pre>
-<h3 id="parametros-opcionais">Parâmetros opcionais</h3>
+<h2 id="tipos-disponiveis">🔹 Tipos Disponíveis</h2>
 <table>
 <thead>
 <tr>
-<th>Parâmetro</th>
+<th>Tipo</th>
 <th>Descrição</th>
+<th>Widget Interno</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>param1</code></td>
-<td>Primeiro parâmetro para factories parametrizadas</td>
+<td><code>TypeTransition.fade</code></td>
+<td>Cross-fade (padrão)</td>
+<td><code>FadeTransition</code></td>
 </tr>
 <tr>
-<td><code>param2</code></td>
-<td>Segundo parâmetro para factories parametrizadas</td>
+<td><code>TypeTransition.scale</code></td>
+<td>Zoom in</td>
+<td><code>ScaleTransition</code></td>
 </tr>
 <tr>
-<td><code>type</code></td>
-<td>Tipo específico para resolver quando há múltiplas implementações</td>
+<td><code>TypeTransition.slideUp</code></td>
+<td>Entra de baixo para cima</td>
+<td><code>SlideTransition</code></td>
 </tr>
 <tr>
-<td><code>instanceName</code></td>
-<td>Nome da instância registrada</td>
+<td><code>TypeTransition.slideDown</code></td>
+<td>Entra de cima para baixo</td>
+<td><code>SlideTransition</code></td>
+</tr>
+<tr>
+<td><code>TypeTransition.slideLeft</code></td>
+<td>Entra da direita para esquerda</td>
+<td><code>SlideTransition</code></td>
+</tr>
+<tr>
+<td><code>TypeTransition.slideRight</code></td>
+<td>Entra da esquerda para direita</td>
+<td><code>SlideTransition</code></td>
+</tr>
+<tr>
+<td><code>TypeTransition.rotation</code></td>
+<td>Rotação</td>
+<td><code>RotationTransition</code></td>
 </tr>
 </tbody>
 </table>
+<hr />
+<h2 id="aplicando-em-rotas">🔹 Aplicando em Rotas</h2>
+<h3 id="por-rota-individual">Por rota individual</h3>
+<pre><code class="language-dart">route(
+  '/details',
+  child: (_, _) =&gt; const DetailsPage(),
+  transition: TypeTransition.slideLeft,
+);
+</code></pre>
+<p>Ou com a sintaxe tradicional:</p>
+<pre><code class="language-dart">ChildRoute(
+  path: '/details',
+  child: (_, _) =&gt; const DetailsPage(),
+  transition: TypeTransition.slideLeft,
+);
+</code></pre>
+<h3 id="transicao-padrao-global">Transição padrão global</h3>
+<p>Defina a transição padrão para todas as rotas via <code>Modugo.configure()</code>:</p>
+<pre><code class="language-dart">await Modugo.configure(
+  module: AppModule(),
+  pageTransition: TypeTransition.slideLeft,
+);
+</code></pre>
+<blockquote>
+<p>Se uma rota não define <code>transition</code>, a transição global é usada. O padrão global é <code>TypeTransition.fade</code>.</p>
+</blockquote>
+<hr />
+<h2 id="usando-transitionbuilder-diretamente">🔹 Usando <code>Transition.builder</code> Diretamente</h2>
+<p>Para cenários avançados, você pode usar o builder diretamente:</p>
+<pre><code class="language-dart">final transitionBuilder = Transition.builder(
+  type: TypeTransition.slideUp,
+  config: () =&gt; debugPrint('Aplicando transição'),
+);
+</code></pre>
+<p>O <code>config</code> é um callback executado <strong>antes</strong> de construir a animação, útil para logging ou side-effects.</p>
 
 
 

@@ -15,7 +15,7 @@
         <link rel="canonical" href="https://bed72.github.io/Modugo/documentation/modules/index.html">
       
       
-        <link rel="prev" href="../../index.html">
+        <link rel="prev" href="../getting-started/index.html">
       
       
         <link rel="next" href="../routes/index.html">
@@ -26,7 +26,7 @@
     
     
       
-        <title>Introdução - Modugo</title>
+        <title>Módulos - Modugo</title>
       
     
     
@@ -115,7 +115,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Introdução
+              Módulos
             
           </span>
         </div>
@@ -286,44 +286,26 @@
       
   
   
-    
   
   
-  
-    
-    
-    
-    
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
-      
+    <li class="md-nav__item">
+      <a href="../getting-started/index.html" class="md-nav__link">
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
-        
-          
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
-            
   
   
   <span class="md-ellipsis">
-    Módulos
+    Primeiros Passos
     
   </span>
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_2">
-            <span class="md-nav__icon md-icon"></span>
-            Módulos
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
+      </a>
+    </li>
+  
+
+    
+      
+      
   
   
     
@@ -343,7 +325,7 @@
   
   
   <span class="md-ellipsis">
-    Introdução
+    Módulos
     
   </span>
   
@@ -356,7 +338,7 @@
   
   
   <span class="md-ellipsis">
-    Introdução
+    Módulos
     
   </span>
   
@@ -397,11 +379,77 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#anatomia-de-um-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      🧬 Anatomia de um Module
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#exemplo-modulo-app" class="md-nav__link">
     <span class="md-ellipsis">
       📝 Exemplo: Módulo App
     </span>
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#importando-modulos-com-imports" class="md-nav__link">
+    <span class="md-ellipsis">
+      📦 Importando Módulos com imports()
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📦 Importando Módulos com imports()">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#comportamento-do-registro" class="md-nav__link">
+    <span class="md-ellipsis">
+      Comportamento do registro
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ciclo-de-vida" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔄 Ciclo de Vida
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔄 Ciclo de Vida">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#initstate" class="md-nav__link">
+    <span class="md-ellipsis">
+      initState()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dispose" class="md-nav__link">
+    <span class="md-ellipsis">
+      dispose()
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -414,85 +462,18 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#diagrama-de-composicao" class="md-nav__link">
+    <span class="md-ellipsis">
+      📊 Diagrama de Composição
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
-      
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
-        
-          
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    Rotas
-    
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3">
-            <span class="md-nav__icon md-icon"></span>
-            Rotas
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../routes/index.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Introdução
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
       
     </li>
   
@@ -521,7 +502,7 @@
   
   
   <span class="md-ellipsis">
-    Injeção de Dependência
+    Rotas
     
   </span>
   
@@ -532,7 +513,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
-            Injeção de Dependência
+            Rotas
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -543,7 +524,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../injection/index.html" class="md-nav__link">
+      <a href="../routes/index.html" class="md-nav__link">
         
   
   
@@ -559,9 +540,187 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../routes/dsl.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    API Declarativa (DSL)
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../routes/transitions.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Transições
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../injection/index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Injeção de Dependência
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guards/index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Guards
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../events/index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Eventos
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../extensions/index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Extensions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../utilities/index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Utilitários
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration/index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Migração
+    
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -611,6 +770,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#anatomia-de-um-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      🧬 Anatomia de um Module
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#exemplo-modulo-app" class="md-nav__link">
     <span class="md-ellipsis">
       📝 Exemplo: Módulo App
@@ -620,9 +788,75 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#importando-modulos-com-imports" class="md-nav__link">
+    <span class="md-ellipsis">
+      📦 Importando Módulos com imports()
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📦 Importando Módulos com imports()">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#comportamento-do-registro" class="md-nav__link">
+    <span class="md-ellipsis">
+      Comportamento do registro
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ciclo-de-vida" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔄 Ciclo de Vida
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔄 Ciclo de Vida">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#initstate" class="md-nav__link">
+    <span class="md-ellipsis">
+      initState()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dispose" class="md-nav__link">
+    <span class="md-ellipsis">
+      dispose()
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#beneficios" class="md-nav__link">
     <span class="md-ellipsis">
       🚀 Benefícios
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#diagrama-de-composicao" class="md-nav__link">
+    <span class="md-ellipsis">
+      📊 Diagrama de Composição
     </span>
   </a>
   
@@ -692,19 +926,51 @@ main.dart
 <li><strong>Escalabilidade</strong>: Novos recursos podem ser adicionados como novos módulos sem afetar os existentes.</li>
 </ol>
 <hr />
+<h2 id="anatomia-de-um-module">🧬 Anatomia de um Module</h2>
+<p>A classe <code>Module</code> é a base de tudo no Modugo. Ela combina três responsabilidades:</p>
+<table>
+<thead>
+<tr>
+<th>Método</th>
+<th>Responsabilidade</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>binds()</code></td>
+<td>Registra dependências no GetIt</td>
+</tr>
+<tr>
+<td><code>routes()</code></td>
+<td>Declara as rotas expostas pelo módulo</td>
+</tr>
+<tr>
+<td><code>imports()</code></td>
+<td>Declara dependências de outros módulos</td>
+</tr>
+<tr>
+<td><code>initState()</code></td>
+<td>Executado quando o módulo é inicializado</td>
+</tr>
+<tr>
+<td><code>dispose()</code></td>
+<td>Executado para limpar recursos do módulo</td>
+</tr>
+</tbody>
+</table>
+<hr />
 <h2 id="exemplo-modulo-app">📝 Exemplo: Módulo App</h2>
-<pre><code class="language-dart">// app_module.dart
-final class AppModule extends Module {
+<pre><code class="language-dart">final class AppModule extends Module {
   @override
   void binds() {
-    i.registerSingleton&lt;AuthService&gt;((_) =&gt; AuthService());
+    i.registerSingleton&lt;AuthService&gt;(AuthService());
   }
 
   @override
   List&lt;IRoute&gt; routes() =&gt; [
-    ModuleRoute(path: '/', module: HomeModule()),
-    ModuleRoute(path: '/chat', module: ChatModule()),
-    ModuleRoute(path: '/profile', module: ProfileModule()),
+    module('/home', HomeModule()),
+    module('/chat', ChatModule()),
+    module('/profile', ProfileModule()),
   ];
 }
 </code></pre>
@@ -713,6 +979,58 @@ final class AppModule extends Module {
 <li><code>routes()</code>: declara as rotas do módulo, encapsulando a interface dentro do seu domínio.</li>
 </ul>
 <hr />
+<h2 id="importando-modulos-com-imports">📦 Importando Módulos com <code>imports()</code></h2>
+<p>O método <code>imports()</code> permite que um módulo declare dependências de outros módulos. Os <code>binds()</code> dos módulos importados são executados <strong>antes</strong> dos <code>binds()</code> do módulo atual.</p>
+<pre><code class="language-dart">final class HomeModule extends Module {
+  @override
+  List&lt;IBinder&gt; imports() =&gt; [SharedModule()];
+
+  @override
+  void binds() {
+    // SharedModule já foi registrado, podemos usar suas dependências
+    i.registerLazySingleton&lt;HomeController&gt;(
+      () =&gt; HomeController(i.get&lt;ApiClient&gt;()),
+    );
+  }
+
+  @override
+  List&lt;IRoute&gt; routes() =&gt; [
+    route('/', child: (_, _) =&gt; const HomePage()),
+  ];
+}
+</code></pre>
+<h3 id="comportamento-do-registro">Comportamento do registro</h3>
+<ul>
+<li>Cada módulo é registrado <strong>apenas uma vez</strong> (idempotente).</li>
+<li>Se o mesmo módulo for importado por múltiplos módulos, seus <code>binds()</code> <strong>não serão executados novamente</strong>.</li>
+<li>Imports são processados <strong>recursivamente</strong> — se <code>A</code> importa <code>B</code> que importa <code>C</code>, a ordem de registro é: <code>C → B → A</code>.</li>
+</ul>
+<hr />
+<h2 id="ciclo-de-vida">🔄 Ciclo de Vida</h2>
+<h3 id="initstate"><code>initState()</code></h3>
+<p>Executado quando o módulo é inicializado. Ideal para configurar listeners, preparar recursos ou executar lógica de setup.</p>
+<pre><code class="language-dart">final class AnalyticsModule extends Module {
+  @override
+  void initState() {
+    super.initState();
+    debugPrint('AnalyticsModule inicializado');
+  }
+}
+</code></pre>
+<h3 id="dispose"><code>dispose()</code></h3>
+<p>Executado quando o módulo é descartado. Ideal para cancelar subscriptions, limpar estado e liberar recursos.</p>
+<pre><code class="language-dart">final class ChatModule extends Module {
+  @override
+  void dispose() {
+    // Limpar recursos
+    super.dispose();
+  }
+}
+</code></pre>
+<blockquote>
+<p>⚠️ <strong>Importante:</strong> O Modugo <strong>não chama <code>dispose()</code> automaticamente</strong>. Se precisar limpar recursos, você deve gerenciar manualmente.</p>
+</blockquote>
+<hr />
 <h2 id="beneficios">🚀 Benefícios</h2>
 <ul>
 <li><strong>Separação de Responsabilidades</strong>: UI, rotas e dependências são modularizadas.</li>
@@ -720,6 +1038,24 @@ final class AppModule extends Module {
 <li><strong>Reutilização</strong>: Módulos podem ser reutilizados em diferentes apps.</li>
 <li><strong>Colaboração em Equipe</strong>: Times podem trabalhar em módulos diferentes simultaneamente sem conflitos.</li>
 </ul>
+<hr />
+<h2 id="diagrama-de-composicao">📊 Diagrama de Composição</h2>
+<pre><code>AppModule
+├── imports: [CoreModule]
+├── binds: AuthService
+└── routes:
+    ├── HomeModule
+    │   ├── imports: [SharedModule]
+    │   ├── binds: HomeController
+    │   └── routes: ['/']
+    ├── ChatModule
+    │   ├── binds: ChatService
+    │   └── routes: ['/']
+    └── ProfileModule
+        ├── imports: [SharedModule]  ← já registrado, skip
+        ├── binds: ProfileController
+        └── routes: ['/']
+</code></pre>
 
 
 

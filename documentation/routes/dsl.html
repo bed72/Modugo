@@ -12,13 +12,13 @@
         <meta name="author" content="Gabriel">
       
       
-        <link rel="canonical" href="https://bed72.github.io/Modugo/documentation/injection/index.html">
+        <link rel="canonical" href="https://bed72.github.io/Modugo/documentation/routes/dsl.html">
       
       
-        <link rel="prev" href="../routes/transitions.html">
+        <link rel="prev" href="index.html">
       
       
-        <link rel="next" href="../guards/index.html">
+        <link rel="next" href="transitions.html">
       
       
       <link rel="icon" href="../../assets/favicon.png">
@@ -26,7 +26,7 @@
     
     
       
-        <title>Injeção de Dependência - Modugo</title>
+        <title>API Declarativa (DSL) - Modugo</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#injecao-de-dependencias" class="md-skip">
+        <a href="#api-declarativa-dsl" class="md-skip">
           Pular para conteúdo
         </a>
       
@@ -115,7 +115,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Injeção de Dependência
+              API Declarativa (DSL)
             
           </span>
         </div>
@@ -330,18 +330,20 @@
       
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
           <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
@@ -357,7 +359,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             Rotas
@@ -371,7 +373,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../routes/index.html" class="md-nav__link">
+      <a href="index.html" class="md-nav__link">
         
   
   
@@ -391,10 +393,32 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../routes/dsl.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    API Declarativa (DSL)
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="dsl.html" class="md-nav__link md-nav__link--active">
         
   
   
@@ -405,6 +429,113 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Índice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Índice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#visao-geral" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔹 Visão Geral
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metodos-disponiveis" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔹 Métodos Disponíveis
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔹 Métodos Disponíveis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#child-cria-uma-childroute" class="md-nav__link">
+    <span class="md-ellipsis">
+      child() — Cria uma ChildRoute
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#module-cria-uma-moduleroute" class="md-nav__link">
+    <span class="md-ellipsis">
+      module() — Cria uma ModuleRoute
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alias-cria-uma-aliasroute" class="md-nav__link">
+    <span class="md-ellipsis">
+      alias() — Cria uma AliasRoute
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shell-cria-uma-shellmoduleroute" class="md-nav__link">
+    <span class="md-ellipsis">
+      shell() — Cria uma ShellModuleRoute
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#statefulshell-cria-uma-statefulshellmoduleroute" class="md-nav__link">
+    <span class="md-ellipsis">
+      statefulShell() — Cria uma StatefulShellModuleRoute
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tabela-de-resumo" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔹 Tabela de Resumo
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exemplo-completo" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔹 Exemplo Completo
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -417,7 +548,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../routes/transitions.html" class="md-nav__link">
+      <a href="transitions.html" class="md-nav__link">
         
   
   
@@ -444,32 +575,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Injeção de Dependência
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="index.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../injection/index.html" class="md-nav__link">
         
   
   
@@ -480,128 +589,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Índice">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Índice
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#registrando-dependencias" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Registrando Dependências
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="🔹 Registrando Dependências">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#tipos-de-registro-suportados" class="md-nav__link">
-    <span class="md-ellipsis">
-      ✅ Tipos de registro suportados:
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#acessando-dependencias" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Acessando Dependências
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#comparacao-com-getit" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Comparação com GetIt
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#ciclo-de-vida-e-modularidade" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Ciclo de Vida e Modularidade
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#exemplo-visual-de-di" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Exemplo Visual de DI
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#acesso-via-context-extension" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Acesso via Context Extension
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="🔹 Acesso via Context Extension">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#contextreadt" class="md-nav__link">
-    <span class="md-ellipsis">
-      context.read&lt;T&gt;()
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#contextreadasynct" class="md-nav__link">
-    <span class="md-ellipsis">
-      context.readAsync&lt;T&gt;()
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#parametros-opcionais" class="md-nav__link">
-    <span class="md-ellipsis">
-      Parâmetros opcionais
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -743,19 +730,64 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#registrando-dependencias" class="md-nav__link">
+  <a href="#visao-geral" class="md-nav__link">
     <span class="md-ellipsis">
-      🔹 Registrando Dependências
+      🔹 Visão Geral
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="🔹 Registrando Dependências">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metodos-disponiveis" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔹 Métodos Disponíveis
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔹 Métodos Disponíveis">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#tipos-de-registro-suportados" class="md-nav__link">
+  <a href="#child-cria-uma-childroute" class="md-nav__link">
     <span class="md-ellipsis">
-      ✅ Tipos de registro suportados:
+      child() — Cria uma ChildRoute
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#module-cria-uma-moduleroute" class="md-nav__link">
+    <span class="md-ellipsis">
+      module() — Cria uma ModuleRoute
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alias-cria-uma-aliasroute" class="md-nav__link">
+    <span class="md-ellipsis">
+      alias() — Cria uma AliasRoute
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shell-cria-uma-shellmoduleroute" class="md-nav__link">
+    <span class="md-ellipsis">
+      shell() — Cria uma ShellModuleRoute
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#statefulshell-cria-uma-statefulshellmoduleroute" class="md-nav__link">
+    <span class="md-ellipsis">
+      statefulShell() — Cria uma StatefulShellModuleRoute
     </span>
   </a>
   
@@ -767,80 +799,20 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#acessando-dependencias" class="md-nav__link">
+  <a href="#tabela-de-resumo" class="md-nav__link">
     <span class="md-ellipsis">
-      🔹 Acessando Dependências
+      🔹 Tabela de Resumo
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#comparacao-com-getit" class="md-nav__link">
+  <a href="#exemplo-completo" class="md-nav__link">
     <span class="md-ellipsis">
-      🔹 Comparação com GetIt
+      🔹 Exemplo Completo
     </span>
   </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#ciclo-de-vida-e-modularidade" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Ciclo de Vida e Modularidade
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#exemplo-visual-de-di" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Exemplo Visual de DI
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#acesso-via-context-extension" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔹 Acesso via Context Extension
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="🔹 Acesso via Context Extension">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#contextreadt" class="md-nav__link">
-    <span class="md-ellipsis">
-      context.read&lt;T&gt;()
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#contextreadasynct" class="md-nav__link">
-    <span class="md-ellipsis">
-      context.readAsync&lt;T&gt;()
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#parametros-opcionais" class="md-nav__link">
-    <span class="md-ellipsis">
-      Parâmetros opcionais
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -863,121 +835,158 @@
   
 
 
-<h1 id="injecao-de-dependencias">🧩 Injeção de Dependências</h1>
-<p>O Modugo possui um <strong>sistema de DI baseado no GetIt</strong>, permitindo registrar e acessar instâncias de serviços de forma centralizada dentro de módulos. Isso facilita a modularização, testes e reutilização de código.</p>
+<h1 id="api-declarativa-dsl">🧩 API Declarativa (DSL)</h1>
+<p>O Modugo oferece uma API declarativa e fluente para definir rotas dentro dos seus módulos. Ela elimina a repetição de código, tornando a configuração mais expressiva e legível.</p>
 <hr />
-<h2 id="registrando-dependencias">🔹 Registrando Dependências</h2>
-<p>Dentro de cada módulo, você pode registrar <strong>binds</strong> usando o método <code>binds()</code>:</p>
-<pre><code class="language-dart">final class HomeModule extends Module {
-  @override
-  List&lt;IBinder&gt; imports() =&gt; [CoreModule()]; // importa outros módulos se necessário
-
-  @override
-  List&lt;IRoute&gt; routes() =&gt; [
-    ChildRoute(path: '/', child: (context, state) =&gt; const HomePage()),
-  ];
-
-  @override
-  void binds() {
-    i
-      ..registerSingleton&lt;ServiceRepository&gt;(ServiceRepository.instance) // singleton
-      ..registerLazySingleton&lt;OtherServiceRepository&gt;(OtherServiceRepositoryImpl.new); // lazy singleton
-  }
-}
+<h2 id="visao-geral">🔹 Visão Geral</h2>
+<p>Tradicionalmente, você define rotas assim:</p>
+<pre><code class="language-dart">List&lt;IRoute&gt; routes() =&gt; [
+  ChildRoute(path: '/', child: (_, _) =&gt; const HomePage()),
+  ModuleRoute(path: '/auth', module: AuthModule()),
+  AliasRoute(from: '/cart/:id', to: '/order/:id'),
+];
 </code></pre>
-<h3 id="tipos-de-registro-suportados">✅ Tipos de registro suportados:</h3>
-<ul>
-<li><code>registerSingleton&lt;T&gt;(instance)</code> → Instância única já criada, retornada sempre que requisitada.</li>
-<li><code>registerLazySingleton&lt;T&gt;(factory)</code> → Instância criada apenas na primeira vez que for requisitada.</li>
-<li><code>registerFactory&lt;T&gt;(factory)</code> → Cria uma nova instância a cada requisição.</li>
-</ul>
-<blockquote>
-<p>🔹 Observação: <code>i</code> é o <strong>Injector do Modugo</strong>, equivalente ao <code>GetIt.I</code> no GetIt.</p>
-</blockquote>
+<p>Com a DSL, o mesmo código fica:</p>
+<pre><code class="language-dart">List&lt;IRoute&gt; routes() =&gt; [
+  route('/', child: (_, _) =&gt; const HomePage()),
+  module('/auth', AuthModule()),
+  alias(from: '/cart/:id', to: '/order/:id'),
+];
+</code></pre>
+<p>A lógica interna é <strong>exatamente a mesma</strong> — a DSL é apenas açúcar sintático.</p>
 <hr />
-<h2 id="acessando-dependencias">🔹 Acessando Dependências</h2>
-<p>Para obter uma instância registrada dentro do módulo ou de qualquer widget que faça parte do módulo:</p>
-<pre><code class="language-dart">final service = i.get&lt;ServiceRepository&gt;();
-final service = Modugo.i.get&lt;ServiceRepository&gt;();
-final otherService = context.read&lt;OtherServiceRepository&gt;();
+<h2 id="metodos-disponiveis">🔹 Métodos Disponíveis</h2>
+<h3 id="child-cria-uma-childroute"><code>child()</code> — Cria uma ChildRoute</h3>
+<p>Para rotas simples que apontam diretamente para um widget.</p>
+<pre><code class="language-dart">child(
+  path: '/home',
+  name: 'home',
+  child: (_, _) =&gt; const HomePage(),
+  guards: [AuthGuard()],
+  transition: TypeTransition.fade,
+  onExit: (context, state) async =&gt; true,
+  pageBuilder: (_, _) =&gt; const MaterialPage(child: HomePage()),
+  parentNavigatorKey: myKey,
+);
 </code></pre>
 <blockquote>
-<p>🔹 Funciona de forma global dentro do escopo do módulo, garantindo consistência e fácil substituição para testes.</p>
+<p>Se <code>path</code> não for informado, o valor padrão é <code>'/'</code>.</p>
 </blockquote>
 <hr />
-<h2 id="comparacao-com-getit">🔹 Comparação com GetIt</h2>
-<p>Se você já conhece o GetIt, o fluxo é muito parecido:</p>
-<pre><code class="language-dart">// GetIt
-final getIt = GetIt.instance;
-getIt.registerSingleton&lt;ServiceRepository&gt;(ServiceRepository.instance);
-
-// Modugo
-i.registerSingleton&lt;ServiceRepository&gt;(ServiceRepository.instance);
-</code></pre>
-<p><strong>Diferenças principais:</strong></p>
-<ul>
-<li>Suporte direto a <strong>rotas modulares</strong>, resolvendo binds automaticamente ao acessar uma rota.</li>
-</ul>
-<hr />
-<h2 id="ciclo-de-vida-e-modularidade">🔹 Ciclo de Vida e Modularidade</h2>
-<ul>
-<li><strong>Lazy Singleton e Factory</strong> são criados <strong>sob demanda</strong>, economizando memória.</li>
-<li><strong>Singleton</strong> pode ser compartilhado entre módulos importados.</li>
-<li>Cada módulo pode importar outros módulos, mantendo a <strong>hierarquia de dependências</strong> limpa e previsível.</li>
-</ul>
-<hr />
-<h2 id="exemplo-visual-de-di">🔹 Exemplo Visual de DI</h2>
-<pre><code>[HomeModule] ---&gt; Singleton(ServiceRepository)
-              \-&gt; LazySingleton(OtherServiceRepository)
-
-[ProfileModule] ---&gt; importa HomeModule
-                     Singleton(ServiceRepository) já compartilhado
-                     LazySingleton(ProfileService)
+<h3 id="module-cria-uma-moduleroute"><code>module()</code> — Cria uma ModuleRoute</h3>
+<p>Conecta submódulos para uma arquitetura hierárquica.</p>
+<pre><code class="language-dart">module(
+  module: AuthModule(),
+  name: 'auth',
+  parentNavigatorKey: myKey,
+);
 </code></pre>
 <blockquote>
-<p>Visualiza como singleton é compartilhado e lazy/factory são criados sob demanda.</p>
+<p>O <code>path</code> padrão é <code>'/'</code>.</p>
 </blockquote>
 <hr />
-<h2 id="acesso-via-context-extension">🔹 Acesso via Context Extension</h2>
-<p>Alem de <code>i.get&lt;T&gt;()</code> e <code>Modugo.i.get&lt;T&gt;()</code>, voce pode usar as extensions de <code>BuildContext</code>:</p>
-<h3 id="contextreadt"><code>context.read&lt;T&gt;()</code></h3>
-<p>Recupera uma dependência registrada de forma síncrona:</p>
-<pre><code class="language-dart">final controller = context.read&lt;HomeController&gt;();
-
-// Com instância nomeada
-final primaryDb = context.read&lt;Database&gt;(instanceName: 'primary');
+<h3 id="alias-cria-uma-aliasroute"><code>alias()</code> — Cria uma AliasRoute</h3>
+<p>Apelidos para rotas existentes sem duplicar lógica.</p>
+<pre><code class="language-dart">alias(from: '/cart/:id', to: '/order/:id');
 </code></pre>
-<h3 id="contextreadasynct"><code>context.readAsync&lt;T&gt;()</code></h3>
-<p>Recupera dependências registradas de forma assíncrona (via <code>registerSingletonAsync</code>):</p>
-<pre><code class="language-dart">final service = await context.readAsync&lt;MyService&gt;();
+<hr />
+<h3 id="shell-cria-uma-shellmoduleroute"><code>shell()</code> — Cria uma ShellModuleRoute</h3>
+<p>Agrupa rotas sob um layout compartilhado.</p>
+<pre><code class="language-dart">shell(
+  builder: (_, _, child) =&gt; AppScaffold(child: child),
+  routes: [
+    route('/feed', child: (_, _) =&gt; const FeedPage()),
+    route('/settings', child: (_, _) =&gt; const SettingsPage()),
+  ],
+  observers: [MyObserver()],
+  navigatorKey: shellKey,
+  parentNavigatorKey: parentKey,
+  pageBuilder: (_, _, child) =&gt; MaterialPage(child: child),
+);
 </code></pre>
-<h3 id="parametros-opcionais">Parâmetros opcionais</h3>
+<hr />
+<h3 id="statefulshell-cria-uma-statefulshellmoduleroute"><code>statefulShell()</code> — Cria uma StatefulShellModuleRoute</h3>
+<p>Navegação com múltiplas pilhas independentes (abas, bottom navigation).</p>
+<pre><code class="language-dart">statefulShell(
+  builder: (_, _, shell) =&gt; BottomBarWidget(shell: shell),
+  routes: [
+    module('/home', HomeModule()),
+    module('/profile', ProfileModule()),
+  ],
+  key: shellKey,
+  parentNavigatorKey: parentKey,
+);
+</code></pre>
+<hr />
+<h2 id="tabela-de-resumo">🔹 Tabela de Resumo</h2>
 <table>
 <thead>
 <tr>
-<th>Parâmetro</th>
-<th>Descrição</th>
+<th>Helper</th>
+<th>Retorna</th>
+<th>Uso Principal</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>param1</code></td>
-<td>Primeiro parâmetro para factories parametrizadas</td>
+<td><code>child()</code></td>
+<td><code>ChildRoute</code></td>
+<td>Telas simples</td>
 </tr>
 <tr>
-<td><code>param2</code></td>
-<td>Segundo parâmetro para factories parametrizadas</td>
+<td><code>module()</code></td>
+<td><code>ModuleRoute</code></td>
+<td>Submódulos</td>
 </tr>
 <tr>
-<td><code>type</code></td>
-<td>Tipo específico para resolver quando há múltiplas implementações</td>
+<td><code>alias()</code></td>
+<td><code>AliasRoute</code></td>
+<td>Caminhos alternativos</td>
 </tr>
 <tr>
-<td><code>instanceName</code></td>
-<td>Nome da instância registrada</td>
+<td><code>shell()</code></td>
+<td><code>ShellModuleRoute</code></td>
+<td>Containers e layouts compartilhados</td>
+</tr>
+<tr>
+<td><code>statefulShell()</code></td>
+<td><code>StatefulShellModuleRoute</code></td>
+<td>Navegação com múltiplas pilhas</td>
 </tr>
 </tbody>
 </table>
+<hr />
+<h2 id="exemplo-completo">🔹 Exemplo Completo</h2>
+<pre><code class="language-dart">final class AppModule extends Module {
+  @override
+  List&lt;IRoute&gt; routes() =&gt; [
+    child(child: (_, _) =&gt; const HomePage()),
+
+    module(module: AuthModule()),
+
+    alias(from: '/cart/:id', to: '/order/:id'),
+
+    shell(
+      builder: (_, _, child) =&gt; MainShell(child: child),
+      routes: [
+        child(path: '/dashboard', child: (_, _) =&gt; const DashboardPage()),
+        child(path: '/settings', child: (_, _) =&gt; const SettingsPage()),
+      ],
+    ),
+
+    statefulShell(
+      builder: (_, _, shell) =&gt; BottomBarWidget(shell: shell),
+      routes: [
+        module(module: FeedModule()),
+        module(module: ProfileModule()),
+      ],
+    ),
+  ];
+}
+</code></pre>
+<blockquote>
+<p>A DSL transforma suas definições de rota em uma linguagem fluente e legível, mantendo os módulos elegantes e escaláveis.</p>
+</blockquote>
 
 
 
