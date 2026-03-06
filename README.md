@@ -4,32 +4,27 @@
 
 # Modugo
 
-**Modugo** é um sistema modular para Flutter inspirado em [Flutter Modular](https://pub.dev/packages/flutter_modular) e [Go Router Modular](https://pub.dev/packages/go_router_modular). Ele organiza sua aplicação em **módulos, rotas e injeção de dependências** de forma clara e escalável. Diferente de outros frameworks, o Modugo **não gerencia descarte automático de modulos**.
+**Modugo** é um sistema modular para Flutter inspirado em [Flutter Modular](https://pub.dev/packages/flutter_modular) e [Go Router Modular](https://pub.dev/packages/go_router_modular). Ele organiza sua aplicação em **módulos, rotas e injeção de dependências** de forma clara e escalável. Diferente de outros frameworks, o Modugo **não gerencia descarte automático de módulos**.
+
+📚 **Documentação completa:** [bed72.github.io/Modugo](https://bed72.github.io/Modugo/)
 
 ---
 
 ## 📖 Sumário
 
-- 🚀 [Visão Geral](#-visão-geral)
-- 📦 [Instalação](#-instalação)
-- 🏗️ [Estrutura de Projeto](#️-estrutura-de-projeto)
-- ▶️ [Primeiros Passos](#️-primeiros-passos)
-- 🧭 [Navegação](#-navegação)
-  - `Construtor Declarativo`
-  - `ChildRoute`
-  - `ModuleRoute`
-  - `ShellModuleRoute`
-  - `StatefulShellModuleRoute`
-  - `AliasRoute`
-- 🔒 [Guards](#-guards-e-propagateguards)
-- 🛠️ [Injeção de Dependência](#️-injeção-de-dependência)
-- ⏳ [AfterLayoutMixin](#-afterlayoutmixin)
-- 🔎 [Regex e Matching](#-regex-e-matching)
-- 📡 [Sistema de Eventos](#-sistema-de-eventos)
-- 📝 [Logging e Diagnóstico](#-logging-e-diagnóstico)
-- 📚 [Documentação MkDocs](#-documentação-mkdocs)
-- 🤝 [Contribuições](#-contribuições)
-- 📜 [Licença](#-licença)
+- [Visão Geral](#-visão-geral)
+- [Instalação](#-instalação)
+- [Primeiros Passos](#️-primeiros-passos)
+- [Módulos](#-módulos)
+- [Rotas](#-rotas)
+- [API Declarativa (DSL)](#-api-declarativa-dsl)
+- [Guards](#-guards)
+- [Injeção de Dependência](#️-injeção-de-dependência)
+- [Sistema de Eventos](#-sistema-de-eventos)
+- [Utilitários](#-utilitários)
+- [Documentação](#-documentação)
+- [Contribuições](#-contribuições)
+- [Licença](#-licença)
 
 ---
 
@@ -38,10 +33,12 @@
 - Usa **GoRouter** para navegação.
 - Usa **GetIt** para injeção de dependências.
 - Dependências são registradas **uma única vez** ao iniciar.
-- Não há descarte automático — as dependências de modulos vivem até o app encerrar.
-- Projetado para fornecer **arquitetura modular desacoplada**.
-
-⚠️ Atenção: Diferente das versões <3.x, o Modugo **não descarta dependências de modulos automaticamente**.
+- Não há descarte automático — as dependências vivem até o app encerrar.
+- **5 tipos de rotas**: `ChildRoute`, `ModuleRoute`, `ShellModuleRoute`, `StatefulShellModuleRoute`, `AliasRoute`.
+- **Guards** com propagação automática para submódulos.
+- **Sistema de eventos** nativo para comunicação desacoplada.
+- **7 transições** de página prontas para uso.
+- **Extensions** de contexto para navegação, matching e injeção.
 
 ---
 
@@ -49,35 +46,31 @@
 
 ```yaml
 dependencies:
-  modugo: ^x.x.x
-```
-
----
-
-## 🏗️ Estrutura de Projeto
-
-```text
-/lib
-  /modules
-    /home
-      home_page.dart
-      home_module.dart
-    /profile
-      profile_page.dart
-      profile_module.dart
-    /chat
-      chat_page.dart
-      chat_module.dart
-  app_module.dart
-  app_widget.dart
-main.dart
+  modugo: ^4.2.6
 ```
 
 ---
 
 ## ▶️ Primeiros Passos
 
-**main.dart**
+### 1. Crie o módulo raiz
+
+```dart
+final class AppModule extends Module {
+  @override
+  void binds() {
+    i.registerSingleton<AuthService>(AuthService());
+  }
+
+  @override
+  List<IRoute> routes() => [
+    route('/', child: (_, _) => const HomePage()),
+    module('/profile', ProfileModule()),
+  ];
+}
+```
+
+### 2. Configure no `main.dart`
 
 ```dart
 Future<void> main() async {
@@ -89,94 +82,166 @@ Future<void> main() async {
 }
 ```
 
----
-
-## 🧭 Navegação
-
-### 🧩 Construtor Declarativo de Rotas do Modugo
-
-O **Modugo** introduz uma API limpa e declarativa para criar rotas dentro do seu `Module`. Ele elimina a repetição de código ao definir rotas, tornando a configuração dos módulos mais expressiva, legível e consistente.
-
----
-
-### 🚀 Visão Geral
-
-Tradicionalmente, você definia rotas do Modugo assim:
+### 3. Use o router
 
 ```dart
-List<IRoute> routes() => [
-  ChildRoute(path: '/', child: (_, _) => const HomePage()),
-  ModuleRoute(path: '/auth', module: AuthModule()),
-];
+class AppWidget extends StatelessWidget {
+  const AppWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp.router(routerConfig: modugoRouter);
+  }
+}
 ```
 
-De forma `declarativa`, você pode escrever:
-
-```dart
-List<IRoute> routes() => [
-  route('/', child: (_, _) => const HomePage()),
-  module('/auth', AuthModule()),
-];
-```
-
-Dessa forma melhoramos a experiência de desenvolvimento sem alterar nenhuma lógica interna do `Modugo`.
+> 📚 Guia completo: [Primeiros Passos](https://bed72.github.io/Modugo/documentation/getting-started/)
 
 ---
 
-### 🧱 Métodos Disponíveis
+## 🏗 Módulos
 
-#### `route()` — Cria uma ChildRoute
-
-Use para rotas simples que apontam diretamente para um widget.
+Cada módulo encapsula suas rotas, dependências e imports:
 
 ```dart
-route(
-  '/',
-  child: (_, _) => const HomePage(),
-  guards: [AuthGuard()],
-  transition: TypeTransition.fade,
-);
+final class HomeModule extends Module {
+  @override
+  List<IBinder> imports() => [SharedModule()];
+
+  @override
+  void binds() {
+    i.registerLazySingleton<HomeController>(
+      () => HomeController(i.get<ApiClient>()),
+    );
+  }
+
+  @override
+  List<IRoute> routes() => [
+    route('/', child: (_, _) => const HomePage()),
+  ];
+}
 ```
 
-#### `module()` — Cria uma ModuleRoute
+- `imports()` — módulos dos quais este depende (registrados antes).
+- `binds()` — registra dependências no GetIt.
+- `routes()` — declara as rotas do módulo.
+- Registro **idempotente**: cada módulo é registrado apenas uma vez.
 
-Conecta submódulos, permitindo uma arquitetura modular e hierárquica.
+> 📚 Detalhes: [Módulos](https://bed72.github.io/Modugo/documentation/modules/)
+
+---
+
+## 🧭 Rotas
+
+### Tipos disponíveis
+
+| Tipo | Uso |
+|------|-----|
+| `ChildRoute` | Telas simples |
+| `ModuleRoute` | Submódulos |
+| `AliasRoute` | Caminhos alternativos para a mesma tela |
+| `ShellModuleRoute` | Layout compartilhado (menus, abas) |
+| `StatefulShellModuleRoute` | Navegação com múltiplas pilhas (bottom nav) |
+
+### ShellModuleRoute
 
 ```dart
-module('/auth', AuthModule());
+ShellModuleRoute(
+  builder: (context, state, child) => Scaffold(body: child),
+  routes: [
+    ChildRoute(path: '/user', child: (_, _) => const UserPage()),
+    ChildRoute(path: '/config', child: (_, _) => const ConfigPage()),
+  ],
+)
 ```
 
-#### `alias()` — Cria uma AliasRoute
+### StatefulShellModuleRoute
 
-Permite criar apelidos (caminhos alternativos) para rotas existentes sem duplicar lógica.
+```dart
+StatefulShellModuleRoute(
+  builder: (context, state, shell) => BottomBarWidget(shell: shell),
+  routes: [
+    ModuleRoute(path: '/', module: HomeModule()),
+    ModuleRoute(path: '/profile', module: ProfileModule()),
+  ],
+)
+```
+
+### AliasRoute
 
 ```dart
 alias(from: '/cart/:id', to: '/order/:id');
 ```
 
-Isso faz com que `/cart/:id` e `/order/:id` apontem para a mesma tela.
+Tanto `/cart/123` quanto `/order/123` renderizam a mesma tela.
 
-#### `shell()` — Cria uma ShellModuleRoute
+> 📚 Detalhes: [Rotas](https://bed72.github.io/Modugo/documentation/routes/)
 
-Agrupa várias rotas sob um layout ou container compartilhado (ex: abas, menus laterais).
+---
+
+## 🧩 API Declarativa (DSL)
+
+Sintaxe fluente para definir rotas sem boilerplate:
 
 ```dart
-shell(
-  builder: (_, _, child) => AppScaffold(child: child),
-  routes: [
-    route('/feed', child: (_, _) => const FeedPage()),
-    route('/settings', child: (_, _) => const SettingsPage()),
-  ],
-);
+final class AppModule extends Module {
+  @override
+  List<IRoute> routes() => [
+    child(child: (_, _) => const HomePage()),
+    module(module: AuthModule()),
+    alias(from: '/cart/:id', to: '/order/:id'),
+    shell(
+      builder: (_, _, child) => MainShell(child: child),
+      routes: [
+        child(path: '/dashboard', child: (_, _) => const DashboardPage()),
+      ],
+    ),
+    statefulShell(
+      builder: (_, _, shell) => BottomBarWidget(shell: shell),
+      routes: [
+        module(module: FeedModule()),
+        module(module: ProfileModule()),
+      ],
+    ),
+  ];
+}
 ```
 
-#### `statefulShell()` — Cria uma StatefulShellModuleRoute
+| Helper | Retorna | Uso |
+|--------|---------|-----|
+| `child()` | `ChildRoute` | Telas simples |
+| `module()` | `ModuleRoute` | Submódulos |
+| `alias()` | `AliasRoute` | Caminhos alternativos |
+| `shell()` | `ShellModuleRoute` | Layouts compartilhados |
+| `statefulShell()` | `StatefulShellModuleRoute` | Múltiplas pilhas |
 
-Usado para estruturas com abas ou navegação inferior onde cada aba mantém seu próprio histórico de navegação.
+> 📚 Detalhes: [API Declarativa](https://bed72.github.io/Modugo/documentation/routes/dsl/)
+
+---
+
+## 🔒 Guards
+
+Controle de acesso a rotas com lógica condicional:
 
 ```dart
-statefulShell(
-  builder: (_, _, shell) => BottomBarWidget(shell: shell),
+final class AuthGuard implements IGuard {
+  @override
+  FutureOr<String?> call(BuildContext context, GoRouterState state) async {
+    final isLoggedIn = await checkAuth();
+    return isLoggedIn ? null : '/login';
+  }
+}
+```
+
+Aplique em rotas individuais ou propague para submódulos:
+
+```dart
+// Por rota
+route('/', child: (_, _) => const HomePage(), guards: [AuthGuard()]);
+
+// Propagação para todos os filhos
+List<IRoute> routes() => propagateGuards(
+  guards: [AuthGuard()],
   routes: [
     module('/home', HomeModule()),
     module('/profile', ProfileModule()),
@@ -184,258 +249,7 @@ statefulShell(
 );
 ```
 
----
-
-### 💡 Exemplo Completo de Módulo
-
-```dart
-final class AppModule extends Module {
-  @override
-  List<IRoute> routes() => [
-    route('/', child: (_, _) => const HomePage()),
-    module('/auth', AuthModule()),
-    alias(from: '/cart/:id', to: '/order/:id'),
-    shell(
-      builder: (_, _, child) => MainShell(child: child),
-      routes: [
-        route('/dashboard', child: (_, _) => const DashboardPage()),
-        route('/settings', child: (_, _) => const SettingsPage()),
-      ],
-    ),
-    statefulShell(
-      builder: (_, _, shell) => BottomBarWidget(shell: shell),
-      routes: [
-        module('/feed', FeedModule()),
-        module('/profile', ProfileModule()),
-      ],
-    ),
-  ];
-}
-```
-
----
-
-## 📚 Resumo
-
-| Helper            | Retorna                    | Uso Principal                       |
-| ----------------- | -------------------------- | ----------------------------------- |
-| `route()`         | `ChildRoute`               | Telas simples                       |
-| `module()`        | `ModuleRoute`              | Submódulos                          |
-| `alias()`         | `AliasRoute`               | Caminhos alternativos               |
-| `shell()`         | `ShellModuleRoute`         | Containers e layouts compartilhados |
-| `statefulShell()` | `StatefulShellModuleRoute` | Navegação com múltiplas pilhas      |
-
----
-
-✨ Desta forma transformamos suas definições de rota em uma DSL fluente e legível — mantendo seus módulos Modugo elegantes e escaláveis.
-
-### 🔹 `route() -> ChildRoute`
-
-```dart
-route(
-  path: '/home',
-  child: (_, _) => const HomePage(),
-)
-```
-
-### 🔹 `module() -> ModuleRoute`
-
-```dart
-module(
-  path: '/profile',
-  module: ProfileModule(),
-)
-```
-
-### 🔹 `shell() -> ShellModuleRoute`
-
-Útil para criar áreas de navegação em **parte da tela**, como menus ou abas.
-
-```dart
-shell(
-  builder: (context, state, child) => Scaffold(body: child),
-  routes: [
-    route(path: '/user', child: (_, _) => const UserPage()),
-    route(path: '/config', child: (_, _) => const ConfigPage()),
-  ],
-)
-```
-
-### 🔹 `statefulShell() -> StatefulShellModuleRoute`
-
-Ideal para apps com **BottomNavigationBar** ou abas preservando estado.
-
-```dart
-statefulShell(
-  builder: (context, state, shell) => BottomBarWidget(shell: shell),
-  routes: [
-    module(path: '/', module: HomeModule()),
-    module(path: '/profile', module: ProfileModule()),
-  ],
-)
-```
-
-### 🔹 `alias() -> AliasRoute`
-
-O `AliasRoute` é um tipo especial de rota que funciona como **um apelido (alias)** para uma `ChildRoute` já existente. Ele resolve o problema de URLs alternativas para a **mesma tela**, sem precisar duplicar lógica ou cair nos loops comuns de `RedirectRoute`.
-
----
-
-#### 📌 Quando usar?
-
-- Para manter **compatibilidade retroativa** com URLs antigas.
-- Para expor uma mesma tela em **múltiplos caminhos semânticos** (ex: `/cart` e `/order`).
-
----
-
-#### ✅ Exemplo simples
-
-```dart
-child(
-  path: '/order/:id',
-  child: (_, state) => OrderPage(id: state.pathParameters['id']!),
-),
-
-alias(
-  from: '/cart/:id',
-  to: '/order/:id',
-),
-```
-
-➡️ Nesse caso, tanto `/order/123` quanto `/cart/123` vão renderizar a mesma tela `OrderPage`.
-
----
-
-#### ⚠️ Limitações
-
-1. O `AliasRoute` **só funciona para `child`**.
-
-   - Ele não pode apontar para `module` ou `shell`.
-   - Essa limitação é intencional, pois módulos inteiros ou shells representam estruturas de navegação maiores e complexas.
-
-2. O alias precisa **apontar para uma `child` existente dentro do mesmo módulo**.
-
-   - Caso contrário, será lançado um erro em tempo de configuração:
-
-     ```text
-     Alias Route points to /cart/:id, but there is no corresponding Child Route.
-     ```
-
-3. Não há suporte a alias encadeados (ex: um alias apontando para outro alias).
-
----
-
-#### 🎯 Exemplo prático
-
-```dart
-final class ShopModule extends Module {
-  @override
-  List<IRoute> routes() => [
-    // rota canônica
-    child(
-      path: '/product/:id',
-      child: (_, state) => ProductPage(id: state.pathParameters['id']!),
-    ),
-
-    // rota alternativa (alias)
-    alias(
-      from: '/item/:id',
-      to: '/product/:id',
-    ),
-  ];
-}
-```
-
-➡️ O usuário acessa `/item/42`, mas internamente o Modugo entrega o mesmo `ProductPage` de `/product/42`.
-
----
-
-#### 💡 Vantagens sobre RedirectRoute
-
-- Evita **loops infinitos** comuns em redirecionamentos.
-- Mantém o histórico de navegação intacto (não "teleporta" o usuário para outra URL, apenas resolve a rota).
-
----
-
-🔒 **Resumo:** Use `alias` para apelidos de `child`. Se precisar de comportamento mais avançado (como autenticação ou lógica condicional), continue usando guards (`IGuard`) ou `child` com cuidado.
-
-## 🔒 Guards — Protegendo suas rotas com IGuard
-
-Os **Guards** no Modugo permitem controlar o acesso a rotas com base em condições lógicas, como autenticação, papéis de usuário ou verificações de sessão. Eles são executados **antes** do carregamento da rota e podem redirecionar o usuário conforme necessário.
-
----
-
-### 🧩 Exemplo básico de Guard
-
-```dart
-final class CustomGuard implements IGuard {
-  final IRepository _repository;
-
-  CustomGuard({required IRepository repository}) : _repository = repository;
-
-  @override
-  FutureOr<String?> call(BuildContext context, GoRouterState state) async {
-    final data = await _repository.call();
-
-    return data == null ? '/welcome' : null;
-  }
-}
-```
-
-Neste exemplo:
-
-- O guard implementa a interface `IGuard`.
-- O método `call` é executado antes de entrar na rota.
-- Retornar uma **string** redireciona o usuário para outro caminho.
-- Retornar **null** permite o acesso normalmente.
-
-### 🚀 Aplicando Guards em rotas
-
-Você pode aplicar guards diretamente nas rotas usando o parâmetro `guards`:
-
-```dart
-child(
-  '/',
-  child: (_, _) => const HomePage(),
-  guards: [CustomGuard(repository: i.get<Repository>())],
-);
-```
-
-➡️ Este parâmetro está disponível apenas para `child`.
-
-### 🌀 propagateGuards — Propagando Guards para submódulos
-
-Quando você deseja aplicar um guard de forma **recursiva** para todos os filhos de um módulo, use `propagateGuards`:
-
-```dart
-List<IRoute> routes() => propagateGuards(
-  guards: [CustomGuard(repository: i.get<Repository>())],
-  routes: [
-    module(path: '/', module: HomeModule()),
-  ],
-);
-```
-
-✅ Assim, todas as rotas internas de `HomeModule` herdam automaticamente o guard.
-
-### 🔐 Comportamento interno
-
-Os guards no Modugo seguem esta **ordem de execução**:
-
-1. **Guards da rota atual** são executados primeiro.
-2. Se todos retornarem `null`, a navegação prossegue.
-3. Se algum retornar uma `String`, ocorre um **redirect** para esse caminho.
-4. Caso a rota contenha um `redirect` próprio, ele será avaliado **após** os guards.
-
-### ⚙️ Vantagens dos Guards
-
-- Evitam navegação não autorizada.
-- Permitem lógica condicional antes da renderização da página.
-- Suportam dependências injetadas pelo Modugo (`i.get()` ou `context.read()`).
-
-### 💡 Dica
-
-Guards são executados **de forma assíncrona**, permitindo validações complexas como chamadas a APIs, verificações em cache ou consultas ao banco local.
+> 📚 Detalhes: [Guards](https://bed72.github.io/Modugo/documentation/guards/)
 
 ---
 
@@ -452,110 +266,106 @@ final class HomeModule extends Module {
 }
 ```
 
-Acesse com:
+Três formas de acessar:
 
 ```dart
-final repository = i.get<ServiceRepository>();
+final service = i.get<ServiceRepository>();
+final service = Modugo.i.get<ServiceRepository>();
+final service = context.read<ServiceRepository>();
 ```
 
-Ou via contexto:
-
-```dart
-final repository = context.read<ServiceRepository>();
-```
-
-Ou via Modugo:
-
-```dart
-final repository = Modugo.i.get<ServiceRepository>();
-```
-
----
-
-## ⏳ AfterLayoutMixin
-
-Mixin para executar código **após o primeiro layout** do widget.
-
-```dart
-class MyScreen extends StatefulWidget {
-  const MyScreen({super.key});
-
-  @override
-  State<MyScreen> createState() => _MyScreenState();
-}
-
-class _MyScreenState extends State<MyScreen> with AfterLayoutMixin {
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: Text('Hello World')));
-  }
-
-  @override
-  Future<void> afterFirstLayout(BuildContext context) async {
-    debugPrint('Tela pronta!');
-  }
-}
-```
-
-💡 Útil para:
-
-- Carregar dados iniciais.
-- Disparar animações.
-- Abrir dialogs/snackbars com `BuildContext` válido.
-
----
-
-## 🔎 Regex e Matching
-
-Use `CompilerRoute` para validar e extrair parâmetros:
-
-```dart
-final route = CompilerRoute('/user/:id');
-
-route.match('/user/42'); // true
-route.extract('/user/42'); // { id: "42" }
-```
+> 📚 Detalhes: [Injeção de Dependência](https://bed72.github.io/Modugo/documentation/injection/)
 
 ---
 
 ## 📡 Sistema de Eventos
 
-Permite comunicação desacoplada entre módulos.
+Comunicação desacoplada entre módulos:
 
 ```dart
-final class MyEvent {
-  final String message;
-  MyEvent(this.message);
+// Definir evento
+final class UserLoggedInEvent {
+  final String userId;
+  UserLoggedInEvent(this.userId);
 }
 
-Event.on<MyEvent>((event) {
-  print(event.message);
-});
+// Emitir
+Event.emit(UserLoggedInEvent('user-123'));
 
-Event.emit(MyEvent('Olá Modugo!'));
+// Ouvir
+Event.i.on<UserLoggedInEvent>((event) {
+  print('Logou: ${event.userId}');
+});
 ```
 
----
-
-## 📝 Logging e Diagnóstico
+O Modugo emite `RouteChangedEventModel` automaticamente a cada navegação:
 
 ```dart
-Modugo.configure(
-  module: AppModule(),
-  debugLogDiagnostics: true,
-);
+Event.i.on<RouteChangedEventModel>((event) {
+  print('Navegou para: ${event.location}');
+});
 ```
 
-Exibe logs de injeção, navegação e erros.
+> 📚 Detalhes: [Eventos](https://bed72.github.io/Modugo/documentation/events/)
 
 ---
 
-## 📚 Documentação MkDocs [Em desenvolvimento]
+## 🧰 Utilitários
 
-Toda a documentação também está disponível em **MkDocs** para navegação mais amigável:
-👉 [Modugo Docs](https://bed72.github.io/Modugo/)
+### AfterLayoutMixin
 
-Estrutura baseada em múltiplos tópicos (Rotas, Injeção, Guards, Eventos), permitindo leitura incremental.
+Executa código após o primeiro frame do widget:
+
+```dart
+class _MyScreenState extends State<MyScreen> with AfterLayoutMixin {
+  @override
+  Future<void> afterFirstLayout(BuildContext context) async {
+    context.read<HomeController>().loadData();
+  }
+}
+```
+
+### CompilerRoute
+
+Validação e extração de parâmetros de rotas:
+
+```dart
+final route = CompilerRoute('/user/:id');
+
+route.match('/user/42');     // true
+route.extract('/user/42');   // {'id': '42'}
+route.build({'id': '42'});   // '/user/42'
+```
+
+### Logging
+
+```dart
+await Modugo.configure(module: AppModule(), debugLogDiagnostics: true);
+```
+
+> 📚 Detalhes: [Utilitários](https://bed72.github.io/Modugo/documentation/utilities/) | [Extensions](https://bed72.github.io/Modugo/documentation/extensions/)
+
+---
+
+## 📚 Documentação
+
+Documentação completa disponível em MkDocs:
+
+👉 **[bed72.github.io/Modugo](https://bed72.github.io/Modugo/)**
+
+| Seção | Descrição |
+|-------|-----------|
+| [Primeiros Passos](https://bed72.github.io/Modugo/documentation/getting-started/) | Instalação e configuração |
+| [Módulos](https://bed72.github.io/Modugo/documentation/modules/) | Arquitetura modular |
+| [Rotas](https://bed72.github.io/Modugo/documentation/routes/) | Tipos de rotas e navegação |
+| [API Declarativa](https://bed72.github.io/Modugo/documentation/routes/dsl/) | DSL fluente para rotas |
+| [Transições](https://bed72.github.io/Modugo/documentation/routes/transitions/) | Animações de página |
+| [Injeção](https://bed72.github.io/Modugo/documentation/injection/) | GetIt e context extensions |
+| [Guards](https://bed72.github.io/Modugo/documentation/guards/) | Proteção de rotas |
+| [Eventos](https://bed72.github.io/Modugo/documentation/events/) | Comunicação entre módulos |
+| [Extensions](https://bed72.github.io/Modugo/documentation/extensions/) | Extensions de BuildContext, GoRouterState e Uri |
+| [Utilitários](https://bed72.github.io/Modugo/documentation/utilities/) | AfterLayoutMixin, CompilerRoute, Logger |
+| [Migração](https://bed72.github.io/Modugo/documentation/migration/) | Guia v2 → v3 → v4 |
 
 ---
 
