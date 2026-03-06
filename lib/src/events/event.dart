@@ -75,8 +75,9 @@ final class Event {
       return existing as StreamController<T>;
     }
 
-    final controller =
-        broadcast ? StreamController<T>.broadcast() : StreamController<T>();
+    final controller = broadcast
+        ? StreamController<T>.broadcast()
+        : StreamController<T>();
 
     _controllers[T] = controller;
     return controller;

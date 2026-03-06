@@ -173,22 +173,18 @@ final class FactoryRoute {
 
         return null;
       },
-      pageBuilder:
-          (context, state) =>
-              route.pageBuilder != null
-                  ? route.pageBuilder!(context, state)
-                  : _transition(context: context, state: state, route: route),
+      pageBuilder: (context, state) => route.pageBuilder != null
+          ? route.pageBuilder!(context, state)
+          : _transition(context: context, state: state, route: route),
     );
   }
 
   static GoRoute _createAlias(AliasRoute alias, List<IRoute> routes) {
     final route = routes.whereType<ChildRoute>().firstWhere(
       (child) => child.path == alias.to,
-      orElse:
-          () =>
-              throw ArgumentError(
-                'Alias "${alias.from}" points to "${alias.to}", but no matching ChildRoute was found.',
-              ),
+      orElse: () => throw ArgumentError(
+        'Alias "${alias.from}" points to "${alias.to}", but no matching ChildRoute was found.',
+      ),
     );
 
     _validatePath(alias.from, 'AliasRoute');
@@ -203,11 +199,9 @@ final class FactoryRoute {
 
         return null;
       },
-      pageBuilder:
-          (context, state) =>
-              route.pageBuilder != null
-                  ? route.pageBuilder!(context, state)
-                  : _transition(context: context, state: state, route: route),
+      pageBuilder: (context, state) => route.pageBuilder != null
+          ? route.pageBuilder!(context, state)
+          : _transition(context: context, state: state, route: route),
     );
   }
 
@@ -256,15 +250,14 @@ final class FactoryRoute {
   }
 
   static ShellRoute _createShell(ShellModuleRoute route) {
-    final routes =
-        route.routes
-            .map((iRoute) {
-              if (iRoute is ChildRoute) return _createChild(iRoute);
-              if (iRoute is ModuleRoute) return _createModule(iRoute);
-              return null;
-            })
-            .whereType<RouteBase>()
-            .toList();
+    final routes = route.routes
+        .map((iRoute) {
+          if (iRoute is ChildRoute) return _createChild(iRoute);
+          if (iRoute is ModuleRoute) return _createModule(iRoute);
+          return null;
+        })
+        .whereType<RouteBase>()
+        .toList();
 
     return ShellRoute(
       routes: routes,
@@ -279,77 +272,71 @@ final class FactoryRoute {
           rethrow;
         }
       },
-      pageBuilder:
-          route.pageBuilder == null
-              ? null
-              : (context, state, child) =>
-                  route.pageBuilder!(context, state, child),
+      pageBuilder: route.pageBuilder == null
+          ? null
+          : (context, state, child) =>
+                route.pageBuilder!(context, state, child),
     );
   }
 
   static StatefulShellRoute _createStatefulShell(
     StatefulShellModuleRoute route,
   ) {
-    final branches =
-        route.routes.asMap().entries.map((entry) {
-          final index = entry.key;
-          final child = entry.value;
+    final branches = route.routes.asMap().entries.map((entry) {
+      final index = entry.key;
+      final child = entry.value;
 
-          if (child is ModuleRoute) {
-            final module = child.module.configureRoutes();
+      if (child is ModuleRoute) {
+        final module = child.module.configureRoutes();
 
-            final routes =
-                module.map((route) {
-                  if (route is! GoRoute) return route;
+        final routes = module.map((route) {
+          if (route is! GoRoute) return route;
 
-                  final composed = _normalizeComposedPath(
-                    child.path,
-                    route.path,
-                  );
-                  _validatePath(composed, 'StatefulShellModuleRoute');
+          final composed = _normalizeComposedPath(child.path, route.path);
+          _validatePath(composed, 'StatefulShellModuleRoute');
 
-                  return GoRoute(
-                    path: composed,
-                    name: route.name,
-                    routes: route.routes,
-                    redirect: route.redirect,
-                    pageBuilder: route.pageBuilder,
-                    parentNavigatorKey:
-                        route.parentNavigatorKey ?? child.parentNavigatorKey,
-                  );
-                }).toList();
-
-            return StatefulShellBranch(
-              routes: routes,
-              navigatorKey: child.parentNavigatorKey,
-            );
-          }
-
-          if (child is ChildRoute) {
-            final path = child.path.isEmpty ? '/' : child.path;
-            _validatePath(path, 'StatefulShellModuleRoute');
-
-            return StatefulShellBranch(
-              routes: [
-                _createChild(
-                  ChildRoute(
-                    path: path,
-                    child: child.child,
-                    guards: child.guards,
-                    transition: child.transition,
-                    pageBuilder: child.pageBuilder,
-                    name: child.name ?? 'branch_$index',
-                    parentNavigatorKey: child.parentNavigatorKey,
-                  ),
-                ),
-              ],
-            );
-          }
-
-          throw UnsupportedError(
-            'Unsupported route type inside StatefulShellModuleRoute: ${child.runtimeType}',
+          return GoRoute(
+            path: composed,
+            name: route.name,
+            routes: route.routes,
+            redirect: route.redirect,
+            pageBuilder: route.pageBuilder,
+            parentNavigatorKey:
+                route.parentNavigatorKey ?? child.parentNavigatorKey,
           );
         }).toList();
+
+        return StatefulShellBranch(
+          routes: routes,
+          navigatorKey: child.parentNavigatorKey,
+        );
+      }
+
+      if (child is ChildRoute) {
+        final path = child.path.isEmpty ? '/' : child.path;
+        _validatePath(path, 'StatefulShellModuleRoute');
+
+        return StatefulShellBranch(
+          routes: [
+            _createChild(
+              ChildRoute(
+                path: path,
+                child: child.child,
+                guards: child.guards,
+                transition: child.transition,
+                pageBuilder: child.pageBuilder,
+                name: child.name ?? 'branch_$index',
+                parentNavigatorKey: child.parentNavigatorKey,
+              ),
+            ),
+          ],
+        );
+      }
+
+      throw UnsupportedError(
+        'Unsupported route type inside StatefulShellModuleRoute: ${child.runtimeType}',
+      );
+    }).toList();
 
     return StatefulShellRoute.indexedStack(
       key: route.key,
@@ -389,8 +376,9 @@ final class FactoryRoute {
       return child.startsWith('/') ? child : '/$child';
     }
 
-    final prefix =
-        parent.endsWith('/') ? parent.substring(0, parent.length - 1) : parent;
+    final prefix = parent.endsWith('/')
+        ? parent.substring(0, parent.length - 1)
+        : parent;
 
     if (child == '/' || child.isEmpty) return prefix;
 
@@ -409,7 +397,8 @@ final class FactoryRoute {
     if (child == null) {
       final name = route?.name ?? 'UnknownRoute';
       final path = route?.path ?? state.uri.toString();
-      final message = '''
+      final message =
+          '''
         [RoutesFactory] Failed to build transition page.
         Path: "$path"
         Route: "$name"

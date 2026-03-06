@@ -27,8 +27,9 @@ void main() {
       final branches = statefulShell.branches;
       expect(branches.length, 1);
 
-      final routesInBranch =
-          branches.first.routes.whereType<GoRoute>().toList();
+      final routesInBranch = branches.first.routes
+          .whereType<GoRoute>()
+          .toList();
 
       expect(routesInBranch, isNotEmpty);
       expect(routesInBranch[0].path, equals('/bed/product'));
@@ -45,8 +46,9 @@ void main() {
 
         final routes = FactoryRoute.from([shell]);
         final statefulShell = routes.first as StatefulShellRoute;
-        final branchRoutes =
-            statefulShell.branches.first.routes.whereType<GoRoute>().toList();
+        final branchRoutes = statefulShell.branches.first.routes
+            .whereType<GoRoute>()
+            .toList();
 
         expect(branchRoutes[0].path, equals('/bed/product'));
         expect(branchRoutes[1].path, equals('/bed/product/add'));

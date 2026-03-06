@@ -15,12 +15,14 @@ void main() {
 
     final shell = ShellModuleRoute(
       routes: [homeRoute],
-      builder:
-          (context, state, child) => Scaffold(
-            body: Column(
-              children: [const Text('Shell Wrapper'), Expanded(child: child)],
-            ),
-          ),
+      builder: (context, state, child) => Scaffold(
+        body: Column(
+          children: [
+            const Text('Shell Wrapper'),
+            Expanded(child: child),
+          ],
+        ),
+      ),
     );
 
     final goRouter = GoRouter(

@@ -68,22 +68,21 @@ extension ShellModuleRouteExtensions on ShellModuleRoute {
 /// Because branches are heterogeneous, we cannot just call [propagateGuards].
 extension StatefulShellModuleRouteExtensions on StatefulShellModuleRoute {
   StatefulShellModuleRoute withInjectedGuards(List<IGuard> inheritedGuards) {
-    final injected =
-        routes.map<IRoute>((route) {
-          if (route is ChildRoute) {
-            return route.withInjectedGuards(inheritedGuards);
-          }
-          if (route is ModuleRoute) {
-            return route.withInjectedGuards(inheritedGuards);
-          }
-          if (route is ShellModuleRoute) {
-            return route.withInjectedGuards(inheritedGuards);
-          }
-          if (route is StatefulShellModuleRoute) {
-            return route.withInjectedGuards(inheritedGuards);
-          }
-          return route;
-        }).toList();
+    final injected = routes.map<IRoute>((route) {
+      if (route is ChildRoute) {
+        return route.withInjectedGuards(inheritedGuards);
+      }
+      if (route is ModuleRoute) {
+        return route.withInjectedGuards(inheritedGuards);
+      }
+      if (route is ShellModuleRoute) {
+        return route.withInjectedGuards(inheritedGuards);
+      }
+      if (route is StatefulShellModuleRoute) {
+        return route.withInjectedGuards(inheritedGuards);
+      }
+      return route;
+    }).toList();
 
     return StatefulShellModuleRoute(
       builder: builder,

@@ -103,10 +103,7 @@ void main() {
         ChildRoute(path: '/a', child: (_, _) => const Placeholder()),
       ];
 
-      final route = dsl.shell(
-        routes: routes,
-        builder: (_, _, child) => child,
-      );
+      final route = dsl.shell(routes: routes, builder: (_, _, child) => child);
 
       expect(route, isA<ShellModuleRoute>());
       expect(route.routes, same(routes));

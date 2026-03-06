@@ -103,10 +103,7 @@ void main() {
 
   group('GoRouterStateExtension - getPathParam', () {
     test('should return path parameter value when exists', () {
-      final state = _StateFake(
-        path: '/user/42',
-        pathParams: {'id': '42'},
-      );
+      final state = _StateFake(path: '/user/42', pathParams: {'id': '42'});
 
       expect(state.getPathParam('id'), '42');
     });
@@ -190,19 +187,13 @@ void main() {
     test('should throw when extra type does not match', () {
       final state = _StateFake(path: '/', extra: 123);
 
-      expect(
-        () => state.argumentsOrThrow<String>(),
-        throwsA(isA<Exception>()),
-      );
+      expect(() => state.argumentsOrThrow<String>(), throwsA(isA<Exception>()));
     });
 
     test('should throw when extra is null', () {
       final state = _StateFake(path: '/');
 
-      expect(
-        () => state.argumentsOrThrow<String>(),
-        throwsA(isA<Exception>()),
-      );
+      expect(() => state.argumentsOrThrow<String>(), throwsA(isA<Exception>()));
     });
   });
 }

@@ -5,13 +5,12 @@ import 'package:modugo/src/mixins/after_layout_mixin.dart';
 
 void main() {
   group('AfterLayoutMixin', () {
-    testWidgets('should call afterFirstLayout after first layout',
-        (tester) async {
+    testWidgets('should call afterFirstLayout after first layout', (
+      tester,
+    ) async {
       var called = false;
 
-      await tester.pumpWidget(
-        _TestWidget(onAfterLayout: (_) => called = true),
-      );
+      await tester.pumpWidget(_TestWidget(onAfterLayout: (_) => called = true));
 
       expect(called, isTrue);
     });
@@ -19,9 +18,7 @@ void main() {
     testWidgets('should call afterFirstLayout exactly once', (tester) async {
       var callCount = 0;
 
-      await tester.pumpWidget(
-        _TestWidget(onAfterLayout: (_) => callCount++),
-      );
+      await tester.pumpWidget(_TestWidget(onAfterLayout: (_) => callCount++));
 
       await tester.pump();
       expect(callCount, 1);

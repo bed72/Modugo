@@ -109,9 +109,8 @@ final class _CustomPageAliasModule extends Module {
     ChildRoute(
       path: '/original',
       child: (_, _) => const Text('Original'),
-      pageBuilder:
-          (context, state) =>
-              const NoTransitionPage(child: Text('Custom Page')),
+      pageBuilder: (context, state) =>
+          const NoTransitionPage(child: Text('Custom Page')),
     ),
     AliasRoute(from: '/alias', to: '/original'),
   ];

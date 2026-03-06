@@ -58,10 +58,7 @@ void main() {
       await tester.pumpWidget(
         Builder(
           builder: (context) {
-            expect(
-              () => context.read<_Service>(),
-              throwsA(isA<Error>()),
-            );
+            expect(() => context.read<_Service>(), throwsA(isA<Error>()));
             return const SizedBox();
           },
         ),
@@ -71,9 +68,7 @@ void main() {
 
   group('ContextInjectionExtension - readAsync', () {
     testWidgets('should retrieve async registered singleton', (tester) async {
-      GetIt.I.registerSingletonAsync<_Service>(
-        () async => _Service('async'),
-      );
+      GetIt.I.registerSingletonAsync<_Service>(() async => _Service('async'));
 
       await GetIt.I.allReady();
 

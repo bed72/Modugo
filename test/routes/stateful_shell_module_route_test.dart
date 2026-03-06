@@ -89,8 +89,9 @@ void main() {
       final routes = module.configureRoutes();
       final shell = routes.whereType<StatefulShellRoute>().first;
 
-      final guardedRoute =
-          shell.branches.first.routes.whereType<GoRoute>().first;
+      final guardedRoute = shell.branches.first.routes
+          .whereType<GoRoute>()
+          .first;
       final result = await guardedRoute.redirect!(
         BuildContextFake(),
         StateFake(),
