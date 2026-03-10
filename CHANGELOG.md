@@ -1,3 +1,7 @@
+## [4.2.8] - 2026-03-10
+
+- :fix: Add error handling to the guards.
+
 ## [4.2.7] - 2026-03-06
 
 - :fire: update version
