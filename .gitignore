@@ -33,3 +33,4 @@ venv
 .flutter-plugins
 .flutter-plugins-dependencies
 build/
+.aider*

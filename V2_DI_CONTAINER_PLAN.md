@@ -494,7 +494,30 @@ class ProfileModule extends Module {
 
 ---
 
-## 6. Fase 3 — Dispose e lifecycle por módulo
+## 6. Fase 3 — Dispose e lifecycle por módulo `[CONCLUÍDA ✓]`
+
+> **Resultado:** 8 testes novos de lifecycle. 283 testes passando.
+>
+> **Arquivo criado:**
+> - `test/container/module_lifecycle_test.dart` — 8 testes cobrindo cenários reais de navegação
+>
+> **Cenários cobertos:**
+> 1. Navegar → dispose → voltar → instância nova (goBack)
+> 2. Singleton mantém estado sem dispose
+> 3. Dispose limpa estado + chama onDispose callbacks
+> 4. Imports sobrevivem ao dispose do importador
+> 5. Dispose duplo não lança erro
+> 6. onDispose chamado exatamente 1x
+> 7. onDispose NÃO chamado se lazy singleton nunca acessado
+> 8. Múltiplos módulos com lifecycles independentes (dispose + re-registro)
+>
+> **Decisão final:** Dispose manual por padrão + `disposeOnExit: true` opt-in no `ModuleRoute`.
+>
+> **Arquivos adicionais criados:**
+> - `lib/src/routes/module_route.dart` — adicionado campo `disposeOnExit` (default `false`)
+> - `lib/src/widgets/module_dispose_scope.dart` — `StatefulWidget` que chama `module.dispose()` no `State.dispose()`
+> - `lib/src/routes/factory_route.dart` — `_createModule` envolve com `ModuleDisposeScope` quando `disposeOnExit: true`
+> - `test/container/dispose_on_exit_test.dart` — 5 testes (default false, set true, auto-dispose on unmount, re-registro após dispose, widget vivo não dispõe)
 
 ### 6.1 — O problema do dispose automático
 
