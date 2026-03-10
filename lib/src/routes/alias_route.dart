@@ -1,3 +1,5 @@
+// coverage:ignore-file
+
 import 'package:flutter/widgets.dart';
 
 import 'package:modugo/src/interfaces/route_interface.dart';

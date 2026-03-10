@@ -6,6 +6,7 @@ import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/transition.dart';
 
+import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/interfaces/route_interface.dart';
 
 import 'package:modugo/src/routes/alias_route.dart';
@@ -165,14 +166,8 @@ final class FactoryRoute {
       path: route.path,
       name: route.name,
       parentNavigatorKey: route.parentNavigatorKey,
-      redirect: (context, state) async {
-        for (final guard in route.guards) {
-          final safety = await guard(context, state);
-          if (safety != null) return safety;
-        }
-
-        return null;
-      },
+      redirect: (context, state) =>
+          _executeGuards(context: context, state: state, guards: route.guards),
       pageBuilder: (context, state) => route.pageBuilder != null
           ? route.pageBuilder!(context, state)
           : _transition(context: context, state: state, route: route),
@@ -191,14 +186,8 @@ final class FactoryRoute {
 
     return GoRoute(
       path: alias.from,
-      redirect: (context, state) async {
-        for (final guard in route.guards) {
-          final safety = await guard(context, state);
-          if (safety != null) return safety;
-        }
-
-        return null;
-      },
+      redirect: (context, state) =>
+          _executeGuards(context: context, state: state, guards: route.guards),
       pageBuilder: (context, state) => route.pageBuilder != null
           ? route.pageBuilder!(context, state)
           : _transition(context: context, state: state, route: route),
@@ -223,16 +212,13 @@ final class FactoryRoute {
       name: route.name,
       routes: module.configureRoutes(),
       parentNavigatorKey: route.parentNavigatorKey ?? first.parentNavigatorKey,
-      redirect: (context, state) async {
-        if (module is GuardModuleDecorator) {
-          for (final guard in module.guards) {
-            final safety = await guard(context, state);
-            if (safety != null) return safety;
-          }
-        }
-
-        return null;
-      },
+      redirect: (context, state) => module is GuardModuleDecorator
+          ? _executeGuards(
+              context: context,
+              state: state,
+              guards: module.guards,
+            )
+          : null,
       pageBuilder: (context, state) {
         try {
           final widget = first.child(context, state);
@@ -354,6 +340,26 @@ final class FactoryRoute {
         }
       },
     );
+  }
+
+  static Future<String?> _executeGuards({
+    required BuildContext context,
+    required List<IGuard> guards,
+    required GoRouterState state,
+  }) async {
+    for (final guard in guards) {
+      try {
+        final data = await guard(context, state);
+        if (data != null) return data;
+      } catch (exception, stack) {
+        Logger.error(
+          'Guard ${guard.runtimeType} threw an exception: $exception\n$stack',
+        );
+        rethrow;
+      }
+    }
+
+    return null;
   }
 
   static void _validatePath(String path, String type) {
