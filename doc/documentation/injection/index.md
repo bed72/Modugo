@@ -1,17 +1,17 @@
-# 🧩 Injeção de Dependências
+# Injeção de Dependências
 
-O Modugo possui um **sistema de DI baseado no GetIt**, permitindo registrar e acessar instâncias de serviços de forma centralizada dentro de módulos. Isso facilita a modularização, testes e reutilização de código.
+O Modugo possui um **sistema de DI próprio** com container leve, scoping por módulo e dispose automático. As dependências são registradas dentro de módulos e podem ser acessadas de qualquer widget via `context.read<T>()`.
 
 ---
 
-## 🔹 Registrando Dependências
+## Registrando Dependências
 
-Dentro de cada módulo, você pode registrar **binds** usando o método `binds()`:
+Dentro de cada módulo, registre **binds** usando o método `binds()`:
 
 ```dart
 final class HomeModule extends Module {
   @override
-  List<IBinder> imports() => [CoreModule()]; // importa outros módulos se necessário
+  List<IBinder> imports() => [CoreModule()];
 
   @override
   List<IRoute> routes() => [
@@ -20,107 +20,158 @@ final class HomeModule extends Module {
 
   @override
   void binds() {
-    i
-      ..registerSingleton<ServiceRepository>(ServiceRepository.instance) // singleton
-      ..registerLazySingleton<OtherServiceRepository>(OtherServiceRepositoryImpl.new); // lazy singleton
+    i.addSingleton<ServiceRepository>(
+      () => ServiceRepository.instance,
+      onDispose: (repo) => repo.close(),
+    );
+    i.addLazySingleton<OtherServiceRepository>(
+      () => OtherServiceRepositoryImpl(),
+    );
   }
 }
 ```
 
-### ✅ Tipos de registro suportados:
+### Tipos de registro
 
-- `registerSingleton<T>(instance)` → Instância única já criada, retornada sempre que requisitada.
-- `registerLazySingleton<T>(factory)` → Instância criada apenas na primeira vez que for requisitada.
-- `registerFactory<T>(factory)` → Cria uma nova instância a cada requisição.
+| Método | Comportamento |
+|--------|---------------|
+| `i.addSingleton<T>(() => T())` | Instância única, criada no primeiro `get<T>()`. Aceita `onDispose` callback. |
+| `i.addLazySingleton<T>(() => T())` | Mesmo que singleton — criado no primeiro acesso. Aceita `onDispose` callback. |
+| `i.add<T>(() => T())` | Factory — nova instância criada a cada `get<T>()`. Sem dispose (não guarda referência). |
 
-> 🔹 Observação: `i` é o **Injector do Modugo**, equivalente ao `GetIt.I` no GetIt.
+> `i` é o **Container** — o container de DI do Modugo.
+
+### Resolvendo dependências no factory
+
+Use `i` para resolver outras dependências dentro do factory:
+
+```dart
+i.addSingleton<HomeController>(
+  () => HomeController(i.get<ApiClient>()),
+);
+```
+
+### Callback `onDispose`
+
+Declare como limpar cada dependência no momento do registro:
+
+```dart
+i.addSingleton<Database>(
+  () => Database(),
+  onDispose: (db) => db.close(),
+);
+```
+
+O `onDispose` é chamado automaticamente quando o módulo é disposto (via `dispose()` ou `disposeOnExit`).
 
 ---
 
-## 🔹 Acessando Dependências
-
-Para obter uma instância registrada dentro do módulo ou de qualquer widget que faça parte do módulo:
+## Acessando Dependências
 
 ```dart
+// Dentro do módulo
 final service = i.get<ServiceRepository>();
-final service = Modugo.i.get<ServiceRepository>();
-final otherService = context.read<OtherServiceRepository>();
-```
 
-> 🔹 Funciona de forma global dentro do escopo do módulo, garantindo consistência e fácil substituição para testes.
+// Via Modugo (global)
+final service = Modugo.container.get<ServiceRepository>();
+
+// Via BuildContext (recomendado em widgets)
+final service = context.read<ServiceRepository>();
+
+// Versão safe (retorna null se não registrado)
+final service = context.tryRead<ServiceRepository>();
+```
 
 ---
 
-## 🔹 Comparação com GetIt
+## Ciclo de Vida e Dispose
 
-Se você já conhece o GetIt, o fluxo é muito parecido:
+### Dispose manual
 
 ```dart
-// GetIt
-final getIt = GetIt.instance;
-getIt.registerSingleton<ServiceRepository>(ServiceRepository.instance);
-
-// Modugo
-i.registerSingleton<ServiceRepository>(ServiceRepository.instance);
+final module = ProfileModule();
+module.dispose(); // Dispõe todos os binds do módulo em ordem reversa
 ```
 
-**Diferenças principais:**
+O `dispose()`:
+1. Chama `onDispose` de cada singleton (em ordem reversa de registro)
+2. Remove os bindings do container
+3. Remove o módulo do registro — permitindo re-registro se o usuário voltar
 
-- Suporte direto a **rotas modulares**, resolvendo binds automaticamente ao acessar uma rota.
+### Dispose automático com `disposeOnExit`
+
+```dart
+ModuleRoute(
+  path: '/profile',
+  module: ProfileModule(),
+  disposeOnExit: true, // dispõe automaticamente ao sair da rota
+)
+```
+
+Quando `disposeOnExit: true`, o módulo é disposto automaticamente quando o widget sai da árvore (ex: navegação para outra rota).
+
+> **Nota:** Não use `disposeOnExit` em módulos dentro de `StatefulShellModuleRoute`, pois tabs mantêm estado e o widget pode ser desmontado/remontado.
+
+### Re-navegação (goBack)
+
+Após o dispose, se o usuário navegar de volta ao módulo, `binds()` roda novamente e novas instâncias são criadas:
+
+```
+1. Usuário entra em /profile → binds() registra ProfileController
+2. Usuário sai → dispose() limpa tudo
+3. Usuário volta → binds() roda de novo → nova instância de ProfileController
+```
 
 ---
 
-## 🔹 Ciclo de Vida e Modularidade
+## Proteções
 
-- **Lazy Singleton e Factory** são criados **sob demanda**, economizando memória.
-- **Singleton** pode ser compartilhado entre módulos importados.
-- Cada módulo pode importar outros módulos, mantendo a **hierarquia de dependências** limpa e previsível.
+### Registro duplicado
+
+Registrar o mesmo tipo duas vezes lança `StateError`:
+
+```dart
+i.addSingleton<Database>(() => Database());
+i.addSingleton<Database>(() => Database()); // StateError!
+```
+
+### Dependência circular
+
+O container detecta dependências circulares e lança `StateError` descritivo:
+
+```dart
+// A depende de B, B depende de A → StateError com a cadeia completa
+```
 
 ---
 
-## 🔹 Exemplo Visual de DI
+## Exemplo Visual
 
 ```
-[HomeModule] ---> Singleton(ServiceRepository)
+[HomeModule] ---> Singleton(ServiceRepository) + onDispose
               \-> LazySingleton(OtherServiceRepository)
 
 [ProfileModule] ---> importa HomeModule
                      Singleton(ServiceRepository) já compartilhado
-                     LazySingleton(ProfileService)
+                     LazySingleton(ProfileService) + onDispose
 ```
-
-> Visualiza como singleton é compartilhado e lazy/factory são criados sob demanda.
 
 ---
 
-## 🔹 Acesso via Context Extension
-
-Alem de `i.get<T>()` e `Modugo.i.get<T>()`, voce pode usar as extensions de `BuildContext`:
+## Acesso via Context Extension
 
 ### `context.read<T>()`
 
-Recupera uma dependência registrada de forma síncrona:
+Recupera uma dependência registrada. Lança `StateError` se não encontrada:
 
 ```dart
 final controller = context.read<HomeController>();
-
-// Com instância nomeada
-final primaryDb = context.read<Database>(instanceName: 'primary');
 ```
 
-### `context.readAsync<T>()`
+### `context.tryRead<T>()`
 
-Recupera dependências registradas de forma assíncrona (via `registerSingletonAsync`):
+Versão safe — retorna `null` se não encontrada:
 
 ```dart
-final service = await context.readAsync<MyService>();
+final service = context.tryRead<MyService>() ?? fallbackService;
 ```
-
-### Parâmetros opcionais
-
-| Parâmetro | Descrição |
-|-----------|-----------|
-| `param1` | Primeiro parâmetro para factories parametrizadas |
-| `param2` | Segundo parâmetro para factories parametrizadas |
-| `type` | Tipo específico para resolver quando há múltiplas implementações |
-| `instanceName` | Nome da instância registrada |

@@ -87,11 +87,11 @@ final class HomeModule extends Module {
     // );
 
     i
-      ..registerSingleton<ModugoRepository>(ModugoRepositoryImpl())
-      ..registerLazySingleton<HomeController>(
+      ..addSingleton<ModugoRepository>(() => ModugoRepositoryImpl())
+      ..addLazySingleton<HomeController>(
         () => HomeController(i.get<DateTime>(), i.get<ModugoRepository>()),
       )
-      ..registerFactory<DateTime>(() => DateTime.now());
+      ..add<DateTime>(() => DateTime.now());
   }
 
   @override

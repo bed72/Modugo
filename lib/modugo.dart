@@ -4,6 +4,9 @@ export 'src/module.dart';
 export 'src/modugo.dart';
 export 'src/transition.dart';
 
+export 'src/container/bind.dart';
+export 'src/container/container.dart';
+
 export 'src/events/event.dart';
 
 export 'src/mixins/dsl_mixin.dart';
@@ -23,6 +26,5 @@ export 'src/extensions/go_router_state_extension.dart';
 export 'src/extensions/context_injection_extension.dart';
 export 'src/extensions/context_navigation_extension.dart';
 
-export 'package:get_it/get_it.dart' show GetIt;
 export 'package:go_router/go_router.dart'
     show GoRouterState, StatefulNavigationShell, StatefulNavigationShellState;

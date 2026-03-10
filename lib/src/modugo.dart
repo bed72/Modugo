@@ -3,13 +3,13 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:get_it/get_it.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/widgets.dart' hide Container;
 import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/transition.dart';
 import 'package:modugo/src/events/event.dart';
+import 'package:modugo/src/container/container.dart';
 import 'package:modugo/src/models/route_change_event_model.dart';
 
 /// A convenient global accessor for the configured [GoRouter] instance.
@@ -61,9 +61,14 @@ final class Modugo {
   /// Internal singleton instance of [GoRouter].
   static GoRouter? _router;
 
-  /// Shortcut to access the global GetIt instance used for dependency injection.
-  /// Provides direct access to registered services and singletons.
-  static GetIt get i => GetIt.instance;
+  /// The global [Container] instance used for dependency injection.
+  ///
+  /// All module bindings are registered here. Access dependencies via
+  /// `Modugo.container.get<T>()` or use `context.read<T>()` in widgets.
+  static final Container _container = Container();
+
+  /// Returns the global [Container] instance.
+  static Container get container => _container;
 
   /// The default page transition to apply for all routes,
   /// unless explicitly overridden.
@@ -166,5 +171,18 @@ final class Modugo {
     });
 
     return _router!;
+  }
+
+  /// Resets the Modugo state for testing purposes.
+  ///
+  /// Clears the router, container, and all internal state.
+  /// Should only be used in test `setUp`/`tearDown`.
+  @visibleForTesting
+  static void resetForTest() {
+    _router?.dispose();
+    _router = null;
+    _container.disposeAll();
+    _debugLogDiagnostics = null;
+    _transition = null;
   }
 }

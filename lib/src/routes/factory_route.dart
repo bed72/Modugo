@@ -15,6 +15,7 @@ import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/shell_module_route.dart';
 import 'package:modugo/src/decorators/guard_module_decorator.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
+import 'package:modugo/src/widgets/module_dispose_scope.dart';
 
 /// A centralized factory responsible for building GoRouter-compatible [RouteBase] objects
 /// from Modugo's declarative [IRoute] definitions.
@@ -221,9 +222,13 @@ final class FactoryRoute {
           : null,
       pageBuilder: (context, state) {
         try {
-          final widget = first.child(context, state);
+          Widget child = first.child(context, state);
 
-          return _transition(context: context, state: state, widget: widget);
+          if (route.disposeOnExit) {
+            child = ModuleDisposeScope(module: module, child: child);
+          }
+
+          return _transition(context: context, state: state, widget: child);
         } catch (exception, stack) {
           Logger.error(
             'Error building ModuleRoute (${route.path}): $exception\n$stack',

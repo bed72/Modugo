@@ -40,12 +40,36 @@ final class ModuleRoute implements IRoute {
   /// The navigator key of the parent (for nested navigator hierarchy).
   final GlobalKey<NavigatorState>? parentNavigatorKey;
 
+  /// Whether to automatically call [Module.dispose] when this route
+  /// is removed from the widget tree (e.g., when the user navigates away).
+  ///
+  /// When `true`, a wrapper widget is injected that calls `module.dispose()`
+  /// in its `State.dispose()`, ensuring all bindings registered by this module
+  /// are cleaned up and can be re-registered if the user navigates back.
+  ///
+  /// Defaults to `false` — the module stays alive until manually disposed.
+  ///
+  /// **Note:** Do NOT enable this for modules inside a [StatefulShellModuleRoute],
+  /// as tabs keep their state alive and the widget may be unmounted/remounted
+  /// unpredictably.
+  ///
+  /// Example:
+  /// ```dart
+  /// ModuleRoute(
+  ///   path: '/profile',
+  ///   module: ProfileModule(),
+  ///   disposeOnExit: true,
+  /// )
+  /// ```
+  final bool disposeOnExit;
+
   /// Creates a [ModuleRoute] that links a [path] to a nested [module].
   const ModuleRoute({
     required this.path,
     required this.module,
     this.name,
     this.parentNavigatorKey,
+    this.disposeOnExit = false,
   });
 
   @override
@@ -53,6 +77,7 @@ final class ModuleRoute implements IRoute {
       path.hashCode ^
       name.hashCode ^
       module.hashCode ^
+      disposeOnExit.hashCode ^
       parentNavigatorKey.hashCode;
 
   @override
@@ -62,6 +87,7 @@ final class ModuleRoute implements IRoute {
           path == other.path &&
           name == other.name &&
           module == other.module &&
+          disposeOnExit == other.disposeOnExit &&
           runtimeType == other.runtimeType &&
           parentNavigatorKey == other.parentNavigatorKey;
 }

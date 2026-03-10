@@ -31,7 +31,10 @@ flutter pub get
 final class AppModule extends Module {
   @override
   void binds() {
-    i.registerSingleton<AuthService>(AuthService());
+    i.addSingleton<AuthService>(
+      () => AuthService(),
+      onDispose: (auth) => auth.close(),
+    );
   }
 
   @override
@@ -77,29 +80,32 @@ O Modugo nasceu para resolver problemas comuns em apps grandes:
 
 - 🧩 **Modularidade**: Divida sua aplicação em módulos isolados e reutilizáveis.
 - 🔍 **Clareza**: Cada módulo define suas rotas e dependências de forma explícita.
-- ⚡ **Injeção de dependências simples**: Baseado em **GetIt**, as dependências são registradas **uma vez** na inicialização.
+- ⚡ **Injeção de dependências com lifecycle**: Container próprio (`Container`) com scoping por módulo, `onDispose` callbacks e dispose automático via `disposeOnExit`.
 - 🛣️ **Navegação robusta**: Com integração ao **GoRouter**, gerencie rotas de forma eficiente.
 - 🔒 **Guards**: Proteja rotas com lógica condicional e propagação automática.
 - 📡 **Eventos**: Comunicação desacoplada entre módulos via sistema de eventos nativo.
 - 🎨 **Transições**: 7 tipos de animação de transição prontos para uso.
 
-> 💡 **Nota importante:** Diferente de outros frameworks modulares, **Modugo não faz o dispose automático das dependências**. Todas as instâncias vivem até o encerramento do app.
+> 💡 **Dispose automático:** Use `disposeOnExit: true` no `ModuleRoute` para dispor automaticamente as dependências ao sair da rota. Cada binding pode declarar seu próprio `onDispose` callback no momento do registro.
 
 ---
 
 ## Base tecnológica 🛠️
 
-| Área                   | Tecnologias usadas              |
-| ---------------------- | ------------------------------- |
-| Navegação              | GoRouter                        |
-| Injeção de Dependência | GetIt                           |
-| Modularização          | Módulos isolados e desacoplados |
+| Área                   | Tecnologias usadas                           |
+| ---------------------- | -------------------------------------------- |
+| Navegação              | GoRouter                                     |
+| Injeção de Dependência | Container (container próprio com lifecycle) |
+| Modularização          | Módulos isolados e desacoplados              |
 
 ---
 
 ## Funcionalidades ✅
 
-- [x] Dependências registradas **uma vez** na inicialização.
+- [x] Dependências com lifecycle e `onDispose` callbacks.
+- [x] Dispose automático via `disposeOnExit: true` no `ModuleRoute`.
+- [x] Re-registro automático após dispose (cenário goBack).
+- [x] Detecção de dependências circulares.
 - [x] Arquitetura **desacoplada** e modular.
 - [x] Navegação simplificada com **GoRouter**.
 - [x] API declarativa (DSL) para definição de rotas.
@@ -110,12 +116,5 @@ O Modugo nasceu para resolver problemas comuns em apps grandes:
 - [x] `AfterLayoutMixin` para executar código pós-layout.
 - [x] `CompilerRoute` para validação e extração de parâmetros de rotas.
 - [x] Logging e diagnóstico integrado.
-
----
-
-## Limitações ⚠️
-
-- ❌ **Sem dispose automático**: Evita inconsistência quando múltiplas rotas compartilham o mesmo módulo.
-- ✅ **Foco na estrutura e clareza**, não no gerenciamento automático de memória.
 
 ---
