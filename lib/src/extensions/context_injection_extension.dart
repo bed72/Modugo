@@ -5,7 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:modugo/src/modugo.dart';
 
 /// Extension on [BuildContext] that provides a shorthand for retrieving
-/// dependencies registered in the [ModugoContainer].
+/// dependencies registered in the [Container].
 ///
 /// This extension allows any widget in the widget tree to access dependencies
 /// directly from the [BuildContext], eliminating the need to manually call
@@ -30,7 +30,7 @@ import 'package:modugo/src/modugo.dart';
 /// final controller = Modugo.container.get<HomeController>();
 /// ```
 extension ContextInjectionExtension on BuildContext {
-  /// Retrieves a registered dependency of type [T] from the [ModugoContainer].
+  /// Retrieves a registered dependency of type [T] from the [Container].
   ///
   /// Throws [StateError] if no binding is found for [T].
   ///

@@ -5,7 +5,7 @@ export 'src/modugo.dart';
 export 'src/transition.dart';
 
 export 'src/container/bind.dart';
-export 'src/container/modugo_container.dart';
+export 'src/container/container.dart';
 
 export 'src/events/event.dart';
 

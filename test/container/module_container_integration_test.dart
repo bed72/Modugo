@@ -1,4 +1,4 @@
-// ignore_for_file: unused_element_parameter
+// ignore_for_file: unused_element, unused_element_parameter
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -40,7 +40,7 @@ final class _ModuleA extends Module {
   @override
   void binds() {
     bindsOrder?.add('A');
-    i.addSingleton<_ServiceA>((c) => _ServiceA());
+    i.addSingleton<_ServiceA>(() => _ServiceA());
   }
 
   @override
@@ -57,7 +57,7 @@ final class _ModuleB extends Module {
   @override
   void binds() {
     bindsOrder?.add('B');
-    i.addSingleton<_ServiceB>((c) => _ServiceB());
+    i.addSingleton<_ServiceB>(() => _ServiceB());
   }
 
   @override
@@ -74,7 +74,7 @@ final class _SharedBinder with IBinder {
   @override
   void binds() {
     bindsOrder?.add('Shared');
-    Modugo.container.addSingleton<_ServiceShared>((c) => _ServiceShared());
+    Modugo.container.addSingleton<_ServiceShared>(() => _ServiceShared());
   }
 }
 
@@ -89,7 +89,7 @@ final class _ModuleWithImport extends Module {
   @override
   void binds() {
     bindsOrder?.add('WithImport');
-    i.addSingleton<_ServiceA>((c) => _ServiceA());
+    i.addSingleton<_ServiceA>(() => _ServiceA());
   }
 
   @override
@@ -109,7 +109,7 @@ final class _ModuleWithDeepImport extends Module {
   @override
   void binds() {
     bindsOrder?.add('Deep');
-    i.addSingleton<_ServiceA>((c) => _ServiceA());
+    i.addSingleton<_ServiceA>(() => _ServiceA());
   }
 
   @override
@@ -129,7 +129,7 @@ final class _MiddleBinder with IBinder {
   @override
   void binds() {
     bindsOrder?.add('Middle');
-    Modugo.container.addSingleton<_ServiceB>((c) => _ServiceB());
+    Modugo.container.addSingleton<_ServiceB>(() => _ServiceB());
   }
 }
 
@@ -139,7 +139,7 @@ final class _ModuleAlsoImportsShared extends Module {
 
   @override
   void binds() {
-    i.addSingleton<_ServiceB>((c) => _ServiceB());
+    i.addSingleton<_ServiceB>(() => _ServiceB());
   }
 
   @override
@@ -155,7 +155,7 @@ final class _ModuleWithDisposable extends Module {
 
   @override
   void binds() {
-    i.addSingleton<_Disposable>((c) => disposable, onDispose: (d) => d.close());
+    i.addSingleton<_Disposable>(() => disposable, onDispose: (d) => d.close());
   }
 
   @override
@@ -169,7 +169,7 @@ final class _ModuleWithDisposable extends Module {
 void main() {
   setUp(() {
     Modugo.resetForTest();
-    modulesRegisteredForTest.clear();
+    registeredForTest.clear();
   });
 
   group('Module + Container integration', () {
@@ -228,11 +228,11 @@ void main() {
       final module = _ModuleA();
       module.configureRoutes();
 
-      expect(modulesRegisteredForTest.contains(_ModuleA), isTrue);
+      expect(registeredForTest.contains(_ModuleA), isTrue);
 
       module.dispose();
 
-      expect(modulesRegisteredForTest.contains(_ModuleA), isFalse);
+      expect(registeredForTest.contains(_ModuleA), isFalse);
     });
 
     test('re-registration after dispose works (goBack scenario)', () {

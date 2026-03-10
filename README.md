@@ -4,7 +4,7 @@
 
 # Modugo
 
-**Modugo** é um sistema modular para Flutter inspirado em [Flutter Modular](https://pub.dev/packages/flutter_modular) e [Go Router Modular](https://pub.dev/packages/go_router_modular). Ele organiza sua aplicação em **módulos, rotas e injeção de dependências** de forma clara e escalável. Diferente de outros frameworks, o Modugo **não gerencia descarte automático de módulos**.
+**Modugo** é um sistema modular para Flutter inspirado em [Flutter Modular](https://pub.dev/packages/flutter_modular) e [Go Router Modular](https://pub.dev/packages/go_router_modular). Ele organiza sua aplicação em **módulos, rotas e injeção de dependências** de forma clara e escalável, com **container DI próprio**, lifecycle por módulo e dispose automático via `disposeOnExit`.
 
 📚 **Documentação completa:** [bed72.github.io/Modugo](https://bed72.github.io/Modugo/)
 
@@ -31,9 +31,11 @@
 ## 🚀 Visão Geral
 
 - Usa **GoRouter** para navegação.
-- Usa **GetIt** para injeção de dependências.
-- Dependências são registradas **uma única vez** ao iniciar.
-- Não há descarte automático — as dependências vivem até o app encerrar.
+- **Container DI próprio** (`Container`) com lifecycle por módulo.
+- **`onDispose` callbacks** — declare como limpar cada dependência no momento do registro.
+- **`disposeOnExit: true`** — dispose automático ao sair da rota.
+- **Re-registro automático** — após dispose, `binds()` roda novamente ao re-navegar.
+- **Detecção de dependências circulares** desde o registro.
 - **5 tipos de rotas**: `ChildRoute`, `ModuleRoute`, `ShellModuleRoute`, `StatefulShellModuleRoute`, `AliasRoute`.
 - **Guards** com propagação automática para submódulos.
 - **Sistema de eventos** nativo para comunicação desacoplada.
@@ -59,7 +61,10 @@ dependencies:
 final class AppModule extends Module {
   @override
   void binds() {
-    i.registerSingleton<AuthService>(AuthService());
+    i.addSingleton<AuthService>(
+      () => AuthService(),
+      onDispose: (auth) => auth.close(),
+    );
   }
 
   @override
@@ -110,8 +115,9 @@ final class HomeModule extends Module {
 
   @override
   void binds() {
-    i.registerLazySingleton<HomeController>(
+    i.addLazySingleton<HomeController>(
       () => HomeController(i.get<ApiClient>()),
+      onDispose: (ctrl) => ctrl.dispose(),
     );
   }
 
@@ -123,8 +129,9 @@ final class HomeModule extends Module {
 ```
 
 - `imports()` — módulos dos quais este depende (registrados antes).
-- `binds()` — registra dependências no GetIt.
+- `binds()` — registra dependências no `Container` com `onDispose` callbacks.
 - `routes()` — declara as rotas do módulo.
+- `dispose()` — limpa bindings e permite re-registro ao re-navegar.
 - Registro **idempotente**: cada módulo é registrado apenas uma vez.
 
 > 📚 Detalhes: [Módulos](https://bed72.github.io/Modugo/documentation/modules/)
@@ -259,9 +266,13 @@ List<IRoute> routes() => propagateGuards(
 final class HomeModule extends Module {
   @override
   void binds() {
-    i
-      ..registerSingleton<ServiceRepository>(ServiceRepository())
-      ..registerLazySingleton<ApiClient>(ApiClient.new);
+    i.addSingleton<ServiceRepository>(
+      () => ServiceRepository.instance,
+      onDispose: (repo) => repo.close(),
+    );
+    i.addLazySingleton<ApiClient>(
+      () => ApiClient(),
+    );
   }
 }
 ```
@@ -270,8 +281,29 @@ Três formas de acessar:
 
 ```dart
 final service = i.get<ServiceRepository>();
-final service = Modugo.i.get<ServiceRepository>();
+final service = Modugo.container.get<ServiceRepository>();
 final service = context.read<ServiceRepository>();
+
+// Versão safe (retorna null se não registrado)
+final service = context.tryRead<ServiceRepository>();
+```
+
+### Tipos de registro
+
+| Método | Comportamento |
+|--------|---------------|
+| `i.addSingleton<T>(() => T())` | Instância única. Aceita `onDispose`. |
+| `i.addLazySingleton<T>(() => T())` | Instância única, criada no primeiro acesso. Aceita `onDispose`. |
+| `i.add<T>(() => T())` | Factory — nova instância a cada `get<T>()`. Sem dispose. |
+
+### Dispose automático
+
+```dart
+ModuleRoute(
+  path: '/profile',
+  module: ProfileModule(),
+  disposeOnExit: true, // dispõe automaticamente ao sair da rota
+)
 ```
 
 > 📚 Detalhes: [Injeção de Dependência](https://bed72.github.io/Modugo/documentation/injection/)
@@ -360,7 +392,7 @@ Documentação completa disponível em MkDocs:
 | [Rotas](https://bed72.github.io/Modugo/documentation/routes/) | Tipos de rotas e navegação |
 | [API Declarativa](https://bed72.github.io/Modugo/documentation/routes/dsl/) | DSL fluente para rotas |
 | [Transições](https://bed72.github.io/Modugo/documentation/routes/transitions/) | Animações de página |
-| [Injeção](https://bed72.github.io/Modugo/documentation/injection/) | GetIt e context extensions |
+| [Injeção](https://bed72.github.io/Modugo/documentation/injection/) | Container e context extensions |
 | [Guards](https://bed72.github.io/Modugo/documentation/guards/) | Proteção de rotas |
 | [Eventos](https://bed72.github.io/Modugo/documentation/events/) | Comunicação entre módulos |
 | [Extensions](https://bed72.github.io/Modugo/documentation/extensions/) | Extensions de BuildContext, GoRouterState e Uri |

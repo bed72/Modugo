@@ -11,7 +11,7 @@ import 'package:modugo/src/module.dart';
 ///
 /// ### Responsibilities
 /// - Declares the bindings (services, controllers, repositories, etc.)
-///   that this module contributes to the [ModugoContainer].
+///   that this module contributes to the [Container].
 /// - Specifies imported modules, enabling modular composition where
 ///   one module can depend on and reuse the bindings of others.
 /// - Ensures that imports are processed recursively before the current
@@ -21,7 +21,7 @@ import 'package:modugo/src/module.dart';
 /// - By default, [binds] is a no-op and [imports] returns an empty list,
 ///   meaning the module has no dependencies and provides no bindings.
 /// - Subclasses/modules override [binds] to register their dependencies
-///   using the [ModugoContainer] instance (accessible via the `i` getter
+///   using the [Container] instance (accessible via the `i` getter
 ///   in [Module]).
 /// - The Modugo framework ensures that each module's [binds] is executed
 ///   at most once per module type, even if imported by multiple modules.
@@ -32,7 +32,7 @@ import 'package:modugo/src/module.dart';
 ///   @override
 ///   void binds() {
 ///     i.addLazySingleton<AuthRepository>(
-///       (c) => AuthRepositoryImpl(c.get<ApiClient>()),
+///       () => AuthRepositoryImpl(i.get<ApiClient>()),
 ///       onDispose: (repo) => repo.close(),
 ///     );
 ///   }
@@ -52,7 +52,7 @@ mixin IBinder {
   /// Registers all dependency injection bindings for this module.
   ///
   /// Override this method to declare your dependencies using the
-  /// [ModugoContainer] available via `i`.
+  /// [Container] available via `i`.
   void binds() {}
 
   /// List of imported modules that this module depends on.

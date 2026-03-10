@@ -1,9 +1,9 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/widgets.dart' hide Container;
 import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/modugo.dart';
-import 'package:modugo/src/container/modugo_container.dart';
+import 'package:modugo/src/container/container.dart';
 
 import 'package:modugo/src/mixins/binder_mixin.dart';
 import 'package:modugo/src/mixins/dsl_mixin.dart';
@@ -13,11 +13,11 @@ import 'package:modugo/src/routes/factory_route.dart';
 
 /// A set of module types that have been registered globally,
 /// used to ensure the same module is not bound more than once.
-final Set<Type> _modulesRegistered = {};
+final Set<Type> _registered = {};
 
 /// For testing: allows checking and manipulating the registered modules set.
 @visibleForTesting
-Set<Type> get modulesRegisteredForTest => _modulesRegistered;
+Set<Type> get registeredForTest => _registered;
 
 /// Abstract base class for a "module" (feature) within the application.
 ///
@@ -26,7 +26,7 @@ Set<Type> get modulesRegisteredForTest => _modulesRegistered;
 ///   modules are executed before the current module's `binds()`.
 /// - [routes()]: the route tree exposed by this module (e.g., [child],
 ///   [module], [shell], [statefulShell]).
-/// - [binds()]: registers the module's dependencies in [ModugoContainer] (via [i]).
+/// - [binds()]: registers the module's dependencies in [Container] (via [i]).
 ///
 /// Behavior:
 /// - When [configureRoutes()] is called, the framework registers — **only once
@@ -57,16 +57,16 @@ Set<Type> get modulesRegisteredForTest => _modulesRegistered;
 ///   @override
 ///   void binds() {
 ///     i.addLazySingleton<HomeController>(
-///       (c) => HomeController(),
+///       () => HomeController(),
 ///       onDispose: (ctrl) => ctrl.dispose(),
 ///     );
-///     i.addSingleton<ApiClient>((c) => ApiClient());
+///     i.addSingleton<ApiClient>(() => ApiClient());
 ///   }
 /// }
 /// ```
 abstract class Module with IBinder, IDsl, IRouter {
-  /// Shortcut to access the [ModugoContainer] used for dependency injection.
-  ModugoContainer get i => Modugo.container;
+  /// Shortcut to access the [Container] used for dependency injection.
+  Container get i => Modugo.container;
 
   /// The tag used to scope this module's bindings in the container.
   ///
@@ -104,7 +104,7 @@ abstract class Module with IBinder, IDsl, IRouter {
   @mustCallSuper
   void dispose() {
     Modugo.container.disposeModule(tag);
-    _modulesRegistered.remove(runtimeType);
+    _registered.remove(runtimeType);
   }
 
   /// Configures and returns the list of [RouteBase]s defined by this module.
@@ -127,12 +127,12 @@ abstract class Module with IBinder, IDsl, IRouter {
   /// - Each module type is registered at most once; subsequent attempts
   ///   are skipped and logged.
   /// - Prevents cyclic imports by keeping track of already-registered types.
-  /// - Sets [ModugoContainer.activeTag] before calling [binds()] so all
+  /// - Sets [Container.activeTag] before calling [binds()] so all
   ///   registrations are associated with the module's tag.
   void _configureBinders({IBinder? binder}) {
     final target = binder ?? this;
 
-    if (_modulesRegistered.contains(target.runtimeType)) {
+    if (_registered.contains(target.runtimeType)) {
       Logger.module('${target.runtimeType} skipped (already registered)');
       return;
     }
@@ -141,12 +141,13 @@ abstract class Module with IBinder, IDsl, IRouter {
       _configureBinders(binder: imported);
     }
 
-    Modugo.container.activeTag =
-        (target is Module) ? target.tag : target.runtimeType.toString();
+    Modugo.container.activeTag = (target is Module)
+        ? target.tag
+        : target.runtimeType.toString();
     target.binds();
     Modugo.container.activeTag = null;
 
-    _modulesRegistered.add(target.runtimeType);
+    _registered.add(target.runtimeType);
 
     Logger.module('${target.runtimeType} binds registered');
   }

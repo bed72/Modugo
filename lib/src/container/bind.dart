@@ -1,5 +1,3 @@
-import 'package:modugo/src/container/modugo_container.dart';
-
 /// The type of lifecycle a binding follows.
 enum BindType {
   /// New instance created on every `get<T>()` call.
@@ -15,24 +13,19 @@ enum BindType {
   lazySingleton,
 }
 
-/// Represents a single dependency registration in the [ModugoContainer].
+/// Represents a single dependency registration in the [Container].
 ///
 /// Each [Bind] holds a factory function to create the instance,
 /// an optional [onDispose] callback, and tracks the created instance
 /// for singleton types.
 final class Bind<T extends Object> {
-  final T Function(ModugoContainer container) create;
-  final void Function(T instance)? onDispose;
-  final BindType type;
-  final String? tag;
   T? _instance;
+  final String? tag;
+  final BindType type;
+  final T Function() create;
+  final void Function(T instance)? onDispose;
 
-  Bind({
-    required this.create,
-    required this.type,
-    this.onDispose,
-    this.tag,
-  });
+  Bind({this.onDispose, required this.type, required this.create, this.tag});
 
   /// Whether this bind has a live instance (only for singletons).
   bool get hasInstance => _instance != null;
@@ -42,20 +35,16 @@ final class Bind<T extends Object> {
   /// - [BindType.factory]: always creates a new instance.
   /// - [BindType.singleton] / [BindType.lazySingleton]: creates on first call,
   ///   returns cached instance on subsequent calls.
-  T resolve(ModugoContainer container) {
-    return switch (type) {
-      BindType.factory => create(container),
-      BindType.singleton => _instance ??= create(container),
-      BindType.lazySingleton => _instance ??= create(container),
-    };
-  }
+  T resolve() => switch (type) {
+    .factory => create(),
+    .singleton => _instance ??= create(),
+    .lazySingleton => _instance ??= create(),
+  };
 
   /// Calls [onDispose] if there is a live instance and a callback defined.
   /// Clears the internal reference after disposal.
   void dispose() {
-    if (_instance != null && onDispose != null) {
-      onDispose!(_instance as T);
-    }
+    if (_instance != null && onDispose != null) onDispose!(_instance as T);
     _instance = null;
   }
 }

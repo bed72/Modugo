@@ -1,10 +1,10 @@
-# 🏗 Arquitetura Modular em Flutter
+# Arquitetura Modular em Flutter
 
 Em uma arquitetura modular, seu app é dividido em **módulos independentes**, cada um responsável por um recurso ou domínio específico. Essa abordagem melhora a **escalabilidade, testabilidade e manutenibilidade**.
 
 ---
 
-## 🔹 Estrutura de Projeto Exemplo
+## Estrutura de Projeto Exemplo
 
 ```
 /lib
@@ -35,36 +35,39 @@ main.dart
 
 ---
 
-## ⚡ Como os Módulos Funcionam
+## Como os Módulos Funcionam
 
 1. **Encapsulamento**: Cada módulo gerencia suas próprias rotas, dependências e interface.
 2. **Roteamento**: Os módulos definem suas próprias rotas, que são posteriormente compostas pelo módulo raiz.
-3. **Injeção de Dependência**: Cada módulo pode registrar suas próprias dependências localmente ou globalmente.
+3. **Injeção de Dependência**: Cada módulo registra suas dependências no `Container` com suporte a dispose.
 4. **Escalabilidade**: Novos recursos podem ser adicionados como novos módulos sem afetar os existentes.
 
 ---
 
-## 🧬 Anatomia de um Module
+## Anatomia de um Module
 
 A classe `Module` é a base de tudo no Modugo. Ela combina três responsabilidades:
 
 | Método | Responsabilidade |
 |--------|------------------|
-| `binds()` | Registra dependências no GetIt |
+| `binds()` | Registra dependências no `Container` |
 | `routes()` | Declara as rotas expostas pelo módulo |
 | `imports()` | Declara dependências de outros módulos |
 | `initState()` | Executado quando o módulo é inicializado |
-| `dispose()` | Executado para limpar recursos do módulo |
+| `dispose()` | Dispõe bindings do módulo e permite re-registro |
 
 ---
 
-## 📝 Exemplo: Módulo App
+## Exemplo: Módulo App
 
 ```dart
 final class AppModule extends Module {
   @override
   void binds() {
-    i.registerSingleton<AuthService>(AuthService());
+    i.addSingleton<AuthService>(
+      () => AuthService(),
+      onDispose: (auth) => auth.close(),
+    );
   }
 
   @override
@@ -76,12 +79,12 @@ final class AppModule extends Module {
 }
 ```
 
-- `binds()`: registra dependências específicas do módulo.
-- `routes()`: declara as rotas do módulo, encapsulando a interface dentro do seu domínio.
+- `binds()`: registra dependências com `onDispose` para limpeza automática.
+- `routes()`: declara as rotas do módulo.
 
 ---
 
-## 📦 Importando Módulos com `imports()`
+## Importando Módulos com `imports()`
 
 O método `imports()` permite que um módulo declare dependências de outros módulos. Os `binds()` dos módulos importados são executados **antes** dos `binds()` do módulo atual.
 
@@ -93,14 +96,14 @@ final class HomeModule extends Module {
   @override
   void binds() {
     // SharedModule já foi registrado, podemos usar suas dependências
-    i.registerLazySingleton<HomeController>(
+    i.addLazySingleton<HomeController>(
       () => HomeController(i.get<ApiClient>()),
     );
   }
 
   @override
   List<IRoute> routes() => [
-    route('/', child: (_, _) => const HomePage()),
+    child(path: '/', child: (_, _) => const HomePage()),
   ];
 }
 ```
@@ -109,11 +112,11 @@ final class HomeModule extends Module {
 
 - Cada módulo é registrado **apenas uma vez** (idempotente).
 - Se o mesmo módulo for importado por múltiplos módulos, seus `binds()` **não serão executados novamente**.
-- Imports são processados **recursivamente** — se `A` importa `B` que importa `C`, a ordem de registro é: `C → B → A`.
+- Imports são processados **recursivamente** — se `A` importa `B` que importa `C`, a ordem de registro é: `C -> B -> A`.
 
 ---
 
-## 🔄 Ciclo de Vida
+## Ciclo de Vida
 
 ### `initState()`
 
@@ -131,47 +134,59 @@ final class AnalyticsModule extends Module {
 
 ### `dispose()`
 
-Executado quando o módulo é descartado. Ideal para cancelar subscriptions, limpar estado e liberar recursos.
+Dispõe todos os bindings do módulo (chamando `onDispose` em ordem reversa) e remove o módulo do registro, permitindo re-registro se o usuário navegar de volta.
 
 ```dart
 final class ChatModule extends Module {
   @override
   void dispose() {
-    // Limpar recursos
-    super.dispose();
+    // Lógica de limpeza customizada ANTES do super
+    myCustomCleanup();
+    super.dispose(); // Limpa bindings + permite re-registro
   }
 }
 ```
 
-> ⚠️ **Importante:** O Modugo **não chama `dispose()` automaticamente**. Se precisar limpar recursos, você deve gerenciar manualmente.
+> **Importante:** Sempre chame `super.dispose()` para garantir que os bindings sejam limpos corretamente.
+
+### Dispose automático com `disposeOnExit`
+
+```dart
+ModuleRoute(
+  path: '/profile',
+  module: ProfileModule(),
+  disposeOnExit: true, // dispõe automaticamente ao sair da rota
+)
+```
 
 ---
 
-## 🚀 Benefícios
+## Benefícios
 
 - **Separação de Responsabilidades**: UI, rotas e dependências são modularizadas.
 - **Facilidade de Testes**: Cada módulo pode ser testado de forma independente.
 - **Reutilização**: Módulos podem ser reutilizados em diferentes apps.
 - **Colaboração em Equipe**: Times podem trabalhar em módulos diferentes simultaneamente sem conflitos.
+- **Dispose com Lifecycle**: Bindings são limpos automaticamente com `onDispose` callbacks.
 
 ---
 
-## 📊 Diagrama de Composição
+## Diagrama de Composição
 
 ```
 AppModule
 ├── imports: [CoreModule]
-├── binds: AuthService
+├── binds: AuthService (+ onDispose)
 └── routes:
     ├── HomeModule
     │   ├── imports: [SharedModule]
-    │   ├── binds: HomeController
+    │   ├── binds: HomeController (+ onDispose)
     │   └── routes: ['/']
     ├── ChatModule
-    │   ├── binds: ChatService
+    │   ├── binds: ChatService (+ onDispose)
     │   └── routes: ['/']
-    └── ProfileModule
-        ├── imports: [SharedModule]  ← já registrado, skip
-        ├── binds: ProfileController
+    └── ProfileModule (disposeOnExit: true)
+        ├── imports: [SharedModule]  <- já registrado, skip
+        ├── binds: ProfileController (+ onDispose)
         └── routes: ['/']
 ```

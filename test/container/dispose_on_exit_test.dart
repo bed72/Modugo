@@ -26,10 +26,7 @@ final class _TestModule extends Module {
 
   @override
   void binds() {
-    i.addSingleton<_Service>(
-      (c) => service,
-      onDispose: (s) => s.close(),
-    );
+    i.addSingleton<_Service>(() => service, onDispose: (s) => s.close());
   }
 
   @override
@@ -43,15 +40,12 @@ final class _TestModule extends Module {
 void main() {
   setUp(() {
     Modugo.resetForTest();
-    modulesRegisteredForTest.clear();
+    registeredForTest.clear();
   });
 
   group('ModuleRoute.disposeOnExit', () {
     test('defaults to false', () {
-      final route = ModuleRoute(
-        path: '/test',
-        module: _TestModule(_Service()),
-      );
+      final route = ModuleRoute(path: '/test', module: _TestModule(_Service()));
 
       expect(route.disposeOnExit, isFalse);
     });
@@ -68,8 +62,9 @@ void main() {
   });
 
   group('ModuleDisposeScope', () {
-    testWidgets('calls module.dispose() when widget is removed from tree',
-        (tester) async {
+    testWidgets('calls module.dispose() when widget is removed from tree', (
+      tester,
+    ) async {
       final service = _Service();
       final module = _TestModule(service);
       module.configureRoutes();
@@ -80,10 +75,7 @@ void main() {
 
       // Mount the widget
       await tester.pumpWidget(
-        ModuleDisposeScope(
-          module: module,
-          child: const SizedBox(),
-        ),
+        ModuleDisposeScope(module: module, child: const SizedBox()),
       );
 
       // Widget is alive — service still active
@@ -98,8 +90,9 @@ void main() {
       expect(Modugo.container.isRegistered<_Service>(), isFalse);
     });
 
-    testWidgets('module can be re-registered after auto-dispose',
-        (tester) async {
+    testWidgets('module can be re-registered after auto-dispose', (
+      tester,
+    ) async {
       final service1 = _Service();
       final module1 = _TestModule(service1);
       module1.configureRoutes();
@@ -108,15 +101,12 @@ void main() {
 
       // Mount and unmount
       await tester.pumpWidget(
-        ModuleDisposeScope(
-          module: module1,
-          child: const SizedBox(),
-        ),
+        ModuleDisposeScope(module: module1, child: const SizedBox()),
       );
       await tester.pumpWidget(const SizedBox());
 
       expect(service1.disposed, isTrue);
-      expect(modulesRegisteredForTest.contains(_TestModule), isFalse);
+      expect(registeredForTest.contains(_TestModule), isFalse);
 
       // Re-register with fresh module
       final service2 = _Service();
@@ -136,10 +126,7 @@ void main() {
       Modugo.container.get<_Service>();
 
       await tester.pumpWidget(
-        ModuleDisposeScope(
-          module: module,
-          child: const SizedBox(),
-        ),
+        ModuleDisposeScope(module: module, child: const SizedBox()),
       );
 
       // Multiple rebuilds — widget stays mounted

@@ -15,7 +15,7 @@ import 'package:modugo/src/extensions/context_injection_extension.dart';
 void main() {
   setUp(() {
     Modugo.container.disposeAll();
-    modulesRegisteredForTest.clear();
+    registeredForTest.clear();
     Modugo.resetForTest();
   });
 
@@ -51,7 +51,7 @@ final class _Service {
 final class _InnerModule extends Module {
   @override
   void binds() {
-    i.addSingleton<_Service>((c) => _Service());
+    i.addSingleton<_Service>(() => _Service());
   }
 
   @override

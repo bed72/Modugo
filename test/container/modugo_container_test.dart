@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:modugo/src/container/modugo_container.dart';
+import 'package:modugo/src/container/container.dart';
 
 // ─── Test helpers ───────────────────────────────────────────
 
@@ -20,16 +20,6 @@ class _ServiceB {
 
 class _ServiceC {}
 
-class _CircularA {
-  _CircularA(ModugoContainer c) : b = c.get<_CircularB>();
-  final _CircularB b;
-}
-
-class _CircularB {
-  _CircularB(ModugoContainer c) : a = c.get<_CircularA>();
-  final _CircularA a;
-}
-
 class _Disposable {
   bool disposed = false;
   void close() => disposed = true;
@@ -38,17 +28,17 @@ class _Disposable {
 // ─── Tests ──────────────────────────────────────────────────
 
 void main() {
-  late ModugoContainer container;
+  late Container container;
 
   setUp(() {
-    container = ModugoContainer();
+    container = Container();
   });
 
   // ─── Registration & Resolution ────────────────────────────
 
   group('Registration & Resolution', () {
     test('factory returns a new instance on every get', () {
-      container.add<_Counter>((c) => _Counter());
+      container.add<_Counter>(() => _Counter());
 
       final a = container.get<_Counter>();
       final b = container.get<_Counter>();
@@ -57,7 +47,7 @@ void main() {
     });
 
     test('singleton returns the same instance on every get', () {
-      container.addSingleton<_Counter>((c) => _Counter());
+      container.addSingleton<_Counter>(() => _Counter());
 
       final a = container.get<_Counter>();
       final b = container.get<_Counter>();
@@ -66,7 +56,7 @@ void main() {
     });
 
     test('lazySingleton returns the same instance on every get', () {
-      container.addLazySingleton<_Counter>((c) => _Counter());
+      container.addLazySingleton<_Counter>(() => _Counter());
 
       final a = container.get<_Counter>();
       final b = container.get<_Counter>();
@@ -77,7 +67,7 @@ void main() {
     test('lazySingleton only creates instance on first get', () {
       var created = false;
 
-      container.addLazySingleton<_Counter>((c) {
+      container.addLazySingleton<_Counter>(() {
         created = true;
         return _Counter();
       });
@@ -107,7 +97,7 @@ void main() {
     });
 
     test('tryGet returns instance when registered', () {
-      container.add<_Counter>((c) => _Counter());
+      container.add<_Counter>(() => _Counter());
 
       expect(container.tryGet<_Counter>(), isNotNull);
     });
@@ -117,7 +107,7 @@ void main() {
     });
 
     test('isRegistered returns true after registration', () {
-      container.add<_Counter>((c) => _Counter());
+      container.add<_Counter>(() => _Counter());
 
       expect(container.isRegistered<_Counter>(), isTrue);
     });
@@ -127,10 +117,10 @@ void main() {
 
   group('Duplicate registration', () {
     test('registering the same type twice throws StateError', () {
-      container.add<_Counter>((c) => _Counter());
+      container.add<_Counter>(() => _Counter());
 
       expect(
-        () => container.add<_Counter>((c) => _Counter()),
+        () => container.add<_Counter>(() => _Counter()),
         throwsA(
           isA<StateError>().having(
             (e) => e.message,
@@ -143,11 +133,11 @@ void main() {
 
     test('error message includes tag when available', () {
       container.activeTag = 'ModuleA';
-      container.add<_Counter>((c) => _Counter());
+      container.add<_Counter>(() => _Counter());
       container.activeTag = null;
 
       expect(
-        () => container.add<_Counter>((c) => _Counter()),
+        () => container.add<_Counter>(() => _Counter()),
         throwsA(
           isA<StateError>().having(
             (e) => e.message,
@@ -159,8 +149,8 @@ void main() {
     });
 
     test('different types can be registered without conflict', () {
-      container.add<_Counter>((c) => _Counter());
-      container.add<_ServiceB>((c) => _ServiceB());
+      container.add<_Counter>(() => _Counter());
+      container.add<_ServiceB>(() => _ServiceB());
 
       expect(container.get<_Counter>(), isNotNull);
       expect(container.get<_ServiceB>(), isNotNull);
@@ -172,7 +162,7 @@ void main() {
   group('Tagging', () {
     test('registration with activeTag associates binding to module', () {
       container.activeTag = 'ModuleA';
-      container.add<_Counter>((c) => _Counter());
+      container.add<_Counter>(() => _Counter());
       container.activeTag = null;
 
       // Verify by disposing the module — binding should be removed
@@ -181,21 +171,23 @@ void main() {
       expect(container.isRegistered<_Counter>(), isFalse);
     });
 
-    test('registration without activeTag is global and survives disposeModule',
-        () {
-      container.add<_Counter>((c) => _Counter());
+    test(
+      'registration without activeTag is global and survives disposeModule',
+      () {
+        container.add<_Counter>(() => _Counter());
 
-      container.disposeModule('SomeModule');
+        container.disposeModule('SomeModule');
 
-      expect(container.isRegistered<_Counter>(), isTrue);
-      expect(container.get<_Counter>(), isNotNull);
-    });
+        expect(container.isRegistered<_Counter>(), isTrue);
+        expect(container.get<_Counter>(), isNotNull);
+      },
+    );
 
     test('multiple bindings under the same tag', () {
       container.activeTag = 'ModuleA';
-      container.add<_Counter>((c) => _Counter());
-      container.add<_ServiceB>((c) => _ServiceB());
-      container.add<_ServiceC>((c) => _ServiceC());
+      container.add<_Counter>(() => _Counter());
+      container.add<_ServiceB>(() => _ServiceB());
+      container.add<_ServiceC>(() => _ServiceC());
       container.activeTag = null;
 
       container.disposeModule('ModuleA');
@@ -207,9 +199,9 @@ void main() {
 
     test('bindings from different tags are independent', () {
       container.activeTag = 'ModuleA';
-      container.add<_Counter>((c) => _Counter());
+      container.add<_Counter>(() => _Counter());
       container.activeTag = 'ModuleB';
-      container.add<_ServiceB>((c) => _ServiceB());
+      container.add<_ServiceB>(() => _ServiceB());
       container.activeTag = null;
 
       container.disposeModule('ModuleA');
@@ -227,7 +219,7 @@ void main() {
 
       container.activeTag = 'Mod';
       container.addSingleton<_Disposable>(
-        (c) => disposable,
+        () => disposable,
         onDispose: (d) => d.close(),
       );
       container.activeTag = null;
@@ -245,7 +237,7 @@ void main() {
 
       container.activeTag = 'Mod';
       container.addLazySingleton<_Disposable>(
-        (c) => disposable,
+        () => disposable,
         onDispose: (d) => d.close(),
       );
       container.activeTag = null;
@@ -258,22 +250,19 @@ void main() {
 
     test('removes bindings from container after dispose', () {
       container.activeTag = 'Mod';
-      container.addSingleton<_Counter>((c) => _Counter());
+      container.addSingleton<_Counter>(() => _Counter());
       container.activeTag = null;
 
       container.disposeModule('Mod');
 
-      expect(
-        () => container.get<_Counter>(),
-        throwsA(isA<StateError>()),
-      );
+      expect(() => container.get<_Counter>(), throwsA(isA<StateError>()));
     });
 
     test('does not affect bindings from other modules', () {
       container.activeTag = 'ModA';
-      container.add<_Counter>((c) => _Counter());
+      container.add<_Counter>(() => _Counter());
       container.activeTag = 'ModB';
-      container.add<_ServiceB>((c) => _ServiceB());
+      container.add<_ServiceB>(() => _ServiceB());
       container.activeTag = null;
 
       container.disposeModule('ModA');
@@ -289,7 +278,7 @@ void main() {
       var disposeCalled = false;
 
       container.activeTag = 'Mod';
-      container.add<_Counter>((c) => _Counter());
+      container.add<_Counter>(() => _Counter());
       container.activeTag = null;
 
       // Factory has no onDispose parameter, but even if the binding
@@ -302,7 +291,7 @@ void main() {
 
     test('singleton without onDispose does not throw on dispose', () {
       container.activeTag = 'Mod';
-      container.addSingleton<_Counter>((c) => _Counter());
+      container.addSingleton<_Counter>(() => _Counter());
       container.activeTag = null;
 
       container.get<_Counter>();
@@ -315,7 +304,7 @@ void main() {
 
       container.activeTag = 'Mod';
       container.addLazySingleton<_Disposable>(
-        (c) => _Disposable(),
+        () => _Disposable(),
         onDispose: (d) {
           disposeCalled = true;
           d.close();
@@ -334,15 +323,15 @@ void main() {
 
       container.activeTag = 'Mod';
       container.addSingleton<_ServiceB>(
-        (c) => _ServiceB(),
+        () => _ServiceB(),
         onDispose: (_) => order.add('B'),
       );
       container.addSingleton<_Counter>(
-        (c) => _Counter(),
+        () => _Counter(),
         onDispose: (_) => order.add('Counter'),
       );
       container.addSingleton<_ServiceC>(
-        (c) => _ServiceC(),
+        () => _ServiceC(),
         onDispose: (_) => order.add('C'),
       );
       container.activeTag = null;
@@ -364,11 +353,11 @@ void main() {
   group('disposeAll', () {
     test('clears all bindings', () {
       container.activeTag = 'ModA';
-      container.add<_Counter>((c) => _Counter());
+      container.add<_Counter>(() => _Counter());
       container.activeTag = 'ModB';
-      container.add<_ServiceB>((c) => _ServiceB());
+      container.add<_ServiceB>(() => _ServiceB());
       container.activeTag = null;
-      container.add<_ServiceC>((c) => _ServiceC());
+      container.add<_ServiceC>(() => _ServiceC());
 
       container.disposeAll();
 
@@ -382,11 +371,11 @@ void main() {
 
       container.activeTag = 'Mod';
       container.addSingleton<_Counter>(
-        (c) => _Counter(),
+        () => _Counter(),
         onDispose: (_) => disposedTypes.add('Counter'),
       );
       container.addSingleton<_ServiceB>(
-        (c) => _ServiceB(),
+        () => _ServiceB(),
         onDispose: (_) => disposedTypes.add('ServiceB'),
       );
       container.activeTag = null;
@@ -401,13 +390,10 @@ void main() {
     });
 
     test('get throws after disposeAll', () {
-      container.add<_Counter>((c) => _Counter());
+      container.add<_Counter>(() => _Counter());
       container.disposeAll();
 
-      expect(
-        () => container.get<_Counter>(),
-        throwsA(isA<StateError>()),
-      );
+      expect(() => container.get<_Counter>(), throwsA(isA<StateError>()));
     });
   });
 
@@ -416,7 +402,7 @@ void main() {
   group('Re-registration after dispose', () {
     test('can register same type after disposeModule', () {
       container.activeTag = 'Mod';
-      container.addSingleton<_Counter>((c) => _Counter());
+      container.addSingleton<_Counter>(() => _Counter());
       container.activeTag = null;
 
       container.get<_Counter>().value = 42;
@@ -424,7 +410,7 @@ void main() {
 
       // Re-register
       container.activeTag = 'Mod';
-      container.addSingleton<_Counter>((c) => _Counter());
+      container.addSingleton<_Counter>(() => _Counter());
       container.activeTag = null;
 
       final instance = container.get<_Counter>();
@@ -432,12 +418,12 @@ void main() {
     });
 
     test('can register same type after disposeAll', () {
-      container.addSingleton<_Counter>((c) => _Counter());
+      container.addSingleton<_Counter>(() => _Counter());
       container.get<_Counter>().value = 99;
 
       container.disposeAll();
 
-      container.addSingleton<_Counter>((c) => _Counter());
+      container.addSingleton<_Counter>(() => _Counter());
       expect(container.get<_Counter>().value, 0);
     });
   });
@@ -446,9 +432,9 @@ void main() {
 
   group('Dependencies between bindings', () {
     test('singleton resolves dependency from another binding', () {
-      container.add<_ServiceB>((c) => _ServiceB('resolved'));
+      container.add<_ServiceB>(() => _ServiceB('resolved'));
       container.addSingleton<_ServiceA>(
-        (c) => _ServiceA(c.get<_ServiceB>()),
+        () => _ServiceA(container.get<_ServiceB>()),
       );
 
       final a = container.get<_ServiceA>();
@@ -457,8 +443,8 @@ void main() {
     });
 
     test('factory resolves dependency from singleton', () {
-      container.addSingleton<_ServiceB>((c) => _ServiceB('shared'));
-      container.add<_ServiceA>((c) => _ServiceA(c.get<_ServiceB>()));
+      container.addSingleton<_ServiceB>(() => _ServiceB('shared'));
+      container.add<_ServiceA>(() => _ServiceA(container.get<_ServiceB>()));
 
       final a1 = container.get<_ServiceA>();
       final a2 = container.get<_ServiceA>();
@@ -475,19 +461,21 @@ void main() {
 
   group('Circular dependency detection', () {
     test('throws StateError with descriptive message', () {
-      container.add<_CircularA>((c) => _CircularA(c));
-      container.add<_CircularB>((c) => _CircularB(c));
+      container.add<_ServiceA>(() => _ServiceA(container.get<_ServiceB>()));
+      container.add<_ServiceB>(
+        () => _ServiceB(container.get<_ServiceA>().b.name),
+      );
 
       expect(
-        () => container.get<_CircularA>(),
+        () => container.get<_ServiceA>(),
         throwsA(
           isA<StateError>().having(
             (e) => e.message,
             'message',
             allOf(
               contains('Circular dependency detected'),
-              contains('_CircularA'),
-              contains('_CircularB'),
+              contains('_ServiceA'),
+              contains('_ServiceB'),
             ),
           ),
         ),
@@ -495,15 +483,17 @@ void main() {
     });
 
     test('resolving set is cleaned up after circular dependency error', () {
-      container.add<_CircularA>((c) => _CircularA(c));
-      container.add<_CircularB>((c) => _CircularB(c));
+      container.add<_ServiceA>(() => _ServiceA(container.get<_ServiceB>()));
+      container.add<_ServiceB>(
+        () => _ServiceB(container.get<_ServiceA>().b.name),
+      );
 
       // First call — throws
-      expect(() => container.get<_CircularA>(), throwsA(isA<StateError>()));
+      expect(() => container.get<_ServiceA>(), throwsA(isA<StateError>()));
 
       // Second call — should also throw the same error (not a stale state)
       expect(
-        () => container.get<_CircularA>(),
+        () => container.get<_ServiceA>(),
         throwsA(
           isA<StateError>().having(
             (e) => e.message,
@@ -515,18 +505,22 @@ void main() {
     });
 
     test('non-circular chains resolve normally', () {
-      container.add<_ServiceB>((c) => _ServiceB());
-      container.addSingleton<_ServiceA>((c) => _ServiceA(c.get<_ServiceB>()));
+      container.add<_ServiceB>(() => _ServiceB());
+      container.addSingleton<_ServiceA>(
+        () => _ServiceA(container.get<_ServiceB>()),
+      );
 
       expect(() => container.get<_ServiceA>(), returnsNormally);
     });
 
     test('tryGet also detects circular dependencies', () {
-      container.add<_CircularA>((c) => _CircularA(c));
-      container.add<_CircularB>((c) => _CircularB(c));
+      container.add<_ServiceA>(() => _ServiceA(container.get<_ServiceB>()));
+      container.add<_ServiceB>(
+        () => _ServiceB(container.get<_ServiceA>().b.name),
+      );
 
       expect(
-        () => container.tryGet<_CircularA>(),
+        () => container.tryGet<_ServiceA>(),
         throwsA(
           isA<StateError>().having(
             (e) => e.message,
@@ -543,7 +537,7 @@ void main() {
   group('Edge cases', () {
     test('disposeModule called twice does not throw', () {
       container.activeTag = 'Mod';
-      container.addSingleton<_Counter>((c) => _Counter());
+      container.addSingleton<_Counter>(() => _Counter());
       container.activeTag = null;
 
       container.get<_Counter>();
@@ -557,17 +551,17 @@ void main() {
     });
 
     test('disposeAll called twice does not throw', () {
-      container.add<_Counter>((c) => _Counter());
+      container.add<_Counter>(() => _Counter());
       container.disposeAll();
 
       expect(() => container.disposeAll(), returnsNormally);
     });
 
     test('global binding survives disposeModule of any tag', () {
-      container.add<_Counter>((c) => _Counter()); // global (no tag)
+      container.add<_Counter>(() => _Counter()); // global (no tag)
 
       container.activeTag = 'Mod';
-      container.add<_ServiceB>((c) => _ServiceB());
+      container.add<_ServiceB>(() => _ServiceB());
       container.activeTag = null;
 
       container.disposeModule('Mod');
@@ -577,7 +571,7 @@ void main() {
     });
 
     test('global binding is cleaned by disposeAll', () {
-      container.add<_Counter>((c) => _Counter());
+      container.add<_Counter>(() => _Counter());
 
       container.disposeAll();
 

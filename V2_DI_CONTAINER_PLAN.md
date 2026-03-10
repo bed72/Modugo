@@ -10,7 +10,7 @@
 - [1. Motivação](#1-motivação)
 - [2. Arquitetura atual (V1)](#2-arquitetura-atual-v1)
 - [3. Visão geral da V2](#3-visão-geral-da-v2)
-- [4. Fase 1 — Container próprio (ModugoContainer)](#4-fase-1--container-próprio-modugocontainer)
+- [4. Fase 1 — Container próprio (Container)](#4-fase-1--container-próprio-modugocontainer)
 - [5. Fase 2 — Integração com Module](#5-fase-2--integração-com-module)
 - [6. Fase 3 — Dispose e lifecycle por módulo](#6-fase-3--dispose-e-lifecycle-por-módulo)
 - [7. Fase 4 — Atualizar context.read](#7-fase-4--atualizar-contextread)
@@ -98,7 +98,7 @@ i.reset()                                  // Apenas em testes
 
 ### Decisão
 
-Criar um container DI leve e próprio do Modugo (`ModugoContainer`) com:
+Criar um container DI leve e próprio do Modugo (`Container`) com:
 
 - **Registro por tag** — cada módulo é automaticamente associado a uma tag (`runtimeType.toString()`)
 - **`onDispose` callback por binding** — o desenvolvedor declara como limpar cada dependência no momento do registro
@@ -108,7 +108,7 @@ Criar um container DI leve e próprio do Modugo (`ModugoContainer`) com:
 ### Diagrama de conceito
 
 ```
-ModugoContainer
+Container
 ├─ _binds: Map<Type, Bind>           ← todos os bindings registrados
 ├─ _tagIndex: Map<String, Set<Type>> ← índice reverso tag → tipos
 │
@@ -129,7 +129,7 @@ ModugoContainer
 
 ---
 
-## 4. Fase 1 — Container próprio (ModugoContainer) `[CONCLUÍDA ✓]`
+## 4. Fase 1 — Container próprio (Container) `[CONCLUÍDA ✓]`
 
 > **Resultado:** 41 testes novos em `test/container/modugo_container_test.dart`. Todos passando.
 >
@@ -146,7 +146,7 @@ Modelo que representa um binding registrado no container:
 enum BindType { factory, singleton, lazySingleton }
 
 final class Bind<T extends Object> {
-  final T Function(ModugoContainer container) create;
+  final T Function() create;
   final void Function(T instance)? onDispose;
   final BindType type;
   final String? tag;
@@ -163,7 +163,7 @@ final class Bind<T extends Object> {
   ///
   /// - factory: sempre cria nova instância
   /// - singleton/lazySingleton: cria na primeira chamada, retorna cache depois
-  T resolve(ModugoContainer container) {
+  T resolve(Container container) {
     return switch (type) {
       BindType.factory => create(container),
       BindType.singleton => _instance ??= create(container),
@@ -195,7 +195,7 @@ Hoje ambos são lazy na prática. A distinção existe para permitir evolução 
 ### 4.2 — Criar `lib/src/container/modugo_container.dart`
 
 ```dart
-final class ModugoContainer {
+final class Container {
   /// Tag ativa durante execução de binds().
   /// Setada automaticamente pelo Module antes de chamar binds().
   /// Todos os registros feitos enquanto activeTag != null serão associados a essa tag.
@@ -212,14 +212,14 @@ final class ModugoContainer {
 
   /// Registra uma factory. Nova instância criada a cada `get<T>()`.
   /// Factories não têm dispose (não mantêm referência).
-  void add<T extends Object>(T Function(ModugoContainer) create) {
+  void add<T extends Object>(T Function() create) {
     _register<T>(create: create, type: BindType.factory);
   }
 
   /// Registra um singleton. Mesma instância retornada em todas as chamadas.
   /// [onDispose] é chamado quando o módulo for disposto.
   void addSingleton<T extends Object>(
-    T Function(ModugoContainer) create, {
+    T Function() create, {
     void Function(T)? onDispose,
   }) {
     _register<T>(create: create, type: BindType.singleton, onDispose: onDispose);
@@ -228,14 +228,14 @@ final class ModugoContainer {
   /// Registra um lazy singleton. Instância criada no primeiro `get<T>()`.
   /// [onDispose] é chamado quando o módulo for disposto.
   void addLazySingleton<T extends Object>(
-    T Function(ModugoContainer) create, {
+    T Function() create, {
     void Function(T)? onDispose,
   }) {
     _register<T>(create: create, type: BindType.lazySingleton, onDispose: onDispose);
   }
 
   void _register<T extends Object>({
-    required T Function(ModugoContainer) create,
+    required T Function() create,
     required BindType type,
     void Function(T)? onDispose,
   }) {
@@ -376,15 +376,15 @@ final class ModugoContainer {
 > **Resultado:** 10 testes novos de integração + testes existentes migrados. 275 testes passando.
 >
 > **Arquivos modificados:**
-> - `lib/src/module.dart` — GetIt → ModugoContainer, `activeTag` antes de `binds()`, `dispose()` com `@mustCallSuper`, `modulesRegisteredForTest` exposto
-> - `lib/src/modugo.dart` — `Modugo.container` (ModugoContainer), `resetForTest()`, removido GetIt
+> - `lib/src/module.dart` — GetIt → Container, `activeTag` antes de `binds()`, `dispose()` com `@mustCallSuper`, `modulesRegisteredForTest` exposto
+> - `lib/src/modugo.dart` — `Modugo.container` (Container), `resetForTest()`, removido GetIt
 > - `lib/src/extensions/context_injection_extension.dart` — `context.read<T>()` via container, adicionado `tryRead<T>()`, removido `readAsync`
 > - `lib/src/mixins/binder_mixin.dart` — docs atualizados (sem refs a GetIt)
 > - `lib/modugo.dart` — exporta container, removido export do GetIt
 > - `pubspec.yaml` — removido `get_it` das dependencies
 >
 > **Testes modificados:**
-> - `test/modugo_test.dart` — migrado de GetIt para ModugoContainer
+> - `test/modugo_test.dart` — migrado de GetIt para Container
 > - `test/extensions/context_injection_extension_test.dart` — migrado, removido readAsync, adicionado tryRead
 >
 > **Testes criados:**
@@ -395,7 +395,7 @@ final class ModugoContainer {
 ```dart
 abstract class Module with IBinder, IDsl, IRouter {
   /// Container de DI do Modugo (substitui GetIt).
-  ModugoContainer get i => Modugo.container;
+  Container get i => Modugo.container;
 
   /// Tag do módulo — usada para scoping de binds.
   /// Por padrão usa o nome do tipo. Pode ser sobrescrito se necessário.
@@ -454,17 +454,17 @@ class ProfileModule extends Module {
   }
 }
 
-// ━━━ DEPOIS (V2 — ModugoContainer) ━━━━━━━━━━━━━━━━━━━━━━━━━
+// ━━━ DEPOIS (V2 — Container) ━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class ProfileModule extends Module {
   @override
   void binds() {
     i.addLazySingleton<ProfileRepo>(
-      (c) => ProfileRepoImpl(),
+      () => ProfileRepoImpl(),
       onDispose: (repo) => repo.close(), // ← dispose declarado no registro
     );
     i.add<ProfileController>(
-      (c) => ProfileController(c.get<ProfileRepo>()),
+      () => ProfileController(i.get<ProfileRepo>()),
     );
   }
 }
@@ -581,7 +581,13 @@ Estes testes simulam cenários reais de navegação:
 
 ---
 
-## 7. Fase 4 — Atualizar context.read
+## 7. Fase 4 — Atualizar context.read `[CONCLUÍDA ✓]`
+
+> **Resultado:** `context.read<T>()` simplificado, `tryRead<T>()` adicionado, `readAsync` removido.
+>
+> **Arquivos modificados:**
+> - `lib/src/extensions/context_injection_extension.dart` — migrado de GetIt para `Modugo.container`
+> - `test/extensions/context_injection_extension_test.dart` — migrado, removido readAsync, adicionado tryRead
 
 ### 7.1 — Nova implementação de `lib/src/extensions/context_injection_extension.dart`
 
@@ -617,15 +623,25 @@ extension ContextInjectionExtension on BuildContext {
 
 ---
 
-## 8. Fase 5 — Remover GetIt
+## 8. Fase 5 — Remover GetIt `[CONCLUÍDA ✓]`
+
+> **Resultado:** GetIt completamente removido do projeto. 288 testes passando.
+>
+> **Arquivos modificados:**
+> - `pubspec.yaml` — removido `get_it` das dependencies
+> - `lib/modugo.dart` — removido export do GetIt, adicionado exports do container
+> - `lib/src/modugo.dart` — `Modugo.container` (Container), `resetForTest()`
+> - `lib/src/module.dart` — `Container get i`, tag, dispose com `@mustCallSuper`
+> - `lib/src/mixins/binder_mixin.dart` — docs atualizados
+> - Todos os testes migrados de `GetIt.instance.reset()` para `Modugo.resetForTest()`
 
 ### 8.1 — Arquivos a modificar
 
 | Arquivo | Mudança |
 |---------|---------|
 | `pubspec.yaml` | Remover `get_it` das dependencies |
-| `lib/src/module.dart` | Remover `import 'package:get_it/get_it.dart'` → trocar `GetIt get i` por `ModugoContainer get i` |
-| `lib/src/modugo.dart` | Remover import GetIt → adicionar `static final ModugoContainer _container = ModugoContainer()` → expor `static ModugoContainer get container => _container` |
+| `lib/src/module.dart` | Remover `import 'package:get_it/get_it.dart'` → trocar `GetIt get i` por `Container get i` |
+| `lib/src/modugo.dart` | Remover import GetIt → adicionar `static final Container _container = Container()` → expor `static Container get container => _container` |
 | `lib/src/extensions/context_injection_extension.dart` | Remover import GetIt → usar `Modugo.container` |
 | `lib/modugo.dart` (barrel) | Adicionar exports: `container/bind.dart`, `container/modugo_container.dart` |
 | Todos os testes com `GetIt.instance.reset()` | Trocar por `Modugo.container.disposeAll()` |
@@ -639,11 +655,11 @@ Buscar estas strings em **todo o projeto** e garantir que foram removidas/substi
 | `import 'package:get_it/get_it.dart'` | `import 'package:modugo/src/container/modugo_container.dart'` |
 | `GetIt.instance` | `Modugo.container` |
 | `GetIt.I` | `Modugo.container` |
-| `GetIt get i` | `ModugoContainer get i` |
-| `static GetIt get i` | `static ModugoContainer get container` |
-| `i.registerSingleton<T>(x)` | `i.addSingleton<T>((c) => x)` |
-| `i.registerLazySingleton<T>(() => x)` | `i.addLazySingleton<T>((c) => x)` |
-| `i.registerFactory<T>(() => x)` | `i.add<T>((c) => x)` |
+| `GetIt get i` | `Container get i` |
+| `static GetIt get i` | `static Container get container` |
+| `i.registerSingleton<T>(x)` | `i.addSingleton<T>(() => x)` |
+| `i.registerLazySingleton<T>(() => x)` | `i.addLazySingleton<T>(() => x)` |
+| `i.registerFactory<T>(() => x)` | `i.add<T>(() => x)` |
 | `i.registerSingletonAsync` | Removido (ver nota sobre async) |
 | `i.getAsync<T>()` | Removido |
 | `GetIt.instance.reset()` | `Modugo.container.disposeAll()` |
@@ -659,19 +675,28 @@ Todos os 224+ testes existentes devem continuar passando após a migração.
 
 ---
 
-## 9. Fase 6 — Documentação e migration guide
+## 9. Fase 6 — Documentação e migration guide `[CONCLUÍDA ✓]`
+
+> **Resultado:** Toda documentação atualizada para V2 API.
+>
+> **Arquivos atualizados:**
+> - `doc/documentation/injection/index.md` — reescrito para Container
+> - `doc/documentation/modules/index.md` — reescrito com dispose, lifecycle, disposeOnExit
+> - `doc/documentation/extensions/index.md` — `read<T>()`, `tryRead<T>()`, removido readAsync
+> - `doc/index.md` — removidas referências a GetIt, atualizado para V2
+> - `README.md` — removidas referências a GetIt, documentado nova API, disposeOnExit, tryRead
 
 ### 9.1 — Tabela de migração (breaking changes)
 
-| V1 (GetIt) | V2 (ModugoContainer) | Notas |
+| V1 (GetIt) | V2 (Container) | Notas |
 |---|---|---|
-| `i.registerSingleton<T>(T())` | `i.addSingleton<T>((c) => T(), onDispose: (t) => t.close())` | onDispose é opcional |
-| `i.registerLazySingleton<T>(() => T())` | `i.addLazySingleton<T>((c) => T(), onDispose: (t) => t.close())` | onDispose é opcional |
-| `i.registerFactory<T>(() => T())` | `i.add<T>((c) => T())` | Sem onDispose (factory não guarda ref) |
+| `i.registerSingleton<T>(T())` | `i.addSingleton<T>(() => T(), onDispose: (t) => t.close())` | onDispose é opcional |
+| `i.registerLazySingleton<T>(() => T())` | `i.addLazySingleton<T>(() => T(), onDispose: (t) => t.close())` | onDispose é opcional |
+| `i.registerFactory<T>(() => T())` | `i.add<T>(() => T())` | Sem onDispose (factory não guarda ref) |
 | `i.get<T>()` | `i.get<T>()` | **Sem mudança** |
 | `context.read<T>()` | `context.read<T>()` | **Sem mudança** |
 | `context.readAsync<T>()` | Removido | Inicializar antes de `configure()` |
-| `Modugo.i` | `Modugo.container` | Tipo muda de GetIt para ModugoContainer |
+| `Modugo.i` | `Modugo.container` | Tipo muda de GetIt para Container |
 | `Module.dispose()` (vazio) | `Module.dispose()` (limpa binds + permite re-registro) | **Funcional agora** |
 | `i.registerSingletonAsync<T>(fn)` | Removido | Usar `await` antes de `configure()` |
 | `context.read<T>(param1: x)` | Removido | Parâmetros não suportados |
@@ -691,7 +716,7 @@ Todos os 224+ testes existentes devem continuar passando após a migração.
 ## 10. Ordem de execução
 
 ```
-Fase 1 ─── Container (Bind + ModugoContainer) + 23 testes
+Fase 1 ─── Container (Bind + Container) + 23 testes
   │
   ├── Fase 2 ─── Integrar no Module + 10 testes
   │     │
@@ -706,7 +731,7 @@ Fase 1 ─── Container (Bind + ModugoContainer) + 23 testes
 
 | Fase | Escopo | Depende de | Testes novos |
 |------|--------|------------|--------------|
-| **1** | `Bind` + `ModugoContainer` | Nenhuma | 23 |
+| **1** | `Bind` + `Container` | Nenhuma | 23 |
 | **2** | Integrar no `Module` + `_configureBinders` | Fase 1 | 10 |
 | **3** | Dispose lifecycle + cenários de goBack | Fase 2 | 8 |
 | **4** | `context.read<T>()` + `context.tryRead<T>()` | Fase 1 | 4 |
@@ -766,8 +791,8 @@ i.registerSingleton<Database>(primaryDb, instanceName: 'primary');
 i.registerSingleton<Database>(cacheDb, instanceName: 'cache');
 
 // DEPOIS (V2) — criar tipos distintos
-i.addSingleton<PrimaryDatabase>((c) => PrimaryDatabase());
-i.addSingleton<CacheDatabase>((c) => CacheDatabase());
+i.addSingleton<PrimaryDatabase>(() => PrimaryDatabase());
+i.addSingleton<CacheDatabase>(() => CacheDatabase());
 ```
 
 ### 11.5 — Sobrescrita de binding (mesmo tipo registrado duas vezes)

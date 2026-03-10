@@ -3,13 +3,13 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/widgets.dart' hide Container;
 import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/transition.dart';
 import 'package:modugo/src/events/event.dart';
-import 'package:modugo/src/container/modugo_container.dart';
+import 'package:modugo/src/container/container.dart';
 import 'package:modugo/src/models/route_change_event_model.dart';
 
 /// A convenient global accessor for the configured [GoRouter] instance.
@@ -61,14 +61,14 @@ final class Modugo {
   /// Internal singleton instance of [GoRouter].
   static GoRouter? _router;
 
-  /// The global [ModugoContainer] instance used for dependency injection.
+  /// The global [Container] instance used for dependency injection.
   ///
   /// All module bindings are registered here. Access dependencies via
   /// `Modugo.container.get<T>()` or use `context.read<T>()` in widgets.
-  static final ModugoContainer _container = ModugoContainer();
+  static final Container _container = Container();
 
-  /// Returns the global [ModugoContainer] instance.
-  static ModugoContainer get container => _container;
+  /// Returns the global [Container] instance.
+  static Container get container => _container;
 
   /// The default page transition to apply for all routes,
   /// unless explicitly overridden.

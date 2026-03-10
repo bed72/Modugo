@@ -1,10 +1,10 @@
-# 🧰 Extensions
+# Extensions
 
 O Modugo fornece um conjunto de extensions no `BuildContext`, `GoRouterState` e `Uri` que enriquecem a navegação, injeção e manipulação de rotas.
 
 ---
 
-## 🔹 ContextNavigationExtension
+## ContextNavigationExtension
 
 Simplifica operações de navegação com GoRouter diretamente no `BuildContext`.
 
@@ -55,7 +55,7 @@ await context.replaceStack(['/home', '/profile', '/settings']);
 
 ---
 
-## 🔹 ContextMatchExtension
+## ContextMatchExtension
 
 Permite verificar rotas registradas, encontrar rotas correspondentes e extrair parâmetros.
 
@@ -89,16 +89,16 @@ final userId = params?['id']; // '42'
 
 ---
 
-## 🔹 ContextInjectionExtension
+## ContextInjectionExtension
 
-Acesso a dependências registradas no GetIt via `BuildContext`.
+Acesso a dependências registradas no `Container` via `BuildContext`.
 
 ### Métodos disponíveis
 
 | Método | Retorno | Descrição |
 |--------|---------|-----------|
-| `read<T>({param1, param2, type, instanceName})` | `T` | Recupera dependência síncrona |
-| `readAsync<T>({param1, param2, type, instanceName})` | `Future<T>` | Recupera dependência assíncrona |
+| `read<T>()` | `T` | Recupera dependência. Lança `StateError` se não encontrada. |
+| `tryRead<T>()` | `T?` | Recupera dependência ou retorna `null`. |
 
 ### Exemplos
 
@@ -106,16 +106,13 @@ Acesso a dependências registradas no GetIt via `BuildContext`.
 // Acesso simples
 final service = context.read<AuthService>();
 
-// Instância nomeada
-final db = context.read<Database>(instanceName: 'primary');
-
-// Dependência assíncrona
-final api = await context.readAsync<ApiClient>();
+// Versão safe
+final service = context.tryRead<AuthService>() ?? fallbackService;
 ```
 
 ---
 
-## 🔹 GoRouterStateExtension
+## GoRouterStateExtension
 
 Helpers para acessar dados do estado de navegação atual.
 
@@ -158,7 +155,7 @@ final segments = state.locationSegments;
 
 ---
 
-## 🔹 UriPathWithExtras
+## UriPathWithExtras
 
 Extension no `Uri` com utilitários para manipulação de paths.
 

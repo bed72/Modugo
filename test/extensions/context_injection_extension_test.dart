@@ -11,7 +11,7 @@ void main() {
 
   group('ContextInjectionExtension - read', () {
     testWidgets('should retrieve registered singleton', (tester) async {
-      Modugo.container.addSingleton<_Service>((c) => _Service('test'));
+      Modugo.container.addSingleton<_Service>(() => _Service('test'));
 
       late _Service result;
 
@@ -57,7 +57,7 @@ void main() {
     });
 
     testWidgets('should return instance when registered', (tester) async {
-      Modugo.container.addSingleton<_Service>((c) => _Service('found'));
+      Modugo.container.addSingleton<_Service>(() => _Service('found'));
 
       late _Service? result;
 

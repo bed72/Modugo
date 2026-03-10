@@ -1,4 +1,4 @@
-// ignore_for_file: unused_element_parameter
+// ignore_for_file: unused_local_variable, unused_element_parameter
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -30,7 +30,7 @@ final class _SharedBinder with IBinder {
   @override
   void binds() {
     Modugo.container.addSingleton<_SharedService>(
-      (c) => _SharedService(),
+      () => _SharedService(),
       onDispose: (_) {},
     );
   }
@@ -47,11 +47,11 @@ final class _FeatureModule extends Module {
   @override
   void binds() {
     i.addSingleton<_Controller>(
-      (c) => _Controller(),
+      () => _Controller(),
       onDispose: (ctrl) => ctrl.state = 'disposed',
     );
     i.addSingleton<_Repository>(
-      (c) => repository ?? _Repository(),
+      () => repository ?? _Repository(),
       onDispose: (repo) => repo.close(),
     );
   }
@@ -70,9 +70,7 @@ class _IndependentService {
 final class _IndependentModule extends Module {
   @override
   void binds() {
-    i.addSingleton<_IndependentService>(
-      (c) => _IndependentService(),
-    );
+    i.addSingleton<_IndependentService>(() => _IndependentService());
   }
 
   @override
@@ -86,7 +84,7 @@ final class _IndependentModule extends Module {
 void main() {
   setUp(() {
     Modugo.resetForTest();
-    modulesRegisteredForTest.clear();
+    registeredForTest.clear();
   });
 
   group('Module lifecycle', () {
@@ -181,7 +179,7 @@ void main() {
     });
 
     test('onDispose called exactly once per singleton', () {
-      var disposeCount = 0;
+      int disposeCount = 0;
 
       final repo = _Repository();
       final module = _FeatureModule(repository: repo);
@@ -199,12 +197,12 @@ void main() {
     });
 
     test('onDispose NOT called if lazy singleton was never accessed', () {
-      var disposeCalled = false;
+      bool disposeCalled = false;
 
       // Register but never access
       Modugo.container.activeTag = 'LazyMod';
       Modugo.container.addLazySingleton<_Controller>(
-        (c) => _Controller(),
+        () => _Controller(),
         onDispose: (_) => disposeCalled = true,
       );
       Modugo.container.activeTag = null;
