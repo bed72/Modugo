@@ -371,7 +371,24 @@ final class ModugoContainer {
 
 ---
 
-## 5. Fase 2 — Integração com Module
+## 5. Fase 2 — Integração com Module `[CONCLUÍDA ✓]`
+
+> **Resultado:** 10 testes novos de integração + testes existentes migrados. 275 testes passando.
+>
+> **Arquivos modificados:**
+> - `lib/src/module.dart` — GetIt → ModugoContainer, `activeTag` antes de `binds()`, `dispose()` com `@mustCallSuper`, `modulesRegisteredForTest` exposto
+> - `lib/src/modugo.dart` — `Modugo.container` (ModugoContainer), `resetForTest()`, removido GetIt
+> - `lib/src/extensions/context_injection_extension.dart` — `context.read<T>()` via container, adicionado `tryRead<T>()`, removido `readAsync`
+> - `lib/src/mixins/binder_mixin.dart` — docs atualizados (sem refs a GetIt)
+> - `lib/modugo.dart` — exporta container, removido export do GetIt
+> - `pubspec.yaml` — removido `get_it` das dependencies
+>
+> **Testes modificados:**
+> - `test/modugo_test.dart` — migrado de GetIt para ModugoContainer
+> - `test/extensions/context_injection_extension_test.dart` — migrado, removido readAsync, adicionado tryRead
+>
+> **Testes criados:**
+> - `test/container/module_container_integration_test.dart` — 10 testes cobrindo todos os cenários planejados
 
 ### 5.1 — Mudanças em `lib/src/module.dart`
 

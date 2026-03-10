@@ -1,17 +1,17 @@
-import 'package:get_it/get_it.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/extensions/context_injection_extension.dart';
 
 void main() {
   setUp(() {
-    GetIt.I.reset();
+    Modugo.container.disposeAll();
   });
 
   group('ContextInjectionExtension - read', () {
     testWidgets('should retrieve registered singleton', (tester) async {
-      GetIt.I.registerSingleton<_Service>(_Service('test'));
+      Modugo.container.addSingleton<_Service>((c) => _Service('test'));
 
       late _Service result;
 
@@ -27,38 +27,14 @@ void main() {
       expect(result.name, 'test');
     });
 
-    testWidgets('should retrieve named instance', (tester) async {
-      GetIt.I.registerSingleton<_Service>(
-        _Service('primary'),
-        instanceName: 'primary',
-      );
-      GetIt.I.registerSingleton<_Service>(
-        _Service('secondary'),
-        instanceName: 'secondary',
-      );
-
-      late _Service primary;
-      late _Service secondary;
-
-      await tester.pumpWidget(
-        Builder(
-          builder: (context) {
-            primary = context.read<_Service>(instanceName: 'primary');
-            secondary = context.read<_Service>(instanceName: 'secondary');
-            return const SizedBox();
-          },
-        ),
-      );
-
-      expect(primary.name, 'primary');
-      expect(secondary.name, 'secondary');
-    });
-
     testWidgets('should throw when service is not registered', (tester) async {
       await tester.pumpWidget(
         Builder(
           builder: (context) {
-            expect(() => context.read<_Service>(), throwsA(isA<Error>()));
+            expect(
+              () => context.read<_Service>(),
+              throwsA(isA<StateError>()),
+            );
             return const SizedBox();
           },
         ),
@@ -66,25 +42,36 @@ void main() {
     });
   });
 
-  group('ContextInjectionExtension - readAsync', () {
-    testWidgets('should retrieve async registered singleton', (tester) async {
-      GetIt.I.registerSingletonAsync<_Service>(() async => _Service('async'));
+  group('ContextInjectionExtension - tryRead', () {
+    testWidgets('should return null when service is not registered',
+        (tester) async {
+      await tester.pumpWidget(
+        Builder(
+          builder: (context) {
+            final result = context.tryRead<_Service>();
+            expect(result, isNull);
+            return const SizedBox();
+          },
+        ),
+      );
+    });
 
-      await GetIt.I.allReady();
+    testWidgets('should return instance when registered', (tester) async {
+      Modugo.container.addSingleton<_Service>((c) => _Service('found'));
 
-      late _Service result;
+      late _Service? result;
 
       await tester.pumpWidget(
         Builder(
           builder: (context) {
-            context.readAsync<_Service>().then((s) => result = s);
+            result = context.tryRead<_Service>();
             return const SizedBox();
           },
         ),
       );
 
-      await tester.pump();
-      expect(result.name, 'async');
+      expect(result, isNotNull);
+      expect(result!.name, 'found');
     });
   });
 }

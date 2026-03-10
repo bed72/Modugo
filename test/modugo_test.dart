@@ -13,19 +13,25 @@ import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/extensions/context_injection_extension.dart';
 
 void main() {
+  setUp(() {
+    Modugo.container.disposeAll();
+    modulesRegisteredForTest.clear();
+    Modugo.resetForTest();
+  });
+
   test('configure sets router and registers binds', () async {
     final module = _InnerModule();
     final router = await Modugo.configure(module: module);
 
     expect(router, isA<GoRouter>());
-    expect(() => Modugo.i.get<_Service>(), returnsNormally);
+    expect(() => Modugo.container.get<_Service>(), returnsNormally);
   });
 
   test('get<T>() retrieves registered dependency', () async {
     final module = _InnerModule();
     await Modugo.configure(module: module);
 
-    final instance = Modugo.i.get<_Service>();
+    final instance = Modugo.container.get<_Service>();
     expect(instance.value, 1);
   });
 
@@ -44,8 +50,8 @@ final class _Service {
 
 final class _InnerModule extends Module {
   @override
-  void binds() async {
-    i.registerSingleton<_Service>(_Service());
+  void binds() {
+    i.addSingleton<_Service>((c) => _Service());
   }
 
   @override

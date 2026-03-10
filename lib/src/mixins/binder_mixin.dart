@@ -11,29 +11,29 @@ import 'package:modugo/src/module.dart';
 ///
 /// ### Responsibilities
 /// - Declares the bindings (services, controllers, repositories, etc.)
-///   that this module contributes to the global dependency injection container.
+///   that this module contributes to the [ModugoContainer].
 /// - Specifies imported modules, enabling modular composition where
 ///   one module can depend on and reuse the bindings of others.
 /// - Ensures that imports are processed recursively before the current
-///   module’s own bindings are registered, avoiding missing dependencies.
+///   module's own bindings are registered, avoiding missing dependencies.
 ///
 /// ### Behavior
 /// - By default, [binds] is a no-op and [imports] returns an empty list,
 ///   meaning the module has no dependencies and provides no bindings.
 /// - Subclasses/modules override [binds] to register their dependencies
-///   using the [GetIt] instance (accessible via `GetIt.instance` or
-///   through the `i` getter in [Module]).
-/// - The Modugo framework ensures that each module’s [binds] is executed
+///   using the [ModugoContainer] instance (accessible via the `i` getter
+///   in [Module]).
+/// - The Modugo framework ensures that each module's [binds] is executed
 ///   at most once per module type, even if imported by multiple modules.
 ///
 /// ### Example
 /// ```dart
-/// final class AuthModule with IBinder {
+/// final class AuthModule extends Module {
 ///   @override
 ///   void binds() {
-///     final i = GetIt.instance;
-///     i.registerLazySingleton<AuthRepository>(
-///       () => AuthRepositoryImpl(i.get<ApiClient>()),
+///     i.addLazySingleton<AuthRepository>(
+///       (c) => AuthRepositoryImpl(c.get<ApiClient>()),
+///       onDispose: (repo) => repo.close(),
 ///     );
 ///   }
 ///
@@ -51,7 +51,8 @@ import 'package:modugo/src/module.dart';
 mixin IBinder {
   /// Registers all dependency injection bindings for this module.
   ///
-  /// Override this method to declare your dependencies using the [GetIt].
+  /// Override this method to declare your dependencies using the
+  /// [ModugoContainer] available via `i`.
   void binds() {}
 
   /// List of imported modules that this module depends on.

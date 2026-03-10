@@ -1,9 +1,9 @@
-// ignore_for_file: use_build_context_synchronously
-
-import 'package:get_it/get_it.dart';
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/logger.dart';
+import 'package:modugo/src/modugo.dart';
+import 'package:modugo/src/container/modugo_container.dart';
 
 import 'package:modugo/src/mixins/binder_mixin.dart';
 import 'package:modugo/src/mixins/dsl_mixin.dart';
@@ -15,6 +15,10 @@ import 'package:modugo/src/routes/factory_route.dart';
 /// used to ensure the same module is not bound more than once.
 final Set<Type> _modulesRegistered = {};
 
+/// For testing: allows checking and manipulating the registered modules set.
+@visibleForTesting
+Set<Type> get modulesRegisteredForTest => _modulesRegistered;
+
 /// Abstract base class for a "module" (feature) within the application.
 ///
 /// A [Module] defines:
@@ -22,7 +26,7 @@ final Set<Type> _modulesRegistered = {};
 ///   modules are executed before the current module's `binds()`.
 /// - [routes()]: the route tree exposed by this module (e.g., [child],
 ///   [module], [shell], [statefulShell]).
-/// - [binds()]: registers the module's dependencies in [GetIt] (via [i]).
+/// - [binds()]: registers the module's dependencies in [ModugoContainer] (via [i]).
 ///
 /// Behavior:
 /// - When [configureRoutes()] is called, the framework registers — **only once
@@ -33,11 +37,11 @@ final Set<Type> _modulesRegistered = {};
 /// - Even if a module does not expose its own routes, if it appears in
 ///   [imports()], its `binds()` will still be executed.
 ///
-/// Customization:
-/// - Use [initState()] and [dispose()] to manage the module's internal state if
-///   necessary.
-/// - The injection instance is accessible via [i] (shortcut to
-///   `GetIt.instance`).
+/// Lifecycle:
+/// - Use [initState()] for setup when the module becomes active.
+/// - Use [dispose()] to clean up resources. Calling `super.dispose()` will
+///   automatically dispose all bindings registered by this module and allow
+///   re-registration if the user navigates back.
 ///
 /// Example:
 /// ```dart
@@ -47,21 +51,28 @@ final Set<Type> _modulesRegistered = {};
 ///
 ///   @override
 ///   List<IRoute> routes() => [
-///     route(path: '/', child: (context, state) => const HomePage()),
+///     child(path: '/', child: (context, state) => const HomePage()),
 ///   ];
 ///
 ///   @override
 ///   void binds() {
-///     i
-///       ..registerLazySingleton<HomeController>(() => HomeController())
-///       ..registerSingleton<ApiClient>(ApiClient());
+///     i.addLazySingleton<HomeController>(
+///       (c) => HomeController(),
+///       onDispose: (ctrl) => ctrl.dispose(),
+///     );
+///     i.addSingleton<ApiClient>((c) => ApiClient());
 ///   }
 /// }
 /// ```
 abstract class Module with IBinder, IDsl, IRouter {
-  /// Shortcut to access the global GetIt instance used for dependency injection.
-  /// Provides direct access to registered services and singletons.
-  GetIt get i => GetIt.instance;
+  /// Shortcut to access the [ModugoContainer] used for dependency injection.
+  ModugoContainer get i => Modugo.container;
+
+  /// The tag used to scope this module's bindings in the container.
+  ///
+  /// Defaults to the runtime type name. All bindings registered in [binds()]
+  /// are associated with this tag, enabling scoped disposal via [dispose()].
+  String get tag => runtimeType.toString();
 
   /// Called when the module is initialized.
   ///
@@ -69,41 +80,40 @@ abstract class Module with IBinder, IDsl, IRouter {
   /// becomes active, such as initializing internal state, registering
   /// listeners, or preparing resources.
   ///
-  /// This method is automatically called by the framework when the
-  /// module is first instantiated or when its routes become active.
-  ///
   /// **Note:** Subclasses should call `super.initState()` if they
   /// override this method to ensure proper module lifecycle behavior.
   void initState() {}
 
   /// Called when the module is being disposed.
   ///
-  /// Use this method to clean up resources, cancel subscriptions,
-  /// dispose internal state, and remove any module-specific event
-  /// listeners.
+  /// Disposes all bindings registered by this module (calling their
+  /// `onDispose` callbacks in reverse registration order) and removes
+  /// the module from the registry, allowing re-registration if the
+  /// user navigates back.
   ///
-  /// This method is automatically called by the framework when the
-  /// module is no longer needed or when its routes are removed from
-  /// the navigation stack.
+  /// **Important:** Subclasses should call `super.dispose()` to ensure
+  /// proper cleanup. Custom cleanup logic should run **before** `super.dispose()`.
   ///
-  /// **Important:** Subclasses should call `super.dispose()` if they
-  /// override this method to ensure that all module-level resources,
-  /// including event channels and subscriptions, are properly released.
-  void dispose() {}
+  /// ```dart
+  /// @override
+  /// void dispose() {
+  ///   myCustomCleanup();
+  ///   super.dispose();
+  /// }
+  /// ```
+  @mustCallSuper
+  void dispose() {
+    Modugo.container.disposeModule(tag);
+    _modulesRegistered.remove(runtimeType);
+  }
 
   /// Configures and returns the list of [RouteBase]s defined by this module.
   ///
   /// This method is responsible for:
   /// - registering binds for the module (if not already active)
   /// - creating and combining child, shell, and module routes
-  /// - optionally logging the final set of registered route paths when diagnostics are enabled
   ///
   /// Returns a combined list of all routes defined by this module and its nested structures.
-  ///
-  /// Example:
-  /// ```dart
-  /// final routes = module.configureRoutes();
-  /// ```
   List<RouteBase> configureRoutes() {
     _configureBinders();
 
@@ -117,26 +127,27 @@ abstract class Module with IBinder, IDsl, IRouter {
   /// - Each module type is registered at most once; subsequent attempts
   ///   are skipped and logged.
   /// - Prevents cyclic imports by keeping track of already-registered types.
-  /// - Executes the [binds] method of each module to register its
-  ///   dependency injection bindings into [GetIt].
-  ///
-  /// [binder] Optional module to register explicitly. If `null`, the current
-  ///   module (`this`) will be used.
-  void _configureBinders({IBinder? binder}) async {
-    final targetBinder = binder ?? this;
+  /// - Sets [ModugoContainer.activeTag] before calling [binds()] so all
+  ///   registrations are associated with the module's tag.
+  void _configureBinders({IBinder? binder}) {
+    final target = binder ?? this;
 
-    if (_modulesRegistered.contains(targetBinder.runtimeType)) {
-      Logger.module('${targetBinder.runtimeType} skipped (already registered)');
+    if (_modulesRegistered.contains(target.runtimeType)) {
+      Logger.module('${target.runtimeType} skipped (already registered)');
       return;
     }
 
-    for (final imported in targetBinder.imports()) {
+    for (final imported in target.imports()) {
       _configureBinders(binder: imported);
     }
 
-    targetBinder.binds();
-    _modulesRegistered.add(targetBinder.runtimeType);
+    Modugo.container.activeTag =
+        (target is Module) ? target.tag : target.runtimeType.toString();
+    target.binds();
+    Modugo.container.activeTag = null;
 
-    Logger.module('${targetBinder.runtimeType} binds registered');
+    _modulesRegistered.add(target.runtimeType);
+
+    Logger.module('${target.runtimeType} binds registered');
   }
 }
