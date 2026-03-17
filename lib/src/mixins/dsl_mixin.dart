@@ -79,7 +79,7 @@ mixin IDsl {
   ///
   /// Example:
   /// ```dart
-  /// route('/home', child: (_, _) => const HomePage());
+  /// child(path: '/home', child: (_, _) => const HomePage());
   /// ```
   ChildRoute child({
     required Widget Function(BuildContext, GoRouterState) child,
@@ -90,6 +90,7 @@ mixin IDsl {
     GlobalKey<NavigatorState>? parentNavigatorKey,
     Page<dynamic> Function(BuildContext, GoRouterState)? pageBuilder,
     FutureOr<bool> Function(BuildContext context, GoRouterState state)? onExit,
+    bool? iosGestureEnabled,
   }) => ChildRoute(
     name: name,
     child: child,
@@ -99,6 +100,7 @@ mixin IDsl {
     transition: transition,
     pageBuilder: pageBuilder,
     parentNavigatorKey: parentNavigatorKey,
+    iosGestureEnabled: iosGestureEnabled,
   );
 
   /// Creates a [ModuleRoute] that links to another [Module].

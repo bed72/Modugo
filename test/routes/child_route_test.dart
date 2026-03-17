@@ -87,6 +87,37 @@ void main() {
 
       expect(route1, isNot(equals(route2)));
     });
+
+    test('should not be equal if iosGestureEnabled differs', () {
+      final route1 = ChildRoute(
+        path: '/x',
+        iosGestureEnabled: true,
+        child: (_, _) => const Placeholder(),
+      );
+      final route2 = ChildRoute(
+        path: '/x',
+        iosGestureEnabled: false,
+        child: (_, _) => const Placeholder(),
+      );
+
+      expect(route1, isNot(equals(route2)));
+    });
+
+    test('should be equal when iosGestureEnabled matches', () {
+      final route1 = ChildRoute(
+        path: '/x',
+        iosGestureEnabled: false,
+        child: (_, _) => const Placeholder(),
+      );
+      final route2 = ChildRoute(
+        path: '/x',
+        iosGestureEnabled: false,
+        child: (_, _) => const Placeholder(),
+      );
+
+      expect(route1, equals(route2));
+      expect(route1.hashCode, equals(route2.hashCode));
+    });
   });
 
   group('ChildRoute - field assignment', () {
@@ -123,6 +154,36 @@ void main() {
       expect(route.transition, isNull);
       expect(route.pageBuilder, isNull);
       expect(route.parentNavigatorKey, isNull);
+      expect(route.iosGestureEnabled, isNull);
+    });
+
+    test('iosGestureEnabled is null by default', () {
+      final route = ChildRoute(
+        path: '/test',
+        child: (_, _) => const Placeholder(),
+      );
+
+      expect(route.iosGestureEnabled, isNull);
+    });
+
+    test('iosGestureEnabled can be set to true', () {
+      final route = ChildRoute(
+        path: '/test',
+        iosGestureEnabled: true,
+        child: (_, _) => const Placeholder(),
+      );
+
+      expect(route.iosGestureEnabled, isTrue);
+    });
+
+    test('iosGestureEnabled can be set to false', () {
+      final route = ChildRoute(
+        path: '/test',
+        iosGestureEnabled: false,
+        child: (_, _) => const Placeholder(),
+      );
+
+      expect(route.iosGestureEnabled, isFalse);
     });
   });
 

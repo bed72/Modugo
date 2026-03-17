@@ -33,11 +33,13 @@ void main() {
 
       expect(
         () => goRoute.redirect!(fakeContext, fakeState),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          'sync guard failure',
-        )),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            'sync guard failure',
+          ),
+        ),
       );
     });
 
@@ -53,11 +55,13 @@ void main() {
 
       expect(
         () => goRoute.redirect!(fakeContext, fakeState),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          'async guard failure',
-        )),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            'async guard failure',
+          ),
+        ),
       );
     });
 
@@ -87,24 +91,23 @@ void main() {
       expect(firstGuardCalled, isTrue);
     });
 
-    test('guard that redirects before a throwing guard prevents the exception',
-        () async {
-      final route = ChildRoute(
-        path: '/test',
-        guards: [
-          _RedirectGuard('/login'),
-          _ThrowingSyncGuard(),
-        ],
-        child: (_, _) => const SizedBox(),
-      );
+    test(
+      'guard that redirects before a throwing guard prevents the exception',
+      () async {
+        final route = ChildRoute(
+          path: '/test',
+          guards: [_RedirectGuard('/login'), _ThrowingSyncGuard()],
+          child: (_, _) => const SizedBox(),
+        );
 
-      final goRoutes = FactoryRoute.from([route]);
-      final goRoute = goRoutes.first as GoRoute;
+        final goRoutes = FactoryRoute.from([route]);
+        final goRoute = goRoutes.first as GoRoute;
 
-      final result = await goRoute.redirect!(fakeContext, fakeState);
+        final result = await goRoute.redirect!(fakeContext, fakeState);
 
-      expect(result, '/login');
-    });
+        expect(result, '/login');
+      },
+    );
   });
 }
 

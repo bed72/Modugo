@@ -1,4 +1,6 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:modugo/src/routes/compiler_route.dart';
 
@@ -392,6 +394,15 @@ final class FactoryRoute {
     return '$prefix$subpath';
   }
 
+  /// Builds the [Page] for a route, selecting the appropriate page type
+  /// based on the transition setting, platform, and iOS gesture configuration.
+  ///
+  /// **Precedence order:**
+  /// 1. [TypeTransition.native] → [CupertinoPage] on iOS, [MaterialPage] elsewhere.
+  /// 2. Explicit custom [transition] set on [route] → [CustomTransitionPage] always.
+  /// 3. Per-route [ChildRoute.iosGestureEnabled] override.
+  /// 4. Global [Modugo.enableIOSGestureNavigation] on iOS → [CupertinoPage].
+  /// 5. Default → [CustomTransitionPage] with the configured transition.
   static Page<void> _transition({
     required BuildContext context,
     required GoRouterState state,
@@ -416,12 +427,39 @@ final class FactoryRoute {
       throw StateError(message);
     }
 
+    final transition = route?.transition;
+
+    // 1. TypeTransition.native → platform-adaptive page (always wins).
+    if (transition == TypeTransition.native) {
+      return defaultTargetPlatform == TargetPlatform.iOS
+          ? CupertinoPage(key: state.pageKey, child: child)
+          : MaterialPage(key: state.pageKey, child: child);
+    }
+
+    // 2. Explicit custom transition → CustomTransitionPage (no iOS back-swipe).
+    if (transition != null) {
+      return CustomTransitionPage(
+        key: state.pageKey,
+        child: child,
+        transitionsBuilder: Transition.builder(config: () {}, type: transition),
+      );
+    }
+
+    // 3 & 4. No explicit transition: check per-route then global iOS gesture flag.
+    final iosGesture =
+        route?.iosGestureEnabled ?? Modugo.enableIOSGestureNavigation;
+
+    if (iosGesture && defaultTargetPlatform == TargetPlatform.iOS) {
+      return CupertinoPage(key: state.pageKey, child: child);
+    }
+
+    // 5. Default: CustomTransitionPage with the globally configured transition.
     return CustomTransitionPage(
       key: state.pageKey,
       child: child,
       transitionsBuilder: Transition.builder(
         config: () {},
-        type: route?.transition ?? Modugo.getDefaultTransition,
+        type: Modugo.getDefaultTransition,
       ),
     );
   }

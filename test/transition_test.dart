@@ -6,7 +6,7 @@ import 'package:modugo/src/transition.dart';
 void main() {
   group('TypeTransition - enum values', () {
     test('should have all expected transition types', () {
-      expect(TypeTransition.values, hasLength(7));
+      expect(TypeTransition.values, hasLength(8));
       expect(TypeTransition.values, contains(TypeTransition.fade));
       expect(TypeTransition.values, contains(TypeTransition.scale));
       expect(TypeTransition.values, contains(TypeTransition.slideUp));
@@ -14,6 +14,7 @@ void main() {
       expect(TypeTransition.values, contains(TypeTransition.slideLeft));
       expect(TypeTransition.values, contains(TypeTransition.slideRight));
       expect(TypeTransition.values, contains(TypeTransition.rotation));
+      expect(TypeTransition.values, contains(TypeTransition.native));
     });
   });
 

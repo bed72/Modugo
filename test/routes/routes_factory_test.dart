@@ -1,9 +1,14 @@
 import 'dart:async';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 
+import 'package:modugo/src/modugo.dart';
 import 'package:modugo/src/module.dart';
+import 'package:modugo/src/transition.dart';
 
 import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/interfaces/route_interface.dart';
@@ -161,6 +166,50 @@ void main() {
 
       expect(route.branches.length, 2);
       expect(route.branches.first.routes.first, isA<GoRoute>());
+    });
+
+    test('TypeTransition.native returns CupertinoPage on iOS', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      addTearDown(() {
+        debugDefaultTargetPlatformOverride = null;
+        Modugo.resetForTesting();
+        GetIt.instance.reset();
+      });
+
+      await startModugoFake(module: _DummyModule());
+
+      final route = ChildRoute(
+        path: '/home',
+        transition: TypeTransition.native,
+        child: (_, _) => const Placeholder(),
+      );
+
+      final goRoute = FactoryRoute.from([route]).first as GoRoute;
+      final page = goRoute.pageBuilder!(BuildContextFake(), StateFake());
+
+      expect(page, isA<CupertinoPage>());
+    });
+
+    test('TypeTransition.native returns MaterialPage on Android', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      addTearDown(() {
+        debugDefaultTargetPlatformOverride = null;
+        Modugo.resetForTesting();
+        GetIt.instance.reset();
+      });
+
+      await startModugoFake(module: _DummyModule());
+
+      final route = ChildRoute(
+        path: '/home',
+        transition: TypeTransition.native,
+        child: (_, _) => const Placeholder(),
+      );
+
+      final goRoute = FactoryRoute.from([route]).first as GoRoute;
+      final page = goRoute.pageBuilder!(BuildContextFake(), StateFake());
+
+      expect(page, isA<MaterialPage>());
     });
 
     test('throws for unsupported IRoute type', () {

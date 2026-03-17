@@ -54,6 +54,7 @@ GlobalKey<NavigatorState> modugoNavigatorKey = GlobalKey<NavigatorState>();
 final class Modugo {
   static bool? _debugLogDiagnostics;
   static TypeTransition? _transition;
+  static bool _enableIOSGestureNavigation = true;
 
   /// Private constructor — this class is not meant to be instantiated.
   Modugo._();
@@ -74,12 +75,36 @@ final class Modugo {
   /// Controlled by the `debugLogDiagnostics` flag passed to [configure].
   static bool get debugLogDiagnostics => _debugLogDiagnostics ?? false;
 
+  /// Whether iOS back-swipe gesture navigation is enabled globally.
+  ///
+  /// When `true` (default), routes on iOS that do not specify an explicit
+  /// [TypeTransition] will use [CupertinoPage] instead of [CustomTransitionPage],
+  /// enabling the native left-edge swipe-back gesture.
+  ///
+  /// Can be overridden per-route via [ChildRoute.iosGestureEnabled].
+  ///
+  /// Set via [configure] `enableIOSGestureNavigation` parameter.
+  static bool get enableIOSGestureNavigation => _enableIOSGestureNavigation;
+
   /// Returns the configured [GoRouter] instance.
   ///
   /// Throws an [AssertionError] if [configure] was never called.
   static GoRouter get routerConfig {
     assert(_router != null, 'Add ModugoConfiguration.configure in main.dart');
     return _router!;
+  }
+
+  /// Resets all internal singleton state.
+  ///
+  /// **For testing purposes only.** Call this in `tearDown` to isolate tests
+  /// that invoke [configure] with different parameters.
+  @visibleForTesting
+  static void resetForTesting() {
+    _router = null;
+    _transition = null;
+    _debugLogDiagnostics = null;
+    _enableIOSGestureNavigation = true;
+    Module.resetRegistrations();
   }
 
   /// Configures the entire Modugo system by:
@@ -112,6 +137,7 @@ final class Modugo {
     GlobalKey<NavigatorState>? navigatorKey,
     bool debugLogDiagnosticsGoRouter = false,
     bool overridePlatformDefaultLocation = false,
+    bool enableIOSGestureNavigation = true,
     Widget Function(BuildContext, GoRouterState)? errorBuilder,
     void Function(BuildContext, GoRouterState, GoRouter)? onException,
     FutureOr<String?> Function(BuildContext, GoRouterState)? redirect,
@@ -121,6 +147,7 @@ final class Modugo {
 
     _transition = pageTransition;
     _debugLogDiagnostics = debugLogDiagnostics;
+    _enableIOSGestureNavigation = enableIOSGestureNavigation;
     GoRouter.optionURLReflectsImperativeAPIs = true;
 
     final routes = module.configureRoutes();

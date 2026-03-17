@@ -8,6 +8,7 @@ import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/mixins/dsl_mixin.dart';
 import 'package:modugo/src/mixins/router_mixin.dart';
 import 'package:modugo/src/mixins/binder_mixin.dart';
+import 'package:modugo/src/routes/factory_route.dart';
 
 /// A set of module types that have been registered globally,
 /// used to ensure the same module is not bound more than once.
@@ -61,6 +62,13 @@ abstract class Module with IBinder, IDsl, IRouter {
   /// Provides direct access to registered services and singletons.
   GetIt get i => GetIt.instance;
 
+  /// Clears the global module registration set.
+  ///
+  /// Used internally by [Modugo.resetForTesting] to allow modules to
+  /// re-register their binds in test isolation scenarios.
+  // ignore: invalid_use_of_visible_for_testing_member
+  static void resetRegistrations() => _modulesRegistered.clear();
+
   /// Called when the module is initialized.
   ///
   /// Use this method to perform any setup required when the module
@@ -105,7 +113,7 @@ abstract class Module with IBinder, IDsl, IRouter {
   List<RouteBase> configureRoutes() {
     _configureBinders();
 
-    return .from(routes());
+    return FactoryRoute.from(routes());
   }
 
   /// Registers this module and all its imported modules recursively.

@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -12,7 +13,15 @@ import 'package:modugo/src/interfaces/route_interface.dart';
 import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/extensions/context_injection_extension.dart';
 
+/// Resets Modugo's internal singleton state between tests.
+void _resetModugo() {
+  Modugo.resetForTesting();
+  GetIt.instance.reset();
+}
+
 void main() {
+  tearDown(_resetModugo);
+
   test('configure sets router and registers binds', () async {
     final module = _InnerModule();
     final router = await Modugo.configure(module: module);
@@ -35,6 +44,32 @@ void main() {
     final second = await Modugo.configure(module: module);
 
     expect(identical(first, second), isTrue);
+  });
+
+  group('enableIOSGestureNavigation', () {
+    test('defaults to true after configure()', () async {
+      await Modugo.configure(module: _InnerModule());
+
+      expect(Modugo.enableIOSGestureNavigation, isTrue);
+    });
+
+    test('persists false when configured explicitly', () async {
+      await Modugo.configure(
+        module: _InnerModule(),
+        enableIOSGestureNavigation: false,
+      );
+
+      expect(Modugo.enableIOSGestureNavigation, isFalse);
+    });
+
+    test('persists true when configured explicitly', () async {
+      await Modugo.configure(
+        module: _InnerModule(),
+        enableIOSGestureNavigation: true,
+      );
+
+      expect(Modugo.enableIOSGestureNavigation, isTrue);
+    });
   });
 }
 

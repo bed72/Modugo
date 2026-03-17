@@ -2,7 +2,7 @@
 
 **ID:** routing
 **Status:** stable
-**Version:** 4.x
+**Version:** 4.3.x
 
 ## Overview
 
@@ -39,6 +39,7 @@ MaterialApp.router(routerConfig: modugoRouter);
 |---|---|---|
 | `initialRoute` | `'/'` | |
 | `pageTransition` | `fade` | Override por rota via `transition:` |
+| `enableIOSGestureNavigation` | `true` | `CupertinoPage` no iOS por default — ver CAP-RTE-10 |
 | `debugLogDiagnostics` | `false` | Logs internos Modugo |
 | `debugLogDiagnosticsGoRouter` | `false` | Logs GoRouter |
 | `redirect` | `null` | Redirect global — executado antes de guards |
@@ -169,19 +170,20 @@ O mixin `IDsl` é incluído em todos os módulos e expõe os seguintes métodos:
 
 ### CAP-RTE-08: Transições
 
-Sete transições built-in via `TypeTransition`:
+Oito transições built-in via `TypeTransition`:
 
-| Enum | Animação |
-|---|---|
-| `fade` | Cross-fade (padrão) |
-| `scale` | Zoom in |
-| `slideUp` | De baixo para cima |
-| `slideDown` | De cima para baixo |
-| `slideLeft` | Da direita para esquerda |
-| `slideRight` | Da esquerda para direita |
-| `rotation` | Rotação |
+| Enum | Animação | Page type |
+|---|---|---|
+| `fade` | Cross-fade (padrão) | `CustomTransitionPage` |
+| `scale` | Zoom in | `CustomTransitionPage` |
+| `slideUp` | De baixo para cima | `CustomTransitionPage` |
+| `slideDown` | De cima para baixo | `CustomTransitionPage` |
+| `slideLeft` | Da direita para esquerda | `CustomTransitionPage` |
+| `slideRight` | Da esquerda para direita | `CustomTransitionPage` |
+| `rotation` | Rotação | `CustomTransitionPage` |
+| `native` | Slide nativo da plataforma | `CupertinoPage` (iOS) / `MaterialPage` (outros) |
 
-Hierarquia de prioridade: `transition` na rota > `pageTransition` global > `fade`
+Hierarquia de prioridade: `TypeTransition.native` > `transition` explícito na rota > iOS gesture flag > `pageTransition` global > `fade`
 
 ### CAP-RTE-09: Navegação imperativa
 
@@ -192,6 +194,34 @@ modugoNavigatorKey.currentState?.push(...);
 modugoNavigatorKey.currentContext   // BuildContext global
 ```
 
+### CAP-RTE-10: iOS Back-Swipe Gesture Navigation
+
+Todas as rotas criadas por `FactoryRoute._transition()` suportam o gesto de swipe-back
+do iOS quando `enableIOSGestureNavigation: true` (default) e nenhuma transição customizada
+explícita é definida. A ordem de precedência é:
+
+```
+1. TypeTransition.native           → CupertinoPage (iOS) / MaterialPage (outros) — sempre vence
+2. transition explícito != native  → CustomTransitionPage (sem back-swipe no iOS)
+3. ChildRoute.iosGestureEnabled    → override por rota (true/false/null=herda global)
+4. Modugo.enableIOSGestureNavigation: true + iOS → CupertinoPage
+5. default                         → CustomTransitionPage com transição global
+```
+
+```dart
+// Default: back-swipe habilitado no iOS
+await Modugo.configure(module: AppModule());
+
+// Desabilitar globalmente
+await Modugo.configure(module: AppModule(), enableIOSGestureNavigation: false);
+
+// Override por rota
+child(path: '/page', child: ..., iosGestureEnabled: false);
+
+// Explícito via enum
+child(path: '/page', child: ..., transition: TypeTransition.native);
+```
+
 ---
 
 ## Restrições
@@ -200,6 +230,8 @@ modugoNavigatorKey.currentContext   // BuildContext global
 - `AliasRoute` não funciona para rotas de módulos ou shell
 - `ModuleRoute` sempre usa path `'/'` na DSL — o path é definido pelo módulo pai ao compor as rotas
 - Paths com espaços ou parênteses inválidos lançam `FormatException` via `CompilerRoute`
+- `TypeTransition.native` com `Transition.builder` retorna `fade` como fallback (não deve ser chamado diretamente)
+- `CustomTransitionPage` **não** suporta iOS back-swipe — limitação do Flutter
 
 ---
 
@@ -214,3 +246,10 @@ modugoNavigatorKey.currentContext   // BuildContext global
 - [ ] `StatefulShellModuleRoute` preserva estado de cada branch ao trocar
 - [ ] Transição por rota tem precedência sobre transição global
 - [ ] Guard de rota bloqueia acesso e redireciona
+- [ ] `TypeTransition.native` retorna `CupertinoPage` em iOS
+- [ ] `TypeTransition.native` retorna `MaterialPage` em Android
+- [ ] `enableIOSGestureNavigation: true` (default) → `CupertinoPage` em iOS sem transition explícito
+- [ ] `enableIOSGestureNavigation: false` → `CustomTransitionPage` em iOS
+- [ ] `ChildRoute(iosGestureEnabled: false)` sobrepõe global `true`
+- [ ] `ChildRoute(iosGestureEnabled: true)` sobrepõe global `false`
+- [ ] Transition explícita em iOS → `CustomTransitionPage` mesmo com flag global `true`

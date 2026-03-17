@@ -15,6 +15,9 @@ import 'package:flutter/widgets.dart';
 /// - [slideLeft] → enters from right
 /// - [slideRight] → enters from left
 /// - [rotation] → rotates in
+/// - [native] → platform-adaptive: [CupertinoPage] on iOS, [MaterialPage] on other platforms.
+///   Enables iOS back-swipe gesture navigation. Use this for the most natural
+///   platform experience. Processed in [FactoryRoute] before applying [Transition.builder].
 enum TypeTransition {
   fade,
   scale,
@@ -23,6 +26,11 @@ enum TypeTransition {
   slideDown,
   slideLeft,
   slideRight,
+
+  /// Selects the native platform page type:
+  /// - iOS → [CupertinoPage] (slide transition + back-swipe gesture)
+  /// - Android / others → [MaterialPage] (platform default)
+  native,
 }
 
 /// Utility class that provides animated transition builders for Modugo routes.
@@ -111,6 +119,9 @@ final class Transition {
           .fade => FadeTransition(opacity: animation, child: child),
           .scale => ScaleTransition(scale: animation, child: child),
           .rotation => RotationTransition(turns: animation, child: child),
+          // [native] is resolved at the page level in FactoryRoute before
+          // reaching this builder. If it somehow arrives here, fall back to fade.
+          .native => FadeTransition(opacity: animation, child: child),
         };
       };
 }

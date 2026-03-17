@@ -67,6 +67,19 @@ final class ChildRoute implements IRoute {
   final Page<dynamic> Function(BuildContext context, GoRouterState state)?
   pageBuilder;
 
+  /// Whether to enable iOS back-swipe gesture navigation for this specific route.
+  ///
+  /// - `null` (default): inherits [Modugo.enableIOSGestureNavigation] global setting.
+  /// - `true`: forces [CupertinoPage] on iOS, enabling back-swipe regardless of global.
+  /// - `false`: forces [CustomTransitionPage] on iOS, disabling back-swipe for this route.
+  ///
+  /// Ignored when [transition] is set to an explicit value (the custom animation
+  /// takes precedence and [CustomTransitionPage] is always used).
+  ///
+  /// Also ignored when [transition] is [TypeTransition.native] (which always
+  /// selects the platform-native page type regardless of this flag).
+  final bool? iosGestureEnabled;
+
   /// Creates a [ChildRoute] with the required [path] and [child] builder.
   ///
   /// Additional behavior like transition, guard, or redirection can be configured via optional parameters.
@@ -79,6 +92,7 @@ final class ChildRoute implements IRoute {
     this.pageBuilder,
     this.guards = const [],
     this.parentNavigatorKey,
+    this.iosGestureEnabled,
   });
 
   @override
@@ -89,6 +103,7 @@ final class ChildRoute implements IRoute {
           name == other.name &&
           transition == other.transition &&
           runtimeType == other.runtimeType &&
+          iosGestureEnabled == other.iosGestureEnabled &&
           parentNavigatorKey == other.parentNavigatorKey;
 
   @override
@@ -96,5 +111,6 @@ final class ChildRoute implements IRoute {
       path.hashCode ^
       name.hashCode ^
       transition.hashCode ^
+      iosGestureEnabled.hashCode ^
       parentNavigatorKey.hashCode;
 }
