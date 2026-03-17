@@ -33,3 +33,6 @@ venv
 .flutter-plugins
 .flutter-plugins-dependencies
 build/
+
+# Claude Code local settings (machine-specific paths)
+.claude/settings.local.json
