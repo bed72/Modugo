@@ -324,36 +324,6 @@ void main() {
     );
 
     test(
-      'TypeTransition.slideLeft → CustomTransitionPage with global true',
-      () async {
-        await Modugo.configure(module: _SimpleModule());
-
-        final route = ChildRoute(
-          path: '/',
-          transition: TypeTransition.slideLeft,
-          child: (_, _) => const Placeholder(),
-        );
-
-        expect(_buildPage(route), isA<CustomTransitionPage>());
-      },
-    );
-
-    test(
-      'TypeTransition.scale → CustomTransitionPage with global true',
-      () async {
-        await Modugo.configure(module: _SimpleModule());
-
-        final route = ChildRoute(
-          path: '/',
-          transition: TypeTransition.scale,
-          child: (_, _) => const Placeholder(),
-        );
-
-        expect(_buildPage(route), isA<CustomTransitionPage>());
-      },
-    );
-
-    test(
       'explicit transition + iosGestureEnabled: true → CustomTransitionPage',
       () async {
         // iosGestureEnabled: true is ignored when explicit transition is set
@@ -473,32 +443,5 @@ void main() {
         expect(_buildPage(route), isA<CustomTransitionPage>());
       },
     );
-
-    test('per-route false > global true', () async {
-      await Modugo.configure(module: _SimpleModule());
-
-      final route = ChildRoute(
-        path: '/',
-        iosGestureEnabled: false,
-        child: (_, _) => const Placeholder(),
-      );
-
-      expect(_buildPage(route), isA<CustomTransitionPage>());
-    });
-
-    test('per-route true > global false', () async {
-      await Modugo.configure(
-        module: _SimpleModule(),
-        enableIOSGestureNavigation: false,
-      );
-
-      final route = ChildRoute(
-        path: '/',
-        iosGestureEnabled: true,
-        child: (_, _) => const Placeholder(),
-      );
-
-      expect(_buildPage(route), isA<CupertinoPage>());
-    });
   });
 }

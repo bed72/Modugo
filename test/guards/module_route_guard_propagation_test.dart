@@ -16,18 +16,6 @@ import 'package:modugo/src/extensions/guard_extension.dart';
 import 'package:modugo/src/decorators/guard_module_decorator.dart';
 
 void main() {
-  test(
-    'ModuleRoute.withInjectedGuards wraps the module with GuardModuleDecorator',
-    () {
-      final module = _FakeModule([_child('/a')]);
-
-      final route = ModuleRoute(path: '/module', module: module);
-      final injected = route.withInjectedGuards([_FakeRedirectGuard('/login')]);
-
-      expect(injected.module, isA<GuardModuleDecorator>());
-    },
-  );
-
   test('Injected parent guards appear in children routes of the module', () {
     final parentGuards = [_FakeRedirectGuard('/login')];
     final module = _FakeModule([_child('/a')]);

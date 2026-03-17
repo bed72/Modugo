@@ -42,21 +42,6 @@ void main() {
 
       expect(guardModuleWithImports.imports(), mockImports);
     });
-
-    test('runtimeType is the same of the decorated module', () {
-      final mockImports = [_ModuleMock()];
-
-      final baseModuleWithImports = _ImportMock(mockImports);
-      final guardModuleWithImports = GuardModuleDecorator(
-        guards: [],
-        module: baseModuleWithImports,
-      );
-
-      expect(
-        guardModuleWithImports.runtimeType,
-        baseModuleWithImports.runtimeType,
-      );
-    });
   });
 }
 

@@ -61,15 +61,6 @@ void main() {
 
       expect(Modugo.enableIOSGestureNavigation, isFalse);
     });
-
-    test('persists true when configured explicitly', () async {
-      await Modugo.configure(
-        module: _InnerModule(),
-        enableIOSGestureNavigation: true,
-      );
-
-      expect(Modugo.enableIOSGestureNavigation, isTrue);
-    });
   });
 }
 

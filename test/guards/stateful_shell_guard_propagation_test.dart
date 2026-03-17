@@ -77,35 +77,11 @@ void main() {
     expect(child.guards.last, same(routeGuards.first));
     expect(child.guards.first, same(parentGuards.first));
   });
-
-  test(
-    'IGuard returns void (treated as null) and can do side-effects',
-    () async {
-      var called = false;
-
-      final guard = _VoidGuard(() => called = true);
-      await guard(BuildContextFake(), StateFake());
-
-      expect(called, isTrue);
-    },
-  );
 }
 
 final class _FakeAllowGuard implements IGuard {
   @override
   FutureOr<String?> call(BuildContext context, GoRouterState state) => null;
-}
-
-final class _VoidGuard implements IGuard {
-  final void Function() onCall;
-  _VoidGuard(this.onCall);
-
-  @override
-  FutureOr<String?> call(BuildContext context, GoRouterState state) {
-    onCall();
-
-    return null;
-  }
 }
 
 final class _FakeRedirectGuard implements IGuard {

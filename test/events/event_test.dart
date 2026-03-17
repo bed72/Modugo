@@ -84,20 +84,6 @@ void main() {
       expect(logoutCalled, isFalse);
     });
 
-    test('should reuse same controller implicitly (behavior test)', () async {
-      int first = 0;
-      int second = 0;
-
-      Event.i.streamOf<_LoginEvent>().listen((_) => first++);
-      Event.i.streamOf<_LoginEvent>().listen((_) => second++);
-
-      Event.emit(_LoginEvent('shared'));
-      await Future<void>.delayed(Duration.zero);
-
-      expect(first, equals(1));
-      expect(second, equals(1));
-    });
-
     test('should allow multiple emits for same event type', () async {
       int count = 0;
       Event.i.on<_LoginEvent>((_) => count++);

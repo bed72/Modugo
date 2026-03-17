@@ -65,7 +65,7 @@ void main() {
       expect(callbackCalled, false);
     });
 
-    test('disposeAll disposes all Event listeners', () async {
+    test('module.dispose() cancels all auto-dispose subscriptions', () async {
       bool callbackCalled = false;
 
       module.on<_EventMock>((_) => callbackCalled = true);

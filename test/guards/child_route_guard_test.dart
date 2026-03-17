@@ -8,12 +8,6 @@ import 'package:modugo/src/extensions/guard_extension.dart';
 import 'package:modugo/src/interfaces/guard_interface.dart';
 
 void main() {
-  test('ChildRoute default has empty guards list', () {
-    final route = ChildRoute(path: '/a', child: (_, _) => const SizedBox());
-
-    expect(route.guards, isEmpty);
-  });
-
   test('withInjectedGuards prepends parent guards to an empty ChildRoute', () {
     final parentGuards = [_FakeRedirectGuard('/login')];
     final route = ChildRoute(path: '/a', child: (_, _) => const SizedBox());

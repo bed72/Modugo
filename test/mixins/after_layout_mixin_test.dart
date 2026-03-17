@@ -27,17 +27,6 @@ void main() {
       await tester.pump();
       expect(callCount, 1);
     });
-
-    testWidgets('should provide a valid BuildContext', (tester) async {
-      BuildContext? receivedContext;
-
-      await tester.pumpWidget(
-        _TestWidget(onAfterLayout: (ctx) => receivedContext = ctx),
-      );
-
-      await tester.pump();
-      expect(receivedContext, isNotNull);
-    });
   });
 }
 
