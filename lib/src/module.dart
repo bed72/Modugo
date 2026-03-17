@@ -5,11 +5,9 @@ import 'package:go_router/go_router.dart';
 
 import 'package:modugo/src/logger.dart';
 
-import 'package:modugo/src/mixins/binder_mixin.dart';
 import 'package:modugo/src/mixins/dsl_mixin.dart';
 import 'package:modugo/src/mixins/router_mixin.dart';
-
-import 'package:modugo/src/routes/factory_route.dart';
+import 'package:modugo/src/mixins/binder_mixin.dart';
 
 /// A set of module types that have been registered globally,
 /// used to ensure the same module is not bound more than once.
@@ -107,7 +105,7 @@ abstract class Module with IBinder, IDsl, IRouter {
   List<RouteBase> configureRoutes() {
     _configureBinders();
 
-    return FactoryRoute.from(routes());
+    return .from(routes());
   }
 
   /// Registers this module and all its imported modules recursively.

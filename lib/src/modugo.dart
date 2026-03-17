@@ -67,8 +67,7 @@ final class Modugo {
 
   /// The default page transition to apply for all routes,
   /// unless explicitly overridden.
-  static TypeTransition get getDefaultTransition =>
-      _transition ?? TypeTransition.fade;
+  static TypeTransition get getDefaultTransition => _transition ?? .fade;
 
   /// Whether diagnostic logging is enabled for Modugo internals.
   ///
@@ -109,10 +108,10 @@ final class Modugo {
     bool debugLogDiagnostics = false,
     List<NavigatorObserver>? observers,
     Codec<Object?, Object?>? extraCodec,
+    TypeTransition pageTransition = .fade,
     GlobalKey<NavigatorState>? navigatorKey,
     bool debugLogDiagnosticsGoRouter = false,
     bool overridePlatformDefaultLocation = false,
-    TypeTransition pageTransition = TypeTransition.fade,
     Widget Function(BuildContext, GoRouterState)? errorBuilder,
     void Function(BuildContext, GoRouterState, GoRouter)? onException,
     FutureOr<String?> Function(BuildContext, GoRouterState)? redirect,
