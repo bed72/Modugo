@@ -39,6 +39,10 @@ void main() {
     test('hasQueryParam returns true when key exists', () {
       final uri = Uri.parse('https://example.com/page?foo=bar');
       expect(uri.hasQueryParam('foo'), isTrue);
+    });
+
+    test('hasQueryParam returns false when key is absent', () {
+      final uri = Uri.parse('https://example.com/page?foo=bar');
       expect(uri.hasQueryParam('baz'), isFalse);
     });
 
