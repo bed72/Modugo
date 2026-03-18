@@ -1,3 +1,7 @@
+## [4.2.9] - 2026-03-18
+
+- docs: document iosGestureEnabled and enableIOSGestureNavigation in MkDocs
+
 ## [4.2.8] - 2026-03-10
 
 - :fix: Add error handling to the guards.
