@@ -1,10 +1,14 @@
 import 'dart:async';
 
-/// Global default event channel instance.
+/// Global accessor for the [Event] singleton.
 ///
-/// Provides decoupled communication between modules and components
-/// without relying on external dependencies.
-final Event events = Event._();
+/// This is a convenience alias for [Event.i]. Both refer to the same instance,
+/// ensuring that listeners registered via `events.on<T>()` receive events
+/// emitted via `Event.emit<T>()`.
+///
+/// Prefer [Event.i] or [Event.emit] in new code; `events` is kept for
+/// backwards-compatibility.
+Event get events => Event.i;
 
 /// Singleton class that manages event-based communication using [StreamController].
 ///
