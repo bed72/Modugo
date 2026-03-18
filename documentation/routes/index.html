@@ -439,6 +439,30 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="ChildRoute">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parametros" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parâmetros
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#navegacao-ios-swipe-back" class="md-nav__link">
+    <span class="md-ellipsis">
+      Navegação iOS (swipe-back)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -770,6 +794,30 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="ChildRoute">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parametros" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parâmetros
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#navegacao-ios-swipe-back" class="md-nav__link">
+    <span class="md-ellipsis">
+      Navegação iOS (swipe-back)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -893,6 +941,120 @@
   path: '/home',
   child: (context, state) =&gt; const HomePage(),
 )
+</code></pre>
+<h4 id="parametros">Parâmetros</h4>
+<table>
+<thead>
+<tr>
+<th>Parâmetro</th>
+<th>Tipo</th>
+<th>Default</th>
+<th>Descrição</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>path</code></td>
+<td><code>String</code></td>
+<td><strong>obrigatório</strong></td>
+<td>Caminho da rota</td>
+</tr>
+<tr>
+<td><code>child</code></td>
+<td><code>Widget Function(BuildContext, GoRouterState)</code></td>
+<td><strong>obrigatório</strong></td>
+<td>Widget da página</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td><code>String?</code></td>
+<td><code>null</code></td>
+<td>Nome único da rota</td>
+</tr>
+<tr>
+<td><code>transition</code></td>
+<td><code>TypeTransition?</code></td>
+<td><code>null</code></td>
+<td>Transição da rota (herda a global se omitido)</td>
+</tr>
+<tr>
+<td><code>guards</code></td>
+<td><code>List&lt;IGuard&gt;</code></td>
+<td><code>[]</code></td>
+<td>Guards aplicados à rota</td>
+</tr>
+<tr>
+<td><code>parentNavigatorKey</code></td>
+<td><code>GlobalKey&lt;NavigatorState&gt;?</code></td>
+<td><code>null</code></td>
+<td>Chave do navigator pai</td>
+</tr>
+<tr>
+<td><code>pageBuilder</code></td>
+<td><code>Page Function(BuildContext, GoRouterState)?</code></td>
+<td><code>null</code></td>
+<td>Builder customizado de página</td>
+</tr>
+<tr>
+<td><code>onExit</code></td>
+<td><code>FutureOr&lt;bool&gt; Function(...)?</code></td>
+<td><code>null</code></td>
+<td>Callback ao sair da rota</td>
+</tr>
+<tr>
+<td><code>iosGestureEnabled</code></td>
+<td><code>bool?</code></td>
+<td><code>null</code></td>
+<td>Controla o swipe-back no iOS. Ver seção abaixo.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="navegacao-ios-swipe-back">Navegação iOS (swipe-back)</h4>
+<p>O parâmetro <code>iosGestureEnabled</code> permite controlar o gesto de swipe-back nativo do iOS por rota individualmente:</p>
+<table>
+<thead>
+<tr>
+<th>Valor</th>
+<th>Comportamento</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>null</code> (padrão)</td>
+<td>Herda <code>Modugo.enableIOSGestureNavigation</code> (global, default <code>true</code>)</td>
+</tr>
+<tr>
+<td><code>true</code></td>
+<td>Força <code>CupertinoPage</code> nessa rota — swipe-back ativado</td>
+</tr>
+<tr>
+<td><code>false</code></td>
+<td>Desativa o swipe-back nessa rota</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Nota:</strong> Ignorado quando <code>transition</code> é <code>TypeTransition.native</code>, que sempre usa a página nativa da plataforma.</p>
+</blockquote>
+<pre><code class="language-dart">// Desativa o swipe-back apenas nessa rota (ex: fluxo de checkout)
+ChildRoute(
+  path: '/checkout',
+  child: (context, state) =&gt; const CheckoutPage(),
+  iosGestureEnabled: false,
+)
+
+// Força swipe-back mesmo que o global esteja desativado
+ChildRoute(
+  path: '/details',
+  child: (context, state) =&gt; const DetailsPage(),
+  iosGestureEnabled: true,
+)
+</code></pre>
+<p>Para definir o comportamento padrão de todo o app, use o parâmetro global em <code>Modugo.configure()</code>:</p>
+<pre><code class="language-dart">await Modugo.configure(
+  module: AppModule(),
+  enableIOSGestureNavigation: false, // desativa para todas as rotas por padrão
+);
 </code></pre>
 <h3 id="moduleroute">ModuleRoute</h3>
 <p>Representa um módulo inteiro como rota.</p>

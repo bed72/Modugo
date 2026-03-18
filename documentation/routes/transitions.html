@@ -764,7 +764,7 @@
 
 
 <h1 id="transicoes">🎨 Transições</h1>
-<p>O Modugo oferece 7 tipos de transição de página prontos para uso, integrados ao GoRouter via <code>CustomTransitionPage</code>.</p>
+<p>O Modugo oferece 8 tipos de transição de página prontos para uso, integrados ao GoRouter via <code>CustomTransitionPage</code>.</p>
 <hr />
 <h2 id="tipos-disponiveis">🔹 Tipos Disponíveis</h2>
 <table>
@@ -811,8 +811,16 @@
 <td>Rotação</td>
 <td><code>RotationTransition</code></td>
 </tr>
+<tr>
+<td><code>TypeTransition.native</code></td>
+<td>Página nativa da plataforma</td>
+<td><code>CupertinoPage</code> (iOS) / <code>MaterialPage</code> (demais)</td>
+</tr>
 </tbody>
 </table>
+<blockquote>
+<p><strong><code>TypeTransition.native</code></strong> tem prioridade máxima na seleção de página — ignora <code>iosGestureEnabled</code> e usa sempre a página nativa da plataforma. No iOS isso garante o swipe-back nativo via <code>CupertinoPage</code>.</p>
+</blockquote>
 <hr />
 <h2 id="aplicando-em-rotas">🔹 Aplicando em Rotas</h2>
 <h3 id="por-rota-individual">Por rota individual</h3>
