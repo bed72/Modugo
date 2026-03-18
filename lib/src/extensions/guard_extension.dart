@@ -85,6 +85,7 @@ extension StatefulShellModuleRouteExtensions on StatefulShellModuleRoute {
     }).toList();
 
     return StatefulShellModuleRoute(
+      key: key,
       builder: builder,
       routes: injected,
       parentNavigatorKey: parentNavigatorKey,

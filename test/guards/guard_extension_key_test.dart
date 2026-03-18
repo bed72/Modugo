@@ -10,13 +10,9 @@ import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 import 'package:modugo/src/extensions/guard_extension.dart';
 
-/// Documents BUG-12: `StatefulShellModuleRoute.withInjectedGuards()` does not
-/// copy the `key` field when building the new route. Any route relying on a
-/// stable `GlobalKey<StatefulNavigationShellState>` will lose it after guard
-/// injection.
 void main() {
-  group('StatefulShellModuleRoute.withInjectedGuards — BUG-12 key loss', () {
-    test('[BUG-12] key is dropped after withInjectedGuards', () {
+  group('StatefulShellModuleRoute.withInjectedGuards — key preservation', () {
+    test('key is preserved after withInjectedGuards (BUG-12 fixed)', () {
       final shellKey = GlobalKey<StatefulNavigationShellState>();
 
       final shell = StatefulShellModuleRoute(
@@ -27,12 +23,7 @@ void main() {
 
       final injected = shell.withInjectedGuards([_FakeGuard()]);
 
-      // BUG: the key is not forwarded — injected.key will be null.
-      expect(
-        injected.key,
-        isNull,
-        reason: 'BUG-12: withInjectedGuards drops the key field',
-      );
+      expect(injected.key, same(shellKey));
     });
 
     test('parentNavigatorKey is preserved after withInjectedGuards', () {

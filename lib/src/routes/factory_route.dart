@@ -167,6 +167,7 @@ final class FactoryRoute {
     return GoRoute(
       path: route.path,
       name: route.name,
+      onExit: route.onExit,
       parentNavigatorKey: route.parentNavigatorKey,
       redirect: (context, state) =>
           _executeGuards(context: context, state: state, guards: route.guards),
@@ -253,8 +254,15 @@ final class FactoryRoute {
       navigatorKey: route.navigatorKey,
       parentNavigatorKey: route.parentNavigatorKey,
       builder: (context, state, child) {
+        final builder = route.builder;
+        if (builder == null) {
+          throw ArgumentError(
+            'ShellModuleRoute.builder must not be null. '
+            'Provide a builder function when constructing ShellModuleRoute.',
+          );
+        }
         try {
-          return route.builder!(context, state, child);
+          return builder(context, state, child);
         } catch (exception, stack) {
           Logger.error('Error building ShellModuleRoute: $exception\n$stack');
           rethrow;

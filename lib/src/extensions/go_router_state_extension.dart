@@ -64,7 +64,7 @@ extension GoRouterStateExtension on GoRouterState {
   /// ```dart
   /// final data = state.getExtra<MyData>();
   /// ```
-  T? getExtra<T>() => extra as T?;
+  T? getExtra<T>() => extra is T ? extra as T : null;
 
   /// Returns `true` if the current route has the given [name].
   ///

@@ -53,7 +53,8 @@ final class ModuleRoute implements IRoute {
       path.hashCode ^
       name.hashCode ^
       module.hashCode ^
-      parentNavigatorKey.hashCode;
+      parentNavigatorKey.hashCode ^
+      runtimeType.hashCode;
 
   @override
   bool operator ==(Object other) =>

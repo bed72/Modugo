@@ -112,5 +112,6 @@ final class ChildRoute implements IRoute {
       name.hashCode ^
       transition.hashCode ^
       iosGestureEnabled.hashCode ^
-      parentNavigatorKey.hashCode;
+      parentNavigatorKey.hashCode ^
+      runtimeType.hashCode;
 }

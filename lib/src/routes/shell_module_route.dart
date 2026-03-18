@@ -75,7 +75,8 @@ final class ShellModuleRoute implements IRoute {
       Object.hashAll(routes) ^
       Object.hashAll(observers ?? []) ^
       navigatorKey.hashCode ^
-      parentNavigatorKey.hashCode;
+      parentNavigatorKey.hashCode ^
+      runtimeType.hashCode;
 
   @override
   bool operator ==(Object other) =>
