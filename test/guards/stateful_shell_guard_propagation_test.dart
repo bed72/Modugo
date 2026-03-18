@@ -16,8 +16,6 @@ import 'package:modugo/src/routes/child_route.dart';
 import 'package:modugo/src/routes/module_route.dart';
 import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 
-import '../fakes/fakes.dart';
-
 void main() {
   test('injects parent guards into ChildRoute branch of StatefulShell', () {
     final parentGuards = [_FakeRedirectGuard('/login')];

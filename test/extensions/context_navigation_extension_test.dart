@@ -130,8 +130,7 @@ void main() {
 
 final class _Page extends StatelessWidget {
   final String label;
-  // ignore: unused_element
-  const _Page(this.label, {super.key});
+  const _Page(this.label);
 
   @override
   Widget build(BuildContext context) => Scaffold(body: Text(label));
