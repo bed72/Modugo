@@ -17,6 +17,57 @@ ChildRoute(
 )
 ```
 
+#### Parâmetros
+
+| Parâmetro | Tipo | Default | Descrição |
+|-----------|------|---------|-----------|
+| `path` | `String` | **obrigatório** | Caminho da rota |
+| `child` | `Widget Function(BuildContext, GoRouterState)` | **obrigatório** | Widget da página |
+| `name` | `String?` | `null` | Nome único da rota |
+| `transition` | `TypeTransition?` | `null` | Transição da rota (herda a global se omitido) |
+| `guards` | `List<IGuard>` | `[]` | Guards aplicados à rota |
+| `parentNavigatorKey` | `GlobalKey<NavigatorState>?` | `null` | Chave do navigator pai |
+| `pageBuilder` | `Page Function(BuildContext, GoRouterState)?` | `null` | Builder customizado de página |
+| `onExit` | `FutureOr<bool> Function(...)?` | `null` | Callback ao sair da rota |
+| `iosGestureEnabled` | `bool?` | `null` | Controla o swipe-back no iOS. Ver seção abaixo. |
+
+#### Navegação iOS (swipe-back)
+
+O parâmetro `iosGestureEnabled` permite controlar o gesto de swipe-back nativo do iOS por rota individualmente:
+
+| Valor | Comportamento |
+|-------|--------------|
+| `null` (padrão) | Herda `Modugo.enableIOSGestureNavigation` (global, default `true`) |
+| `true` | Força `CupertinoPage` nessa rota — swipe-back ativado |
+| `false` | Desativa o swipe-back nessa rota |
+
+> **Nota:** Ignorado quando `transition` é `TypeTransition.native`, que sempre usa a página nativa da plataforma.
+
+```dart
+// Desativa o swipe-back apenas nessa rota (ex: fluxo de checkout)
+ChildRoute(
+  path: '/checkout',
+  child: (context, state) => const CheckoutPage(),
+  iosGestureEnabled: false,
+)
+
+// Força swipe-back mesmo que o global esteja desativado
+ChildRoute(
+  path: '/details',
+  child: (context, state) => const DetailsPage(),
+  iosGestureEnabled: true,
+)
+```
+
+Para definir o comportamento padrão de todo o app, use o parâmetro global em `Modugo.configure()`:
+
+```dart
+await Modugo.configure(
+  module: AppModule(),
+  enableIOSGestureNavigation: false, // desativa para todas as rotas por padrão
+);
+```
+
 ### ModuleRoute
 
 Representa um módulo inteiro como rota.

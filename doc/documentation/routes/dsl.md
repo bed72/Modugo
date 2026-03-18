@@ -46,10 +46,19 @@ child(
   onExit: (context, state) async => true,
   pageBuilder: (_, _) => const MaterialPage(child: HomePage()),
   parentNavigatorKey: myKey,
+  iosGestureEnabled: true, // opcional — controla swipe-back no iOS
 );
 ```
 
 > Se `path` não for informado, o valor padrão é `'/'`.
+
+O parâmetro `iosGestureEnabled` é exclusivo do iOS e opera com a seguinte precedência:
+
+- `null` (padrão) → herda `Modugo.enableIOSGestureNavigation` (global)
+- `true` → força swipe-back ativado nessa rota
+- `false` → desativa swipe-back nessa rota
+
+> Ignorado quando `transition: TypeTransition.native` — nesse caso a página nativa da plataforma é sempre usada.
 
 ---
 

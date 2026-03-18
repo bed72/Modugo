@@ -90,6 +90,7 @@ class AppWidget extends StatelessWidget {
 | `refreshListenable` | `Listenable?` | `null` | Listenable para refresh do router |
 | `redirectLimit` | `int` | `2` | Limite de redirects antes de erro |
 | `extraCodec` | `Codec<Object?, Object?>?` | `null` | Codec para serialização de extras |
+| `enableIOSGestureNavigation` | `bool` | `true` | Habilita o gesto de swipe-back nativo do iOS globalmente. Pode ser sobrescrito por rota via `ChildRoute.iosGestureEnabled`. |
 
 ---
 

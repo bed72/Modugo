@@ -1,6 +1,6 @@
 # 🎨 Transições
 
-O Modugo oferece 7 tipos de transição de página prontos para uso, integrados ao GoRouter via `CustomTransitionPage`.
+O Modugo oferece 8 tipos de transição de página prontos para uso, integrados ao GoRouter via `CustomTransitionPage`.
 
 ---
 
@@ -15,6 +15,9 @@ O Modugo oferece 7 tipos de transição de página prontos para uso, integrados 
 | `TypeTransition.slideLeft` | Entra da direita para esquerda | `SlideTransition` |
 | `TypeTransition.slideRight` | Entra da esquerda para direita | `SlideTransition` |
 | `TypeTransition.rotation` | Rotação | `RotationTransition` |
+| `TypeTransition.native` | Página nativa da plataforma | `CupertinoPage` (iOS) / `MaterialPage` (demais) |
+
+> **`TypeTransition.native`** tem prioridade máxima na seleção de página — ignora `iosGestureEnabled` e usa sempre a página nativa da plataforma. No iOS isso garante o swipe-back nativo via `CupertinoPage`.
 
 ---
 
