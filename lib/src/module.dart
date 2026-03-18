@@ -128,7 +128,7 @@ abstract class Module with IBinder, IDsl, IRouter {
   ///
   /// [binder] Optional module to register explicitly. If `null`, the current
   ///   module (`this`) will be used.
-  void _configureBinders({IBinder? binder}) async {
+  void _configureBinders({IBinder? binder}) {
     final targetBinder = binder ?? this;
 
     if (_modulesRegistered.contains(targetBinder.runtimeType)) {
