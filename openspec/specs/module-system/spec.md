@@ -55,30 +55,29 @@ módulos o importem.
 
 ### CAP-MOD-03: Ciclo de vida
 
-O módulo expõe dois hooks de ciclo de vida:
+O ciclo de vida do módulo é mínimo — o `Module` base NÃO expõe hooks genéricos
+como `initState()` ou `dispose()`.
 
 | Método | Quando | Chamado automaticamente |
 |---|---|---|
-| `initState()` | Módulo inicializado | Sim (via `configureRoutes`) |
 | `binds()` | Primeira vez que o módulo é registrado | Sim |
-| `dispose()` | Módulo descartado | **Não** |
 
-**Regra:** `dispose()` NÃO é chamado automaticamente. O consumidor é responsável
-por invocar `dispose()` manualmente quando necessário.
+Mixins como `IEvent` PODEM adicionar métodos de ciclo de vida específicos à sua
+responsabilidade (ex: `listen()`, `dispose()`), mas estes pertencem ao mixin,
+não ao `Module` base. Quando um módulo aplica `IEvent`, o framework chama
+`listen()` automaticamente após `binds()` durante `_configureBinders()`.
 
 ```dart
-final class ChatModule extends Module {
+final class ChatModule extends Module with IEvent {
   @override
-  void initState() {
-    super.initState(); // DEVE chamar super
-    // setup inicial: iniciar listeners, etc.
+  void listen() {
+    on<MessageReceivedEvent>((event) {
+      // handle event
+    });
   }
 
   @override
-  void dispose() {
-    // limpar recursos: cancelar streams, etc.
-    super.dispose(); // DEVE chamar super
-  }
+  List<IRoute> routes() => [];
 }
 ```
 
@@ -153,7 +152,7 @@ main.dart
 
 - [ ] Módulo registra seus binds apenas uma vez mesmo com múltiplos imports
 - [ ] Imports são processados na ordem correta (dependências antes do dependente)
-- [ ] `initState()` é chamado na inicialização
-- [ ] `dispose()` NÃO é chamado automaticamente
+- [ ] `Module` NÃO possui métodos `initState()` nem `dispose()`
+- [ ] `IEvent.listen()` é chamado automaticamente após `binds()` durante `_configureBinders()`
 - [ ] `i` retorna `GetIt.instance`
 - [ ] Módulo com `routes()` vazio não causa erro

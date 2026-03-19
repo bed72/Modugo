@@ -68,13 +68,13 @@ Event.i.disposeAll();
 
 ### CAP-EVT-05: IEvent mixin — integração com módulos
 
-O mixin `IEvent` integra o event bus ao ciclo de vida do módulo:
+O mixin `IEvent` integra o event bus ao módulo com ativação automática e cleanup manual:
 
 ```dart
 final class AnalyticsModule extends Module with IEvent {
   @override
   void listen() {
-    // subscriptions aqui são auto-canceladas no dispose() do módulo
+    // subscriptions aqui são canceladas ao chamar dispose() no módulo
     on<UserLoggedInEvent>((event) {
       Analytics.trackLogin(event.userId);
     });
@@ -84,7 +84,7 @@ final class AnalyticsModule extends Module with IEvent {
     });
 
     // autoDispose: false → vive além do módulo
-    on<SystemEvent>((e) => ..., autoDispose: false);
+    on<SystemEvent>((e) => handleSystem(e), autoDispose: false);
   }
 
   @override
@@ -93,9 +93,12 @@ final class AnalyticsModule extends Module with IEvent {
 ```
 
 **Comportamento do IEvent:**
-- `listen()` é chamado automaticamente em `initState()`
+- `listen()` é chamado automaticamente por `_configureBinders()` após os `binds()` do módulo serem registrados
+- `listen()` NÃO depende de `Module.initState()` (que foi removido)
 - `on<T>()` com `autoDispose: true` (padrão) → subscription cancelada no `dispose()`
 - `on<T>()` com `autoDispose: false` → subscription persiste após o dispose do módulo
+- `dispose()` é método próprio do `IEvent` mixin (não override de `Module`)
+- `dispose()` NÃO é chamado automaticamente — é responsabilidade do consumidor
 
 ### CAP-EVT-06: RouteChangedEventModel
 

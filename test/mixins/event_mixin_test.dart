@@ -15,12 +15,12 @@ void main() {
       module = _EventModule();
     });
 
-    test('initState calls listen', () async {
+    test('listen registers event listeners', () async {
       final completer = Completer<void>();
 
       final module2 = _EventModule(onEventCalled: (_) => completer.complete());
 
-      module2.initState();
+      module2.listen();
 
       await Future<void>.delayed(Duration.zero);
 
@@ -41,7 +41,7 @@ void main() {
         },
       );
 
-      module.initState();
+      module.listen();
 
       Event.emit(_EventMock('Test'));
 

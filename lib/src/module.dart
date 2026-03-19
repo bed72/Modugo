@@ -8,6 +8,7 @@ import 'package:modugo/src/logger.dart';
 import 'package:modugo/src/mixins/dsl_mixin.dart';
 import 'package:modugo/src/mixins/router_mixin.dart';
 import 'package:modugo/src/mixins/binder_mixin.dart';
+import 'package:modugo/src/mixins/event_mixin.dart';
 import 'package:modugo/src/routes/factory_route.dart';
 
 /// A set of module types that have been registered globally,
@@ -33,10 +34,9 @@ final Set<Type> _modulesRegistered = {};
 ///   [imports()], its `binds()` will still be executed.
 ///
 /// Customization:
-/// - Use [initState()] and [dispose()] to manage the module's internal state if
-///   necessary.
 /// - The injection instance is accessible via [i] (shortcut to
 ///   `GetIt.instance`).
+/// - Use the [IEvent] mixin for event-based communication between modules.
 ///
 /// Example:
 /// ```dart
@@ -68,34 +68,6 @@ abstract class Module with IBinder, IDsl, IRouter {
   /// re-register their binds in test isolation scenarios.
   // ignore: invalid_use_of_visible_for_testing_member
   static void resetRegistrations() => _modulesRegistered.clear();
-
-  /// Called when the module is initialized.
-  ///
-  /// Use this method to perform any setup required when the module
-  /// becomes active, such as initializing internal state, registering
-  /// listeners, or preparing resources.
-  ///
-  /// This method is automatically called by the framework when the
-  /// module is first instantiated or when its routes become active.
-  ///
-  /// **Note:** Subclasses should call `super.initState()` if they
-  /// override this method to ensure proper module lifecycle behavior.
-  void initState() {}
-
-  /// Called when the module is being disposed.
-  ///
-  /// Use this method to clean up resources, cancel subscriptions,
-  /// dispose internal state, and remove any module-specific event
-  /// listeners.
-  ///
-  /// This method is automatically called by the framework when the
-  /// module is no longer needed or when its routes are removed from
-  /// the navigation stack.
-  ///
-  /// **Important:** Subclasses should call `super.dispose()` if they
-  /// override this method to ensure that all module-level resources,
-  /// including event channels and subscriptions, are properly released.
-  void dispose() {}
 
   /// Configures and returns the list of [RouteBase]s defined by this module.
   ///
@@ -142,6 +114,11 @@ abstract class Module with IBinder, IDsl, IRouter {
 
     targetBinder.binds();
     _modulesRegistered.add(targetBinder.runtimeType);
+
+    if (targetBinder is IEvent) {
+      targetBinder.listen();
+      Logger.module('${targetBinder.runtimeType} listeners registered');
+    }
 
     Logger.module('${targetBinder.runtimeType} binds registered');
   }

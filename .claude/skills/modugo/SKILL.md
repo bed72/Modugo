@@ -80,8 +80,8 @@ abstract class Module with IBinder, IDsl, IRouter {
   // Shortcut para GetIt.instance — NÃO é parâmetro, é getter
   GetIt get i => GetIt.instance;
 
-  void initState() {}   // lifecycle: chamado na inicialização
-  void dispose() {}     // lifecycle: chamado ao descartar (NÃO auto-chamado)
+  // NÃO possui initState() nem dispose() — lifecycle mínimo
+  // Mixins como IEvent adicionam seus próprios métodos de ciclo de vida
 
   List<RouteBase> configureRoutes();   // chamado internamente pelo framework
 }
@@ -106,22 +106,21 @@ mixin IBinder {
 
 | Método | Quando | Chamado automaticamente? |
 |---|---|---|
-| `initState()` | Módulo inicializado | Sim (via `configureRoutes`) |
 | `binds()` | Primeira vez que o módulo é registrado | Sim |
-| `dispose()` | Módulo descartado | **NÃO** — gerenciar manualmente |
+| `IEvent.listen()` | Após binds (se módulo usa `IEvent`) | Sim (via `_configureBinders`) |
+| `IEvent.dispose()` | Cleanup de subscriptions | **NÃO** — gerenciar manualmente |
+
+O `Module` base **NÃO possui** `initState()` nem `dispose()`. Mixins como `IEvent`
+adicionam métodos de ciclo de vida específicos à sua responsabilidade.
 
 ```dart
-final class AnalyticsModule extends Module {
+final class AnalyticsModule extends Module with IEvent {
   @override
-  void initState() {
-    super.initState();
-    // setup inicial
-  }
-
-  @override
-  void dispose() {
-    // limpar recursos
-    super.dispose();
+  void listen() {
+    // chamado automaticamente após binds() durante _configureBinders()
+    on<UserLoggedInEvent>((event) {
+      Analytics.trackLogin(event.userId);
+    });
   }
 }
 ```
@@ -482,7 +481,7 @@ Event.i.on<RouteChangedEventModel>((event) {
 });
 ```
 
-### IEvent mixin — auto-cleanup em módulos
+### IEvent mixin — event listening em módulos
 
 ```dart
 final class ChatModule extends Module with IEvent {
@@ -492,13 +491,14 @@ final class ChatModule extends Module with IEvent {
     on<UserLoggedInEvent>((event) { /* ... */ });
 
     // autoDispose: false → subscription vive além do módulo
-    on<SystemEvent>((e) => ..., autoDispose: false);
+    on<SystemEvent>((e) => handleSystem(e), autoDispose: false);
   }
 }
 ```
 
-- `listen()` é chamado automaticamente em `initState()`
+- `listen()` é chamado automaticamente por `_configureBinders()` após `binds()`
 - `on<T>()` com `autoDispose: true` (padrão) → cancelado no `dispose()`
+- `dispose()` é método próprio do `IEvent` mixin — **NÃO** é chamado automaticamente
 
 ---
 
@@ -755,11 +755,12 @@ owner: "bed72", repo: "Modugo"
 3. `imports()` retorna `List<IBinder>`, não `List<Module>`
 4. DSL usa `child()` para `ChildRoute` — **não** `route()`
 5. Módulos registrados no máximo uma vez — `Set<Type> _modulesRegistered`
-6. `dispose()` **não é chamado automaticamente** — gerenciar manualmente
-7. Guards: `null` = permite, `String` = redireciona
-8. `AliasRoute` funciona apenas para `ChildRoute` no mesmo módulo
-9. `StatefulShellModuleRoute` preserva estado de cada branch independentemente
-10. Toda navegação emite `RouteChangedEventModel` automaticamente
+6. `Module` NÃO possui `initState()` nem `dispose()` — lifecycle mínimo
+7. `IEvent.dispose()` **não é chamado automaticamente** — gerenciar manualmente
+8. Guards: `null` = permite, `String` = redireciona
+9. `AliasRoute` funciona apenas para `ChildRoute` no mesmo módulo
+10. `StatefulShellModuleRoute` preserva estado de cada branch independentemente
+11. Toda navegação emite `RouteChangedEventModel` automaticamente
 
 ---
 
