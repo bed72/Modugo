@@ -262,6 +262,59 @@ void binds() {
 }
 ```
 
+### Dispose e cleanup de dependências
+
+O GetIt oferece mecanismos de dispose que NÃO são chamados automaticamente.
+O desenvolvedor DEVE invocar explicitamente `unregister()`, `reset()` ou `popScope()`.
+
+```dart
+// 1. dispose: callback no registro
+i.registerSingleton<DbService>(
+  DbService(),
+  dispose: (service) => service.close(),  // chamado em unregister/reset/popScope
+);
+
+// 2. Interface Disposable — GetIt detecta automaticamente no reset/popScope
+class CacheService implements Disposable {
+  @override
+  FutureOr onDispose() => clearCache();
+}
+
+// 3. Scopes — agrupar registros com ciclo de vida limitado
+i.pushNewScope(scopeName: 'checkout');
+i.registerSingleton<PaymentService>(PaymentService());
+await i.popScope();  // remove tudo do scope e chama dispose callbacks
+
+// 4. Remoção individual
+i.unregister<T>();
+i.resetLazySingleton<T>();  // dispõe e permite recriar na próxima chamada
+```
+
+| Método | O que faz |
+|---|---|
+| `unregister<T>()` | Remove e dispõe a instância |
+| `reset()` | Dispõe e remove tudo (ordem reversa) |
+| `resetLazySingleton<T>()` | Dispõe e permite recriar na próxima chamada |
+| `popScope()` | Dispõe tudo registrado no scope atual |
+| `dropScope('name')` | Dispõe e remove scope nomeado |
+
+### Ordem de cleanup com IEvent
+
+Quando um módulo usa `IEvent` e seus binds têm dispose callbacks, a ordem é:
+
+```dart
+// 1. Cancelar event subscriptions PRIMEIRO
+module.dispose();
+
+// 2. DEPOIS remover binds
+i.unregister<AnalyticsService>();
+
+// Para reset global (ex: logout):
+Event.i.disposeAll();         // cancelar todos os event listeners
+Module.resetRegistrations();  // limpar módulos registrados
+await Modugo.i.reset();      // resetar GetIt (chama dispose callbacks)
+```
+
 ---
 
 ## Rotas — Tipos e DSL

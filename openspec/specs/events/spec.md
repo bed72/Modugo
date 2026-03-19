@@ -130,6 +130,42 @@ final class TrackingModule extends Module with IEvent {
 }
 ```
 
+### CAP-EVT-08: Ordem de cleanup — IEvent antes de unregister
+
+Quando um módulo com `IEvent` precisa de cleanup completo, a ordem correta é:
+
+1. `module.dispose()` — cancela event subscriptions (IEvent)
+2. `i.unregister<T>()` ou `i.reset()` — remove binds (GetIt chama dispose callbacks)
+
+Se a ordem for invertida, event listeners ativos podem tentar acessar serviços
+já removidos do GetIt, causando erros em runtime.
+
+```dart
+// CORRETO
+analyticsModule.dispose(); // cancela listeners primeiro
+i.unregister<AnalyticsService>(); // depois remove o serviço
+
+// ERRADO — pode causar erro se listener usa AnalyticsService
+i.unregister<AnalyticsService>();
+analyticsModule.dispose();
+```
+
+### CAP-EVT-09: Padrão de reset global
+
+Para reset completo (ex: logout), cancelar todos os event listeners antes
+de resetar o GetIt:
+
+```dart
+void logout() async {
+  // 1. Cancelar todos os event listeners globais
+  Event.i.disposeAll();
+
+  // 2. Resetar GetIt (chama dispose callbacks)
+  Module.resetRegistrations();
+  await Modugo.i.reset();
+}
+```
+
 ---
 
 ## Restrições
@@ -139,6 +175,7 @@ final class TrackingModule extends Module with IEvent {
 - Listeners são executados **síncronamente** na thread do emissor
 - `StreamController` usado internamente é `broadcast` — permite múltiplos listeners
 - `on<T>()` do mixin `IEvent` só deve ser chamado dentro de `listen()`
+- Ao fazer cleanup, cancelar event listeners ANTES de remover dependências do GetIt
 
 ---
 
@@ -153,3 +190,5 @@ final class TrackingModule extends Module with IEvent {
 - [ ] `IEvent.on` com `autoDispose: false` persiste após `dispose()` do módulo
 - [ ] `RouteChangedEventModel` é emitido a cada navegação
 - [ ] `Event.i.streamOf<T>()` retorna stream com os eventos do tipo T
+- [ ] Cleanup na ordem correta: `IEvent.dispose()` antes de `unregister()`
+- [ ] Reset global: `Event.i.disposeAll()` antes de `i.reset()`

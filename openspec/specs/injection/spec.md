@@ -138,13 +138,79 @@ await i.isReady<T>()
 await i.allReady()   // aguarda todos os singletons assíncronos
 ```
 
-### CAP-INJ-07: Desregistro (raro)
+### CAP-INJ-07: Desregistro e cleanup
 
-O Modugo não auto-remove dependências. Para remover manualmente:
+O Modugo não auto-remove dependências. O GetIt oferece mecanismos de cleanup
+que o desenvolvedor invoca explicitamente:
 
 ```dart
+// Remover uma dependência específica
 i.unregister<T>()
-i.resetLazySingleton<T>()  // força criação na próxima chamada
+i.unregister<T>(disposingFunction: (t) => t.close())  // com cleanup
+
+// Recriar lazy singleton na próxima chamada
+i.resetLazySingleton<T>()
+
+// Resetar tudo (chama todos os dispose callbacks, ordem reversa)
+await i.reset()
+```
+
+### CAP-INJ-08: Dispose callback no registro
+
+O parâmetro `dispose:` pode ser passado a `registerSingleton` e
+`registerLazySingleton`. O callback é chamado quando a instância é removida
+via `unregister()`, `reset()` ou `popScope()` — nunca automaticamente.
+
+```dart
+void binds() {
+  i.registerSingleton<DatabaseService>(
+    DatabaseService(),
+    dispose: (service) => service.close(),
+  );
+
+  i.registerLazySingleton<WebSocketClient>(
+    () => WebSocketClient(),
+    dispose: (client) => client.disconnect(),
+  );
+}
+```
+
+### CAP-INJ-09: Interface Disposable
+
+Quando uma instância implementa a interface `Disposable` do GetIt, o método
+`onDispose()` é chamado automaticamente em `reset()` ou `popScope()`, sem
+necessidade de passar `dispose:` no registro:
+
+```dart
+class CacheService implements Disposable {
+  @override
+  FutureOr onDispose() {
+    // limpar cache
+  }
+}
+
+void binds() {
+  // GetIt detecta Disposable e chama onDispose() no reset/popScope
+  i.registerSingleton<CacheService>(CacheService());
+}
+```
+
+### CAP-INJ-10: Scopes hierárquicos
+
+O GetIt suporta scopes para agrupar registros com ciclo de vida limitado.
+Registros em um scope filho sobrescrevem registros do pai. `popScope()`
+remove todos os registros do scope e chama seus dispose callbacks:
+
+```dart
+// Criar scope para feature temporária
+i.pushNewScope(scopeName: 'checkout');
+i.registerSingleton<PaymentService>(PaymentService());
+
+// Quando não precisa mais
+await i.popScope();  // remove PaymentService e chama dispose
+
+// Scope nomeado — pode ser removido diretamente
+await i.dropScope('checkout');
 ```
 
 ---
@@ -152,10 +218,12 @@ i.resetLazySingleton<T>()  // força criação na próxima chamada
 ## Restrições
 
 - Todas as dependências são **globais** — não há escopo por módulo ou por rota
+  (a menos que o dev use scopes explicitamente)
 - `binds()` NÃO aceita parâmetros — o getter `i` já fornece acesso ao GetIt
 - Tentar registrar o mesmo tipo duas vezes lança `AssertionError` (GetIt padrão)
   — a não ser que `allowReassignment` esteja habilitado
-- `dispose()` do módulo NÃO remove dependências do GetIt automaticamente
+- Dispose callbacks NÃO são chamados automaticamente — requerem invocação
+  explícita de `unregister()`, `reset()` ou `popScope()`
 - `registerSingletonAsync` deve ser aguardado via `i.allReady()` antes de `runApp()`
   se a dep for necessária imediatamente
 
@@ -171,3 +239,10 @@ i.resetLazySingleton<T>()  // força criação na próxima chamada
 - [ ] `context.readAsync<T>()` resolve singleton assíncrono
 - [ ] `instanceName` diferencia instâncias do mesmo tipo
 - [ ] Módulo registrado duas vezes não re-executa `binds()`
+- [ ] `dispose:` callback é chamado no `unregister()`
+- [ ] `dispose:` callback é chamado no `reset()`
+- [ ] `dispose:` callback NÃO é chamado sem invocação explícita
+- [ ] `Disposable.onDispose()` é chamado automaticamente no `reset()`
+- [ ] `popScope()` remove registros do scope e chama dispose callbacks
+- [ ] Scope filho sobrescreve registro do pai
+- [ ] `popScope()` restaura registro do scope anterior
