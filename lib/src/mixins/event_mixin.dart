@@ -37,16 +37,39 @@ mixin IEvent on Module {
   /// (after `binds()` have been registered).
   void listen();
 
-  /// Registers a listener for events of type [T].
+  /// Registers a listener for events of type [T] and returns the [StreamSubscription].
   ///
-  /// If [autoDispose] is `true` (default), the listener is automatically
-  /// cancelled when [dispose] is called on this module.
-  void on<T>(void Function(T event) callback, {bool autoDispose = true}) {
+  /// If [autoDispose] is `true` (default), the subscription is tracked and
+  /// automatically cancelled when [dispose] is called on this module.
+  ///
+  /// If [autoDispose] is `false`, the subscription is **not** tracked by this
+  /// module — the returned [StreamSubscription] is the caller's responsibility
+  /// to cancel when no longer needed.
+  ///
+  /// ```dart
+  /// // Managed automatically:
+  /// on<UserEvent>((e) => handleUser(e));
+  ///
+  /// // Manual management:
+  /// final sub = on<SystemEvent>((e) => handleSystem(e), autoDispose: false);
+  /// // later:
+  /// sub.cancel();
+  /// ```
+  StreamSubscription<T> on<T>(
+    void Function(T event) callback, {
+    bool autoDispose = true,
+  }) {
     final sub = Event.i.streamOf<T>().listen(callback);
     if (autoDispose) _subscriptions.add(sub);
+    return sub;
   }
 
   /// Cancels all tracked subscriptions and clears the list.
+  ///
+  /// **Cleanup order matters:** always call [dispose] **before** any
+  /// `GetIt.reset()`, `GetIt.unregister()`, or `GetIt.popScope()` that
+  /// removes services accessed by active listeners. Reversing this order
+  /// may cause `ServiceNotFoundException` in still-active callbacks.
   ///
   /// This method is NOT called automatically by the framework.
   /// It is the consumer's responsibility to call [dispose] when

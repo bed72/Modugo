@@ -1,18 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/events/event.dart';
 import 'package:modugo/src/mixins/event_mixin.dart';
-import 'package:modugo/src/interfaces/route_interface.dart';
 import 'package:modugo/src/routes/child_route.dart';
+import 'package:modugo/src/interfaces/route_interface.dart';
 
-/// Documents DESIGN-14: `IEvent.on<T>(autoDispose: false)` creates a
-/// StreamSubscription that is neither stored nor returned. Once registered,
-/// there is no API to cancel it — it is an irrecoverable resource leak.
-///
-/// These tests document the current behavior. When DESIGN-14 is addressed
-/// (e.g., by returning the StreamSubscription), the leak test should be updated.
 void main() {
   group('IEvent.on autoDispose behavior', () {
     setUp(() => Event.i.disposeAll());
@@ -35,10 +31,11 @@ void main() {
     );
 
     test(
-      '[DESIGN-14] autoDispose: false — subscription still fires after module dispose',
+      'autoDispose: false — subscription still fires after module dispose',
       () async {
         bool called = false;
         final module = _TestModule();
+        // Caller holds no reference — subscription is not tracked by module.
         module.on<_Evt>((_) => called = true, autoDispose: false);
 
         // Disposing the module does NOT cancel the subscription.
@@ -47,29 +44,24 @@ void main() {
         Event.emit(_Evt());
         await Future<void>.delayed(Duration.zero);
 
-        // The subscription is still alive — this is the documented leak.
+        // The subscription is still alive — caller must cancel manually.
         expect(
           called,
           isTrue,
           reason:
-              'DESIGN-14: autoDispose:false subscription cannot be cancelled',
+              'autoDispose:false subscription is not cancelled by module.dispose()',
         );
       },
     );
 
-    test(
-      '[DESIGN-14] autoDispose: false — on() returns void, caller cannot cancel',
-      () {
-        final module = _TestModule();
+    test('autoDispose: false — on() returns a valid StreamSubscription', () {
+      final module = _TestModule();
 
-        // on() returns void — the caller has no handle to cancel the subscription.
-        // This documents the API limitation: no way to clean up.
-        expect(
-          () => module.on<_Evt>((_) {}, autoDispose: false),
-          returnsNormally,
-        );
-      },
-    );
+      final sub = module.on<_Evt>((_) {}, autoDispose: false);
+
+      expect(sub, isA<StreamSubscription<_Evt>>());
+      sub.cancel();
+    });
   });
 }
 

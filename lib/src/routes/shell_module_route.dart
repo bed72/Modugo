@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:modugo/src/interfaces/guard_interface.dart';
 import 'package:modugo/src/interfaces/route_interface.dart';
 
 /// A modular shell route that wraps a group of child [IRoute] routes within a common layout or container.
@@ -60,6 +61,13 @@ final class ShellModuleRoute implements IRoute {
   )?
   pageBuilder;
 
+  /// Guards evaluated before allowing navigation into this shell.
+  ///
+  /// Each guard receives the current [BuildContext] and [GoRouterState].
+  /// Returning `null` allows navigation; returning a path string redirects.
+  /// Guards are evaluated in order — the first non-null result wins.
+  final List<IGuard> guards;
+
   /// Creates a [ShellModuleRoute] that groups [routes] inside a shared shell layout.
   const ShellModuleRoute({
     required this.routes,
@@ -68,6 +76,7 @@ final class ShellModuleRoute implements IRoute {
     this.pageBuilder,
     this.navigatorKey,
     this.parentNavigatorKey,
+    this.guards = const [],
   });
 
   @override

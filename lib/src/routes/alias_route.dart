@@ -9,14 +9,20 @@ import 'package:modugo/src/interfaces/route_interface.dart';
 /// Unlike [ChildRoute], this route does not define its own [child] or [pageBuilder].
 /// Instead, it delegates rendering to the [to] route within the same module.
 ///
+/// **Limitations:**
+/// - [to] must reference the [path] of a [ChildRoute] defined **directly in the
+///   same module** (not inside a nested module or shell). Cross-module aliases
+///   are not supported and will throw an [ArgumentError] at router build time.
+/// - Alias chaining is not supported — [to] cannot point to another [AliasRoute].
+///
 /// This is useful when you want multiple paths to resolve to the same page,
 /// such as supporting legacy URLs, SEO-friendly routes, or alternate entry points.
 ///
 /// Example:
 /// ```dart
 /// AliasRoute(
-///   alias: '/cart/:id',
-///   detination: '/order/:id',
+///   from: '/cart/:id',
+///   to: '/order/:id',
 /// )
 /// ```
 @immutable

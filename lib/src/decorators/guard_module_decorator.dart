@@ -1,7 +1,5 @@
 // coverage:ignore-file
 
-import 'package:flutter/foundation.dart';
-
 import 'package:modugo/src/guard.dart';
 import 'package:modugo/src/module.dart';
 
@@ -16,7 +14,6 @@ import 'package:modugo/src/interfaces/route_interface.dart';
 /// by wrapping the original module and overriding its `routes()` method.
 ///
 /// It delegates binding and imports to the wrapped [_module].
-@immutable
 final class GuardModuleDecorator extends Module {
   final Module _module;
   final List<IGuard> _guards;

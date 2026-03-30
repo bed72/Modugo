@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:modugo/src/module.dart';
 import 'package:modugo/src/transition.dart';
 import 'package:modugo/src/events/event.dart';
+import 'package:modugo/src/routes/factory_route.dart';
 import 'package:modugo/src/models/route_change_event_model.dart';
 
 /// A convenient global accessor for the configured [GoRouter] instance.
@@ -105,6 +106,8 @@ final class Modugo {
     _debugLogDiagnostics = null;
     _enableIOSGestureNavigation = true;
     Module.resetRegistrations();
+    // ignore: invalid_use_of_visible_for_testing_member
+    FactoryRoute.resetForTesting();
   }
 
   /// Configures the entire Modugo system by:
@@ -124,7 +127,7 @@ final class Modugo {
   static Future<GoRouter> configure({
     required Module module,
     Object? initialExtra,
-    int redirectLimit = 2,
+    int redirectLimit = 12,
     bool requestFocus = true,
     String initialRoute = '/',
     String? restorationScopeId,
@@ -188,7 +191,7 @@ final class Modugo {
 
       lastNotifiedLocation = current;
 
-      Event.emit(RouteChangedEventModel(current));
+      Future.microtask(() => Event.emit(RouteChangedEventModel(current)));
     });
 
     return _router!;
