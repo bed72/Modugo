@@ -6,9 +6,9 @@ import 'package:go_router/go_router.dart';
 import 'package:modugo/src/logger.dart';
 
 import 'package:modugo/src/mixins/dsl_mixin.dart';
+import 'package:modugo/src/mixins/event_mixin.dart';
 import 'package:modugo/src/mixins/router_mixin.dart';
 import 'package:modugo/src/mixins/binder_mixin.dart';
-import 'package:modugo/src/mixins/event_mixin.dart';
 import 'package:modugo/src/routes/factory_route.dart';
 
 /// A set of module types that have been registered globally,
@@ -58,6 +58,12 @@ final Set<Type> _modulesRegistered = {};
 /// }
 /// ```
 abstract class Module with IBinder, IDsl, IRouter {
+  /// Tracks whether [configureRoutes] has already been called on this instance.
+  ///
+  /// Prevents [_configureBinders] (and therefore [IEvent.listen]) from being
+  /// executed more than once for the same module instance.
+  bool _routesConfigured = false;
+
   /// Shortcut to access the global GetIt instance used for dependency injection.
   /// Provides direct access to registered services and singletons.
   GetIt get i => GetIt.instance;
@@ -83,7 +89,12 @@ abstract class Module with IBinder, IDsl, IRouter {
   /// final routes = module.configureRoutes();
   /// ```
   List<RouteBase> configureRoutes() {
+    if (_routesConfigured) {
+      return FactoryRoute.from(routes());
+    }
+
     _configureBinders();
+    _routesConfigured = true;
 
     return FactoryRoute.from(routes());
   }
@@ -104,7 +115,10 @@ abstract class Module with IBinder, IDsl, IRouter {
     final targetBinder = binder ?? this;
 
     if (_modulesRegistered.contains(targetBinder.runtimeType)) {
-      Logger.module('${targetBinder.runtimeType} skipped (already registered)');
+      Logger.warn(
+        '${targetBinder.runtimeType} already registered — skipping. '
+        'If this is intentional, ensure both instances share the same configuration.',
+      );
       return;
     }
 
