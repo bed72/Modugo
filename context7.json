@@ -12,6 +12,8 @@
     "example",
     ".dart_tool",
     ".claude",
+    ".claude/skills",
+    ".claude/commands",
     "openspec"
   ],
   "excludeFiles": ["CHANGELOG.md", "pubspec.lock"],
