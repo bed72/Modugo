@@ -1,0 +1,32 @@
+# Modugo
+
+> Modular routing and dependency injection for Flutter, built on GoRouter + GetIt.
+
+Modugo provides a module-based architecture for Flutter apps: each module encapsulates
+routes, dependencies (binds), and sub-module imports. Routes are protected by guards,
+DI is lifecycle-aware per module, and navigation events are observable.
+
+## Docs
+
+- [Getting Started](https://bed72.github.io/Modugo/documentation/getting-started/)
+- [Modules](https://bed72.github.io/Modugo/documentation/modules/)
+- [Routes](https://bed72.github.io/Modugo/documentation/routes/)
+- [Route DSL](https://bed72.github.io/Modugo/documentation/routes/dsl/)
+- [Route Transitions](https://bed72.github.io/Modugo/documentation/routes/transitions/)
+- [Dependency Injection](https://bed72.github.io/Modugo/documentation/injection/)
+- [Guards](https://bed72.github.io/Modugo/documentation/guards/)
+- [Events](https://bed72.github.io/Modugo/documentation/events/)
+- [Extensions](https://bed72.github.io/Modugo/documentation/extensions/)
+- [Utilities](https://bed72.github.io/Modugo/documentation/utilities/)
+- [Migration](https://bed72.github.io/Modugo/documentation/migration/)
+
+## Dependencies
+
+Modugo is built on top of these libraries. For advanced usage, consult their docs directly:
+
+- [GoRouter](https://context7.com/websites/pub_dev_go_router) — declarative routing engine used internally (`/websites/pub_dev_go_router`)
+- [GetIt](https://context7.com/fluttercommunity/get_it) — service locator powering all DI in `binds()` (`/fluttercommunity/get_it`)
+
+## Optional: full docs
+
+- [Full documentation](https://bed72.github.io/Modugo/llms-full.txt)
