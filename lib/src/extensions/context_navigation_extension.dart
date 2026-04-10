@@ -4,6 +4,8 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path_to_regexp/path_to_regexp.dart';
 
+import 'package:modugo/src/logger.dart';
+
 /// Extension on [BuildContext] that provides convenient navigation helpers
 /// using [GoRouter].
 ///
@@ -55,7 +57,11 @@ extension ContextNavigationExtension on BuildContext {
   /// context.go(context.state.uri.toString());
   /// ```
   void reload() {
-    goRouter.go(GoRouterState.of(this).uri.toString());
+    try {
+      goRouter.go(GoRouterState.of(this).uri.toString());
+    } on FlutterError catch (exception) {
+      Logger.warn('context.reload() called on invalid context: $exception');
+    }
   }
 
   /// Returns `true` if the navigation stack can be popped (i.e. there's a previous route).

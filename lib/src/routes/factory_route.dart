@@ -1,6 +1,7 @@
+import 'package:async/async.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:modugo/src/routes/compiler_route.dart';
 
@@ -76,6 +77,18 @@ import 'package:modugo/src/routes/stateful_shell_module_route.dart';
 /// structure is validated, guarded, and ready for use within Flutter’s [GoRouter].
 final class FactoryRoute {
   const FactoryRoute._();
+
+  static CancelableOperation<String?>? _pendingGuards;
+
+  /// Cancels any in-flight guard operation and clears the pending reference.
+  ///
+  /// **For testing purposes only.** Call this in `tearDown` to ensure a
+  /// cancelled guard from one test cannot affect subsequent tests.
+  @visibleForTesting
+  static void resetForTesting() {
+    _pendingGuards?.cancel();
+    _pendingGuards = null;
+  }
 
   /// Converts a list of Modugo [IRoute] definitions into a flattened list of
   /// GoRouter-compatible [RouteBase] objects.
@@ -181,7 +194,8 @@ final class FactoryRoute {
     final route = routes.whereType<ChildRoute>().firstWhere(
       (child) => child.path == alias.to,
       orElse: () => throw ArgumentError(
-        'Alias "${alias.from}" points to "${alias.to}", but no matching ChildRoute was found.',
+        'AliasRoute only works with ChildRoute defined directly in the same module. '
+        "Path '${alias.to}' was not found.",
       ),
     );
 
@@ -253,6 +267,13 @@ final class FactoryRoute {
       observers: route.observers,
       navigatorKey: route.navigatorKey,
       parentNavigatorKey: route.parentNavigatorKey,
+      redirect: route.guards.isNotEmpty
+          ? (context, state) => _executeGuards(
+              context: context,
+              state: state,
+              guards: route.guards,
+            )
+          : null,
       builder: (context, state, child) {
         final builder = route.builder;
         if (builder == null) {
@@ -353,6 +374,22 @@ final class FactoryRoute {
   }
 
   static Future<String?> _executeGuards({
+    required BuildContext context,
+    required List<IGuard> guards,
+    required GoRouterState state,
+  }) async {
+    _pendingGuards?.cancel();
+
+    final operation = CancelableOperation<String?>.fromFuture(
+      _runGuards(context: context, guards: guards, state: state),
+    );
+
+    _pendingGuards = operation;
+
+    return operation.valueOrCancellation(null);
+  }
+
+  static Future<String?> _runGuards({
     required BuildContext context,
     required List<IGuard> guards,
     required GoRouterState state,

@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import 'package:path_to_regexp/path_to_regexp.dart';
 
+import 'package:modugo/src/routes/compiler_route.dart';
+
 /// Extension on [BuildContext] that provides advanced route matching utilities.
 ///
 /// These methods allow you to:
@@ -168,7 +170,13 @@ extension ContextMatchExtension on BuildContext {
 
   bool _matchPath(String path, List<RouteBase> routes) {
     for (final route in routes) {
-      if (route is GoRoute && route.path == path) return true;
+      if (route is GoRoute) {
+        try {
+          if (CompilerRoute(route.path).match(path)) return true;
+        } on FormatException {
+          // Invalid path pattern — skip this route.
+        }
+      }
       if (route is ShellRouteBase) {
         if (_matchPath(path, route.routes)) return true;
       }
