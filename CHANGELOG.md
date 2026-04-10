@@ -1,3 +1,7 @@
+## [4.2.11] - 2026-04-10
+
+- chore: exclude .claude/skills and .claude/commands from Context7 indexing
+
 ## [4.2.9] - 2026-03-18
 
 - docs: document iosGestureEnabled and enableIOSGestureNavigation in MkDocs
