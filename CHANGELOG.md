@@ -1,3 +1,7 @@
+## [4.2.12] - 2026-04-13
+
+- :fire: update configs
+
 ## [4.2.11] - 2026-04-10
 
 - chore: exclude .claude/skills and .claude/commands from Context7 indexing
