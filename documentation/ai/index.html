@@ -660,24 +660,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#llmstxt" class="md-nav__link">
-    <span class="md-ellipsis">
-      llms.txt
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#context7json" class="md-nav__link">
-    <span class="md-ellipsis">
-      context7.json
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#skills" class="md-nav__link">
     <span class="md-ellipsis">
       Skills
@@ -765,24 +747,6 @@
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#llmstxt" class="md-nav__link">
-    <span class="md-ellipsis">
-      llms.txt
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#context7json" class="md-nav__link">
-    <span class="md-ellipsis">
-      context7.json
-    </span>
-  </a>
   
 </li>
       
@@ -883,32 +847,6 @@
 <pre><code>Como criar um módulo com guard de autenticação? use context7
 </code></pre>
 <p>O assistente buscará automaticamente a documentação correta do Modugo antes de responder.</p>
-<hr />
-<h2 id="llmstxt">llms.txt</h2>
-<p>O Modugo inclui um arquivo <a href="https://github.com/bed72/Modugo/blob/master/llms.txt"><code>llms.txt</code></a> na raiz do repositório — padrão criado por <a href="https://llmstxt.org">Jeremy Howard</a> para expor documentação de forma estruturada a LLMs.</p>
-<p>Ferramentas que consomem <code>llms.txt</code> automaticamente encontram os links para todas as seções da documentação:</p>
-<pre><code>https://raw.githubusercontent.com/bed72/Modugo/master/llms.txt
-</code></pre>
-<hr />
-<h2 id="context7json">context7.json</h2>
-<p>O arquivo <a href="https://github.com/bed72/Modugo/blob/master/context7.json"><code>context7.json</code></a> na raiz do repositório controla como o Context7 indexa o projeto:</p>
-<ul>
-<li><strong>Pastas indexadas:</strong> <code>doc/</code> e <code>lib/</code></li>
-<li><strong>Pastas excluídas:</strong> <code>test/</code>, <code>build/</code>, <code>coverage/</code>, <code>example/</code></li>
-<li><strong>Regras de uso</strong> que guiam o AI sobre padrões corretos da lib</li>
-</ul>
-<pre><code class="language-json">{
-  &quot;$schema&quot;: &quot;https://context7.com/schema/context7.json&quot;,
-  &quot;projectTitle&quot;: &quot;Modugo&quot;,
-  &quot;folders&quot;: [&quot;doc&quot;, &quot;lib&quot;],
-  &quot;rules&quot;: [
-    &quot;Define modules implementing IModule with imports(), binds(), and routes()&quot;,
-    &quot;Prefer the declarative DSL: child(), module(), alias(), shell(), statefulShell()&quot;,
-    &quot;Protect routes with guards implementing IGuard&quot;,
-    &quot;Access DI via Modugo.i.get&lt;T&gt;(), i.get&lt;T&gt;(), or context.read&lt;T&gt;()&quot;
-  ]
-}
-</code></pre>
 <hr />
 <h2 id="skills">Skills</h2>
 <p>Skills são instruções estruturadas que ensinam o assistente a executar tarefas específicas com o Modugo — como criar um módulo, registrar uma dependência ou adicionar um guard.</p>
