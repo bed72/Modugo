@@ -1,4 +1,4 @@
-extension UriPathWithExtras on Uri {
+extension UriExtensions on Uri {
   /// Returns the full path including query and fragment if they exist.
   ///
   /// Examples:

@@ -85,12 +85,12 @@ mixin IDsl {
     required Widget Function(BuildContext, GoRouterState) child,
     String? name,
     String? path,
+    bool? iosGestureEnabled,
     TypeTransition? transition,
     List<IGuard> guards = const [],
     GlobalKey<NavigatorState>? parentNavigatorKey,
     Page<dynamic> Function(BuildContext, GoRouterState)? pageBuilder,
     FutureOr<bool> Function(BuildContext context, GoRouterState state)? onExit,
-    bool? iosGestureEnabled,
   }) => ChildRoute(
     name: name,
     child: child,
@@ -99,8 +99,8 @@ mixin IDsl {
     path: path ?? '/',
     transition: transition,
     pageBuilder: pageBuilder,
-    parentNavigatorKey: parentNavigatorKey,
     iosGestureEnabled: iosGestureEnabled,
+    parentNavigatorKey: parentNavigatorKey,
   );
 
   /// Creates a [ModuleRoute] that links to another [Module].
