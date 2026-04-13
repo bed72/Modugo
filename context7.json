@@ -13,6 +13,10 @@
     ".dart_tool",
     ".claude",
     ".claude/skills",
+    ".claude/skills/openspec-explore",
+    ".claude/skills/openspec-apply-change",
+    ".claude/skills/openspec-archive-change",
+    ".claude/skills/openspec-propose",
     ".claude/commands",
     "openspec"
   ],

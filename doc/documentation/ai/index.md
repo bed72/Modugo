@@ -70,42 +70,6 @@ O assistente buscará automaticamente a documentação correta do Modugo antes d
 
 ---
 
-## llms.txt
-
-O Modugo inclui um arquivo [`llms.txt`](https://github.com/bed72/Modugo/blob/master/llms.txt) na raiz do repositório — padrão criado por [Jeremy Howard](https://llmstxt.org) para expor documentação de forma estruturada a LLMs.
-
-Ferramentas que consomem `llms.txt` automaticamente encontram os links para todas as seções da documentação:
-
-```
-https://raw.githubusercontent.com/bed72/Modugo/master/llms.txt
-```
-
----
-
-## context7.json
-
-O arquivo [`context7.json`](https://github.com/bed72/Modugo/blob/master/context7.json) na raiz do repositório controla como o Context7 indexa o projeto:
-
-- **Pastas indexadas:** `doc/` e `lib/`
-- **Pastas excluídas:** `test/`, `build/`, `coverage/`, `example/`
-- **Regras de uso** que guiam o AI sobre padrões corretos da lib
-
-```json
-{
-  "$schema": "https://context7.com/schema/context7.json",
-  "projectTitle": "Modugo",
-  "folders": ["doc", "lib"],
-  "rules": [
-    "Define modules implementing IModule with imports(), binds(), and routes()",
-    "Prefer the declarative DSL: child(), module(), alias(), shell(), statefulShell()",
-    "Protect routes with guards implementing IGuard",
-    "Access DI via Modugo.i.get<T>(), i.get<T>(), or context.read<T>()"
-  ]
-}
-```
-
----
-
 ## Skills
 
 Skills são instruções estruturadas que ensinam o assistente a executar tarefas específicas com o Modugo — como criar um módulo, registrar uma dependência ou adicionar um guard.
