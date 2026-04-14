@@ -4,7 +4,11 @@
   "public_key": "pk_XCsCEYXZ1kT4EpK0ylQe6",
   "projectTitle": "Modugo",
   "description": "Modular routing and dependency injection for Flutter using GoRouter + GetIt",
-  "folders": ["doc", "lib", "skills"],
+  "folders": [
+    "doc",
+    "lib",
+    "skills"
+  ],
   "excludeFolders": [
     "test",
     "build",
@@ -20,7 +24,10 @@
     ".claude/commands",
     "openspec"
   ],
-  "excludeFiles": ["CHANGELOG.md", "pubspec.lock"],
+  "excludeFiles": [
+    "CHANGELOG.md",
+    "pubspec.lock"
+  ],
   "rules": [
     "Use GoRouter for navigation — always configure it through Modugo's module system, not directly. For GoRouter-specific questions use Context7 library /websites/pub_dev_go_router",
     "Use GetIt for DI — binds are registered per module via binds(). For GetIt-specific patterns use Context7 library /fluttercommunity/get_it",
@@ -31,7 +38,11 @@
     "Access DI via Modugo.i.get<T>(), i.get<T>(), or context.read<T>() inside widgets"
   ],
   "previousVersions": [
-    { "tag": "v4.2.9" },
-    { "tag": "v4.1.0" }
+    {
+      "tag": "v4.2.9"
+    },
+    {
+      "tag": "v4.1.0"
+    }
   ]
 }
