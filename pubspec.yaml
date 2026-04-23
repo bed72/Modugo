@@ -1,5 +1,5 @@
 name: modugo
-version: 4.2.12
+version: 4.2.13
 homepage: https://bed72.github.io/Modugo
 repository: https://github.com/bed72/Modugo
 description: Modular Routing and Dependency Injection for Flutter with GetIt and GoRouter.
@@ -24,7 +24,7 @@ dependencies:
 
   async: ^2.13.1
   get_it: ^9.2.1
-  go_router: ^17.2.0
+  go_router: ^17.2.2
   path_to_regexp: ^0.4.0
 
 dev_dependencies:
