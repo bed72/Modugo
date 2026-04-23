@@ -1,3 +1,7 @@
+## [4.2.13] - 2026-04-23
+
+- :fire: update dependencies
+
 ## [4.2.12] - 2026-04-13
 
 - :fire: update configs
